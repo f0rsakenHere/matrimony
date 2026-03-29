@@ -125,35 +125,61 @@ export default function SiteHeader() {
         </div>
 
         <div className="border-b border-[var(--border-subtle)] bg-[var(--surface)] px-4 py-4">
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center justify-between gap-3">
             <Link href="/" aria-label="Qahira home" className="shrink-0">
               <BrandLogo compact />
             </Link>
+
+            <Link
+              href={registerLink.href}
+              className="inline-flex h-11 min-w-[132px] items-center justify-center bg-[var(--surface-inverse)] px-4 transition-opacity hover:opacity-90"
+            >
+              <span className="text-[14px] font-semibold text-[var(--color-light)] whitespace-nowrap">
+                {registerLink.label}
+              </span>
+            </Link>
           </div>
 
-          <Link
-            href={registerLink.href}
-            className="mt-4 inline-flex h-12 w-full items-center justify-center bg-[var(--surface-inverse)] px-4 transition-opacity hover:opacity-90"
-          >
-            <span className="text-[16px] font-semibold text-[var(--color-light)] whitespace-nowrap">
-              {registerLink.label}
-            </span>
-          </Link>
+          <details className="group mt-4">
+            <summary className="flex h-11 cursor-pointer list-none items-center justify-between border border-[var(--color-dark-12)] px-4 text-[15px] font-semibold text-[var(--foreground)]">
+              <span>Menu</span>
+              <span className="relative inline-flex size-5 items-center justify-center">
+                <span className="absolute h-0.5 w-4 bg-[var(--foreground)] transition-transform duration-200 group-open:rotate-45" />
+                <span className="absolute h-0.5 w-4 bg-[var(--foreground)] transition-transform duration-200 group-open:-rotate-45" />
+                <span className="absolute h-0.5 w-4 -translate-y-1.5 bg-[var(--foreground)] transition-opacity duration-150 group-open:opacity-0" />
+                <span className="absolute h-0.5 w-4 translate-y-1.5 bg-[var(--foreground)] transition-opacity duration-150 group-open:opacity-0" />
+              </span>
+            </summary>
 
-          <nav
-            aria-label="Primary navigation"
-            className="mt-4 flex flex-wrap gap-2 text-[15px] font-semibold text-[var(--foreground)]"
-          >
-            {navigationLinks.map((item) => (
-              <Link
-                key={item.label}
-                href={item.href}
-                className="inline-flex h-10 items-center bg-[var(--color-dark-08)] px-3"
+            <div className="mt-2 space-y-3 border border-[var(--color-dark-12)] p-3">
+              <nav aria-label="Primary navigation" className="grid gap-2">
+                {navigationLinks.map((item) => (
+                  <Link
+                    key={item.label}
+                    href={item.href}
+                    className="inline-flex h-10 items-center border border-[var(--color-dark-12)] bg-[var(--color-dark-08)] px-3 text-[15px] font-semibold text-[var(--foreground)]"
+                  >
+                    <span>{item.label}</span>
+                  </Link>
+                ))}
+              </nav>
+
+              <nav
+                aria-label="Utility navigation"
+                className="flex flex-wrap items-center gap-4 text-[12px] font-semibold text-[var(--color-dark-72)]"
               >
-                <span>{item.label}</span>
-              </Link>
-            ))}
-          </nav>
+                {utilityLinks.map((item) => (
+                  <Link
+                    key={item.label}
+                    href={item.href}
+                    className="leading-none"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </nav>
+            </div>
+          </details>
         </div>
       </div>
     </header>
@@ -168,7 +194,7 @@ function BrandLogo({ compact = false }: { compact?: boolean }) {
       width={511}
       height={77}
       preload
-      className={compact ? "h-auto w-[200px]" : "h-auto w-[248px]"}
+      className={compact ? "h-auto w-[176px]" : "h-auto w-[248px]"}
     />
   );
 }
