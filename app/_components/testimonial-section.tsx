@@ -1,3 +1,5 @@
+import { MotionSection } from "@/components/ui/motion-section";
+
 const testimonials = [
   {
     quote:
@@ -24,7 +26,7 @@ const testimonials = [
 
 export default function TestimonialSection() {
   return (
-    <section className="bg-[var(--surface)] py-16 md:py-18 lg:py-20">
+    <MotionSection className="bg-[var(--surface)] py-16 md:py-18 lg:py-20">
       <div className="mx-auto max-w-[1520px] px-6 md:px-8 lg:px-10">
         <p className="text-center subheading text-[var(--color-dark-72)]">
           Testimonial
@@ -48,7 +50,7 @@ export default function TestimonialSection() {
           <span className="h-[3px] w-5 bg-[var(--color-dark-18)]" />
         </div>
       </div>
-    </section>
+    </MotionSection>
   );
 }
 

@@ -1,3 +1,5 @@
+import { MotionSection } from "@/components/ui/motion-section";
+
 const faqs = [
   {
     question: "How is this platform halal and privacy-first?",
@@ -33,7 +35,7 @@ const faqs = [
 
 export default function FaqSection() {
   return (
-    <section
+    <MotionSection
       id="faq"
       className="bg-[var(--color-dark-08)] py-14 md:py-16 lg:py-20"
     >
@@ -70,6 +72,6 @@ export default function FaqSection() {
           ))}
         </div>
       </div>
-    </section>
+    </MotionSection>
   );
 }

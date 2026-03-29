@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { MotionSection } from "@/components/ui/motion-section";
 import { ShieldCheckIcon } from "@/components/ui/shield-check-icon";
 
 const processSteps = [
@@ -26,7 +27,7 @@ const processSteps = [
 
 export default function HowItWorksSection() {
   return (
-    <section className="bg-[var(--surface)] py-14 md:py-16 lg:py-20">
+    <MotionSection className="bg-[var(--surface)] py-14 md:py-16 lg:py-20">
       <div className="mx-auto max-w-[1520px] px-6 md:px-8 lg:px-10">
         <div className="grid border border-[var(--color-dark-12)] lg:grid-cols-[47%_53%]">
           <div className="p-6 md:p-10 lg:p-12">
@@ -90,6 +91,6 @@ export default function HowItWorksSection() {
           </div>
         </div>
       </div>
-    </section>
+    </MotionSection>
   );
 }

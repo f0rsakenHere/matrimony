@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { MotionSection } from "@/components/ui/motion-section";
 import { ChevronRightIcon } from "@/components/ui/chevron-right-icon";
 import { BookOpenCheckIcon } from "@/components/ui/book-open-check-icon";
 import { BookmarkCheckIcon } from "@/components/ui/bookmark-check-icon";
@@ -39,7 +40,7 @@ const stats = [
 
 export default function PilgrimsBookingSection() {
   return (
-    <section className="bg-[var(--surface)] py-14 md:py-16 lg:py-20">
+    <MotionSection className="bg-[var(--surface)] py-14 md:py-16 lg:py-20">
       <div className="mx-auto max-w-[1520px] px-6 md:px-8 lg:px-10">
         <div className="relative z-10 overflow-hidden border border-[var(--color-dark-12)] bg-[var(--surface)] lg:-mb-20">
           <div className="grid lg:grid-cols-[300px_1fr]">
@@ -129,6 +130,6 @@ export default function PilgrimsBookingSection() {
           </aside>
         </div>
       </div>
-    </section>
+    </MotionSection>
   );
 }

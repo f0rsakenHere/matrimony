@@ -1,8 +1,9 @@
 import Link from "next/link";
+import { MotionSection } from "@/components/ui/motion-section";
 
 export default function JourneyCtaSection() {
   return (
-    <section className="relative isolate overflow-hidden bg-[var(--surface-inverse)] py-16 md:py-20 lg:py-24">
+    <MotionSection className="relative isolate overflow-hidden bg-[var(--surface-inverse)] py-16 md:py-20 lg:py-24">
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_36%,var(--color-light-12)_0%,var(--color-dark)_42%,var(--color-dark)_100%)]" />
         <div className="absolute inset-y-0 left-0 w-[26%] bg-[linear-gradient(90deg,var(--color-dark)_0%,var(--color-dark-28)_100%)]" />
@@ -36,6 +37,6 @@ export default function JourneyCtaSection() {
           Free to join · Wali-verified · 100% halal process
         </p>
       </div>
-    </section>
+    </MotionSection>
   );
 }

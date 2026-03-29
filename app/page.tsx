@@ -7,6 +7,7 @@ import JourneyCtaSection from "./_components/journey-cta-section";
 import TestimonialSection from "./_components/testimonial-section";
 import FaqSection from "./_components/faq-section";
 import SiteFooter from "./_components/site-footer";
+import { MotionSection } from "@/components/ui/motion-section";
 import { ChevronRightIcon } from "@/components/ui/chevron-right-icon";
 
 const serviceCards = [
@@ -36,7 +37,7 @@ export default function Home() {
       <SiteHeader />
 
       <main className="flex-1">
-        <section className="relative isolate overflow-hidden bg-[var(--surface-inverse)]">
+        <MotionSection className="relative isolate overflow-hidden bg-[var(--surface-inverse)]">
           <Image
             src="/nikah-canada-hero.jpg"
             alt=""
@@ -93,9 +94,9 @@ export default function Home() {
               </div>
             </div>
           </div>
-        </section>
+        </MotionSection>
 
-        <section className="grid lg:grid-cols-3">
+        <MotionSection className="grid lg:grid-cols-3" delay={0.05}>
           {serviceCards.map((card) => (
             <article
               key={card.title}
@@ -148,7 +149,7 @@ export default function Home() {
               </div>
             </article>
           ))}
-        </section>
+        </MotionSection>
 
         <PilgrimsBookingSection />
         <HowItWorksSection />
