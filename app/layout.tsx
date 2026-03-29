@@ -4,10 +4,10 @@ import "./globals.css";
 import { Geist } from "next/font/google";
 import { cn } from "@/lib/utils";
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
-  title: "Qahira Travel",
+  title: "BdCanNikah",
   description: "Umrah and Hajj travel landing page preview",
 };
 
@@ -20,7 +20,15 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={cn("h-full", "antialiased", soraSans.variable, headingManrope.variable, geistMono.variable, "font-sans", geist.variable)}
+      className={cn(
+        "h-full",
+        "antialiased",
+        soraSans.variable,
+        headingManrope.variable,
+        geistMono.variable,
+        "font-sans",
+        geist.variable,
+      )}
     >
       <body
         suppressHydrationWarning

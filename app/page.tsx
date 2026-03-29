@@ -1,5 +1,12 @@
 import Link from "next/link";
-import SiteHeader from "@/app/_components/site-header";
+import Image from "next/image";
+import SiteHeader from "./_components/site-header";
+import PilgrimsBookingSection from "./_components/pilgrims-booking-section";
+import HowItWorksSection from "./_components/how-it-works-section";
+import JourneyCtaSection from "./_components/journey-cta-section";
+import TestimonialSection from "./_components/testimonial-section";
+import FaqSection from "./_components/faq-section";
+import SiteFooter from "./_components/site-footer";
 import { ChevronRightIcon } from "@/components/ui/chevron-right-icon";
 
 const serviceCards = [
@@ -30,13 +37,13 @@ export default function Home() {
 
       <main className="flex-1">
         <section className="relative isolate overflow-hidden bg-[var(--surface-inverse)]">
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-            style={{
-              backgroundImage: "url('/nikah-canada-hero.jpg')",
-              backgroundPosition: "center center",
-            }}
+          <Image
+            src="/nikah-canada-hero.jpg"
+            alt=""
+            fill
+            priority
+            sizes="100vw"
+            className="absolute inset-0 object-cover object-center"
           />
           <div className="absolute inset-0 bg-[var(--color-dark-28)]" />
           <div className="absolute inset-0 bg-[linear-gradient(180deg,var(--color-dark-18)_0%,var(--color-dark-28)_30%,var(--color-dark-56)_100%)]" />
@@ -46,7 +53,7 @@ export default function Home() {
             <div className="mx-auto flex w-full max-w-[1180px] flex-col items-center gap-6">
               <div className="flex w-full max-w-[980px] flex-col items-center gap-4">
                 <p className="subheading max-w-[420px] uppercase tracking-[0.06em] text-[var(--color-light)]">
-                  Your Path To Umrah Serenity
+                  Complete Half Your Deen
                 </p>
 
                 <h1 className="max-w-[20ch] text-[var(--color-light)] [text-wrap:balance]">
@@ -142,7 +149,15 @@ export default function Home() {
             </article>
           ))}
         </section>
+
+        <PilgrimsBookingSection />
+        <HowItWorksSection />
+        <JourneyCtaSection />
+        <TestimonialSection />
+        <FaqSection />
       </main>
+
+      <SiteFooter />
     </div>
   );
 }
