@@ -2,11 +2,14 @@ import { Fragment } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { soraSans } from "@/app/fonts";
+import { FacebookIcon } from "@/components/ui/facebook-icon";
+import { InstagramIcon } from "@/components/ui/instagram-icon";
+import { TwitterIcon } from "@/components/ui/twitter-icon";
 
 const utilityLinks = [
-  { href: "/#package", label: "Umrah Package" },
-  { href: "/#hajj", label: "Hajj Program" },
-  { href: "/#contact", label: "Customer Service" },
+  { href: "/#guide", label: "Wali Guidelines" },
+  { href: "/#faq", label: "FAQ" },
+  { href: "/#contact", label: "Contact" },
 ];
 
 const navigationLinks = [
@@ -54,7 +57,7 @@ export default function SiteHeader() {
           </nav>
 
           <p className="flex items-center justify-center px-4 text-center text-[12.5px] font-semibold text-[var(--color-light)]">
-            Secure and Reliable Umrah Experience.{" "}
+            Strictly Confidential. Wali Verified Profiles Only.{" "}
             <Link
               href="/#contact"
               className="ml-1 font-bold underline underline-offset-[2px]"
@@ -70,7 +73,7 @@ export default function SiteHeader() {
                 href={href}
                 className="inline-flex items-center gap-[9px] text-[var(--color-light)] transition-opacity hover:opacity-100"
               >
-                <Icon className="size-[12px]" />
+                <Icon size={13} duration={1} />
                 <span>{label}</span>
               </Link>
             ))}
@@ -104,9 +107,11 @@ export default function SiteHeader() {
           <div className="flex items-center justify-center px-8">
             <Link
               href={registerLink.href}
-              className="inline-flex h-[56px] min-w-[206px] items-center justify-center bg-[#1c413a] px-6 text-[16px] font-semibold text-[#efefe3] whitespace-nowrap transition-opacity hover:opacity-90"
+              className="inline-flex h-[56px] min-w-[206px] items-center justify-center bg-[var(--surface-inverse)] px-6 transition-opacity hover:opacity-90"
             >
-              {registerLink.label}
+              <span className="text-[16px] font-semibold text-[var(--color-light)] whitespace-nowrap">
+                {registerLink.label}
+              </span>
             </Link>
           </div>
         </div>
@@ -128,9 +133,11 @@ export default function SiteHeader() {
 
           <Link
             href={registerLink.href}
-            className="mt-4 inline-flex h-12 w-full items-center justify-center bg-[#1c413a] px-4 text-[16px] font-semibold text-[#efefe3]"
+            className="mt-4 inline-flex h-12 w-full items-center justify-center bg-[var(--surface-inverse)] px-4 transition-opacity hover:opacity-90"
           >
-            {registerLink.label}
+            <span className="text-[16px] font-semibold text-[var(--color-light)] whitespace-nowrap">
+              {registerLink.label}
+            </span>
           </Link>
 
           <nav
@@ -163,54 +170,5 @@ function BrandLogo({ compact = false }: { compact?: boolean }) {
       preload
       className={compact ? "h-auto w-[200px]" : "h-auto w-[248px]"}
     />
-  );
-}
-
-function FacebookIcon({ className = "" }: { className?: string }) {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      className={className}
-      fill="currentColor"
-    >
-      <path d="M13.4 20v-6h2l.4-2.4h-2.4V10c0-.7.2-1.2 1.2-1.2H16V6.6c-.3 0-1.1-.1-2.1-.1-2.1 0-3.5 1.3-3.5 3.6v1.5H8V14h2.4v6h3Z" />
-    </svg>
-  );
-}
-
-function TwitterIcon({ className = "" }: { className?: string }) {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      className={className}
-      fill="currentColor"
-    >
-      <path d="M20.7 7.1c-.6.3-1.2.4-1.8.5.7-.4 1.2-1 1.4-1.8-.6.4-1.4.7-2.1.8A3.3 3.3 0 0 0 12.6 9c0 .3 0 .5.1.8-2.8-.1-5.3-1.5-6.9-3.6-.3.5-.4 1-.4 1.6 0 1.1.5 2 1.4 2.6-.5 0-1-.2-1.5-.4 0 1.6 1.1 2.9 2.6 3.2-.3 0-.6.1-.9.1l-.6-.1c.4 1.3 1.6 2.2 3 2.2A6.6 6.6 0 0 1 5 17.9 9.4 9.4 0 0 0 10.1 19c6.1 0 9.4-5.1 9.4-9.5v-.4c.6-.4 1.1-1 1.5-1.6-.1 0-.2 0-.3-.1Z" />
-    </svg>
-  );
-}
-
-function InstagramIcon({ className = "" }: { className?: string }) {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      className={className}
-      fill="none"
-    >
-      <rect
-        x="4.5"
-        y="4.5"
-        width="15"
-        height="15"
-        rx="4"
-        stroke="currentColor"
-        strokeWidth="1.8"
-      />
-      <circle cx="12" cy="12" r="3.4" stroke="currentColor" strokeWidth="1.8" />
-      <circle cx="17.1" cy="6.9" r="1.1" fill="currentColor" />
-    </svg>
   );
 }

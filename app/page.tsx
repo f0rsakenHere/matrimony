@@ -1,32 +1,26 @@
 import Link from "next/link";
 import SiteHeader from "@/app/_components/site-header";
+import { ChevronRightIcon } from "@/components/ui/chevron-right-icon";
 
 const serviceCards = [
   {
-    title: "Easy Booking Service",
+    title: "Expert Manual Curation",
     description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut elit tellus, luctus nec ullamcorper mattis, pulvinar dapibus leo.",
+      "We never rely on matching algorithms. Our dedicated matchmakers personally review every single biodata to handpick candidates who truly align with your family values.",
     inverted: true,
   },
   {
-    title: "Trusted 100% Satisfaction",
+    title: "Strictly Halal and Private",
     description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut elit tellus, luctus nec ullamcorper mattis, pulvinar dapibus leo.",
+      "Profiles are never made public. We strictly follow Islamic guidelines and encourage Wali involvement during all introductions.",
     inverted: true,
   },
   {
-    title: "Pilgrims Five Stars Service",
+    title: "For Bangladeshi Canadians",
     description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut elit tellus, luctus nec ullamcorper mattis, pulvinar dapibus leo.",
+      "We understand exactly what it takes to honor your rich ancestral roots while building a successful and modern life here in Canada.",
     inverted: false,
   },
-];
-
-const trustedProfiles = [
-  { label: "MA", tone: "soft" as const },
-  { label: "KS", tone: "dark" as const },
-  { label: "FN", tone: "soft" as const },
-  { label: "AR", tone: "light" as const },
 ];
 
 export default function Home() {
@@ -49,48 +43,47 @@ export default function Home() {
           <div className="absolute inset-0 bg-[linear-gradient(90deg,var(--color-dark-18)_0%,transparent_40%,var(--color-dark-18)_100%)]" />
 
           <div className="relative mx-auto flex min-h-[calc(100vh-132px)] max-w-[1520px] flex-col items-center justify-center px-6 py-14 text-center text-[var(--color-light)] md:px-8 md:py-16 min-[1100px]:min-h-[calc(100vh-172px)] min-[1100px]:py-20 lg:px-10">
-            <p className="subheading max-w-[420px] uppercase tracking-[0.06em] text-[var(--color-light)]">
-              Your Path To Umrah Serenity
-            </p>
+            <div className="mx-auto flex w-full max-w-[1180px] flex-col items-center gap-6">
+              <div className="flex w-full max-w-[980px] flex-col items-center gap-4">
+                <p className="subheading max-w-[420px] uppercase tracking-[0.06em] text-[var(--color-light)]">
+                  Your Path To Umrah Serenity
+                </p>
 
-            <h1 className="mt-3 max-w-[1320px] text-[var(--color-light)]">
-              Your Unforgettable Umrah Experience
-            </h1>
-
-            <p className="mt-5 max-w-[940px] text-[var(--color-light-96)] leading-[1.55]">
-              A prominent pioneer in crafting A-grade Umrah Experiences,
-              Nurturing Faith, and Guiding Pilgrims in the USA. Since its
-              inception, the organization has consistently expanded its reach,
-              witnessing a steady increase in the number of spiritual journeys.
-            </p>
-
-            <div className="mt-8 flex flex-col items-center gap-5 lg:flex-row lg:gap-6">
-              <div className="flex items-center -space-x-3">
-                {trustedProfiles.map((profile) => (
-                  <TrustedAvatar key={profile.label} {...profile} />
-                ))}
+                <h1 className="max-w-[20ch] text-[var(--color-light)] [text-wrap:balance]">
+                  Find Your Partner the Halal Way
+                </h1>
               </div>
 
-              <p className="subheading text-[var(--color-light)]">
-                Trusted by 5000+ All Clients and Business
+              <p className="max-w-[820px] text-[var(--color-light-96)]">
+                Canada&apos;s #1 faith-first matrimonial platform. Connecting
+                serious, marriage-minded Muslims through a Wali-verified, halal
+                process.
               </p>
-            </div>
 
-            <div className="mt-8 flex flex-col gap-4 sm:flex-row">
-              <Link
-                href="/#package"
-                className="inline-flex min-w-[196px] items-center justify-center gap-4 bg-[var(--color-dark-72)] px-8 py-5 text-base font-semibold text-[var(--color-light)] transition-colors hover:bg-[var(--color-dark-88)]"
-              >
-                <span>Our Package</span>
-                <ArrowRightIcon className="size-5" />
-              </Link>
+              <div className="flex flex-col items-center gap-8">
+                <div className="flex flex-col items-center gap-5 lg:flex-row lg:gap-5">
+                  <p className="subheading text-[var(--color-light)]">
+                    Trusted by 5000+ All Clients and Business
+                  </p>
+                </div>
 
-              <Link
-                href="/#about"
-                className="inline-flex min-w-[178px] items-center justify-center bg-[var(--color-dark-88)] px-8 py-5 text-base font-semibold text-[var(--color-light)] transition-colors hover:bg-[var(--color-dark)]"
-              >
-                Read More
-              </Link>
+                <div className="flex flex-col gap-4 sm:flex-row">
+                  <Link
+                    href="/#package"
+                    className="inline-flex min-w-[196px] items-center justify-center gap-4 bg-[var(--color-dark-72)] px-8 py-5 text-base font-semibold text-[var(--color-light)] transition-colors hover:bg-[var(--color-dark-88)]"
+                  >
+                    <span>Our Package</span>
+                    <ArrowRightIcon className="size-5" />
+                  </Link>
+
+                  <Link
+                    href="/#about"
+                    className="inline-flex min-w-[178px] items-center justify-center bg-[var(--color-dark-88)] px-8 py-5 text-base font-semibold text-[var(--color-light)] transition-colors hover:bg-[var(--color-dark)]"
+                  >
+                    Read More
+                  </Link>
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -99,13 +92,13 @@ export default function Home() {
           {serviceCards.map((card) => (
             <article
               key={card.title}
-              className={`min-h-[270px] px-6 py-12 md:px-10 lg:min-h-[300px] lg:px-12 lg:py-14 ${
+              className={`flex min-h-[270px] px-6 py-12 md:px-10 lg:min-h-[300px] lg:px-12 lg:py-14 ${
                 card.inverted
                   ? "border-r border-[var(--color-light-18)] bg-[var(--surface-inverse)] text-[var(--color-light)]"
                   : "bg-[var(--surface)] text-[var(--foreground)]"
               }`}
             >
-              <div className="mx-auto max-w-[420px]">
+              <div className="mx-auto flex h-full w-full max-w-[420px] flex-col">
                 <h3
                   className={
                     card.inverted
@@ -117,7 +110,7 @@ export default function Home() {
                 </h3>
 
                 <p
-                  className={`mt-6 max-w-[360px] ${
+                  className={`mt-[20px] max-w-[360px] ${
                     card.inverted
                       ? "text-[var(--color-light-90)]"
                       : "text-[var(--color-dark-72)]"
@@ -128,7 +121,7 @@ export default function Home() {
 
                 <Link
                   href="/#about"
-                  className={`mt-10 inline-flex items-center gap-4 text-base font-semibold ${
+                  className={`mt-auto pt-10 inline-flex items-center gap-4 text-base font-semibold ${
                     card.inverted
                       ? "text-[var(--color-light)]"
                       : "text-[var(--foreground)]"
@@ -141,7 +134,7 @@ export default function Home() {
                         : "bg-[var(--surface-inverse)] text-[var(--color-light)]"
                     }`}
                   >
-                    <ArrowRightIcon className="size-6" />
+                    <ChevronRightIcon size={24} />
                   </span>
                   <span>Explore More</span>
                 </Link>
@@ -150,48 +143,6 @@ export default function Home() {
           ))}
         </section>
       </main>
-    </div>
-  );
-}
-
-function TrustedAvatar({
-  label,
-  tone,
-}: {
-  label: string;
-  tone: "soft" | "dark" | "light";
-}) {
-  const toneClassName =
-    tone === "dark"
-      ? "bg-[var(--color-dark-72)]"
-      : tone === "light"
-        ? "bg-[var(--color-light-72)]"
-        : "bg-[var(--color-light-18)]";
-
-  const silhouetteClassName =
-    tone === "light" ? "text-[var(--foreground)]" : "text-[var(--color-light)]";
-
-  return (
-    <div
-      className={`relative flex size-16 items-center justify-center overflow-hidden rounded-full border-[3px] border-[var(--color-light)] ${toneClassName}`}
-    >
-      <div className="absolute inset-x-0 bottom-0 h-[42%] bg-[var(--color-dark-28)]" />
-      <svg
-        aria-hidden="true"
-        viewBox="0 0 64 64"
-        className={`relative size-14 ${silhouetteClassName}`}
-        fill="none"
-      >
-        <circle cx="32" cy="22" r="10" fill="currentColor" opacity="0.95" />
-        <path
-          d="M15 58c1.8-11.2 8.3-17 17-17 8.6 0 15.1 5.8 17 17"
-          fill="currentColor"
-          opacity="0.95"
-        />
-      </svg>
-      <span className="absolute bottom-1.5 right-1.5 rounded-full bg-[var(--color-light)] px-1.5 py-0.5 text-[9px] font-bold text-[var(--foreground)]">
-        {label}
-      </span>
     </div>
   );
 }
