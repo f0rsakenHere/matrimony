@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { MotionSection } from "@/components/ui/motion-section";
 
 const faqs = [
@@ -37,13 +38,21 @@ export default function FaqSection() {
   return (
     <MotionSection
       id="faq"
-      className="bg-[var(--color-dark-08)] py-14 md:py-16 lg:py-20"
+      className="relative isolate overflow-hidden bg-[var(--color-dark-08)] py-14 md:py-16 lg:py-20"
     >
-      <div className="mx-auto max-w-[980px] px-6 md:px-8">
-        <p className="text-center subheading uppercase tracking-[0.08em] text-[var(--color-dark-72)]">
+      <Image
+        src="/faqs.jpg"
+        alt=""
+        fill
+        sizes="100vw"
+        className="absolute inset-0 object-cover object-center opacity-100"
+      />
+
+      <div className="relative z-10 mx-auto max-w-[980px] px-6 md:px-8">
+        <p className="text-center subheading uppercase tracking-[0.08em] text-[var(--color-dark)]">
           FAQ
         </p>
-        <h2 className="mt-4 text-center text-[var(--foreground)]">
+        <h2 className="mt-4 text-center text-[var(--color-dark)]">
           Common Questions
         </h2>
         <p className="mx-auto mt-6 max-w-[60ch] text-center text-[var(--color-dark-72)]">
@@ -52,10 +61,14 @@ export default function FaqSection() {
         </p>
 
         <div className="mt-10 space-y-4">
-          {faqs.map((item) => (
+          {faqs.map((item, index) => (
             <details
               key={item.question}
-              className="group border border-[var(--color-dark-12)] bg-[var(--surface)]"
+              className={`group border border-[var(--color-dark-12)] ${
+                index % 2 === 0
+                  ? "bg-[var(--surface)]"
+                  : "bg-[var(--color-light-90)]"
+              }`}
             >
               <summary className="flex cursor-pointer list-none items-center justify-between gap-5 px-6 py-5 text-left">
                 <span className="subheading text-[var(--foreground)]">

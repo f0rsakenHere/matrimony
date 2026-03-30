@@ -82,29 +82,28 @@ export default function PilgrimsBookingSection() {
         </div>
       </div>
 
-      <div className="relative isolate w-full overflow-hidden border-y border-[var(--color-dark-12)] bg-[var(--surface-inverse)] lg:min-h-[760px] lg:pt-28">
+      <div className="relative isolate w-full overflow-hidden border-y border-[var(--color-dark-12)] lg:min-h-[760px] lg:pt-28">
         <Image
-          src="/booking section.jpg"
+          src="/table-decor.jpg"
           alt=""
           fill
           sizes="100vw"
-          className="absolute inset-0 object-cover object-center"
+          className="absolute inset-0 object-cover"
+          style={{ objectPosition: "center top" }}
         />
-        <div className="absolute inset-0 bg-[var(--color-dark-56)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,var(--color-dark-72)_0%,var(--color-dark-28)_58%,var(--color-dark-18)_100%)]" />
 
         <div className="relative z-10 mx-auto grid max-w-[1520px] gap-10 px-6 py-14 md:px-10 md:py-16 lg:grid-cols-[1fr_420px] lg:items-end lg:px-14 lg:py-16">
-          <div className="max-w-[620px] text-[var(--color-light)]">
-            <p className="subheading uppercase tracking-[0.06em] text-[var(--color-light)]">
+          <div className="max-w-[620px] text-[var(--color-dark)] lg:self-start">
+            <p className="subheading shadow uppercase tracking-[0.06em] text-[#fff]">
               YOUR PRIVATE SEARCH BEGINS HERE
             </p>
-            <h2 className="mt-4 text-[var(--color-light)] [text-wrap:balance]">
+            <h2 className="mt-4 text-[#fff] [text-wrap:balance] [text-shadow:0_4px_18px_var(--color-dark-56)]">
               Ready to Find Someone Who Shares Your Values?
             </h2>
 
             <Link
               href="/#consult"
-              className="mt-8 inline-flex h-14 min-w-[188px] items-center justify-center gap-3 border border-[var(--color-light-18)] bg-[var(--color-dark-12)] px-7 text-base font-semibold text-[var(--color-light)] transition-colors hover:bg-[var(--color-dark-28)]"
+              className="mt-8 inline-flex h-14 min-w-[188px] items-center justify-center gap-3 border border-[var(--color-light)] bg-[var(--color-light)] px-7 text-base font-semibold text-[var(--color-dark)] shadow-[0_8px_22px_var(--color-dark-28)] transition-colors hover:bg-[var(--color-light-90)]"
             >
               <span>Consult With Us</span>
               <ChevronRightIcon size={20} />

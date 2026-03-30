@@ -7,6 +7,8 @@ const testimonials = [
     name: "Farid Ibrahim",
     handle: "@faridibrahim",
     initials: "FI",
+    cardTone: "bg-[var(--color-dark-08)]",
+    chipTone: "bg-[var(--surface)]",
   },
   {
     quote:
@@ -14,6 +16,8 @@ const testimonials = [
     name: "Sami Hassan",
     handle: "@samihassan",
     initials: "SH",
+    cardTone: "bg-[var(--color-light-90)]",
+    chipTone: "bg-[var(--surface)]",
   },
   {
     quote:
@@ -21,6 +25,8 @@ const testimonials = [
     name: "Layla Al-Sabah",
     handle: "@laylaalsabah",
     initials: "LA",
+    cardTone: "bg-[var(--color-dark-08)]",
+    chipTone: "bg-[var(--surface)]",
   },
 ];
 
@@ -62,11 +68,15 @@ function TestimonialCard({
     name: string;
     handle: string;
     initials: string;
+    cardTone: string;
+    chipTone: string;
   };
 }) {
   return (
     <article className="relative h-full pb-10">
-      <div className="relative h-full min-h-[350px] rounded-[20px] border border-[var(--color-dark-12)] bg-[var(--color-dark-08)] px-7 pt-8 pb-12 md:min-h-[370px] md:px-8 md:pt-9 md:pb-14">
+      <div
+        className={`relative h-full min-h-[350px] rounded-[20px] border border-[var(--color-dark-12)] px-7 pt-8 pb-12 md:min-h-[370px] md:px-8 md:pt-9 md:pb-14 ${item.cardTone}`}
+      >
         <p className="text-[64px] leading-none font-bold text-[var(--color-dark-18)] md:text-[68px]">
           “
         </p>
@@ -74,10 +84,14 @@ function TestimonialCard({
           {item.quote}
         </h3>
 
-        <span className="absolute -bottom-3 left-14 size-6 rotate-45 border-r border-b border-[var(--color-dark-12)] bg-[var(--color-dark-08)]" />
+        <span
+          className={`absolute -bottom-3 left-14 size-6 rotate-45 border-r border-b border-[var(--color-dark-12)] ${item.cardTone}`}
+        />
       </div>
 
-      <div className="absolute bottom-0 left-4 inline-flex max-w-[calc(100%-2rem)] items-center gap-3 rounded-[16px] border border-[var(--color-dark-12)] bg-[var(--surface)] px-3 py-2">
+      <div
+        className={`absolute bottom-0 left-4 inline-flex max-w-[calc(100%-2rem)] items-center gap-3 rounded-[16px] border border-[var(--color-dark-12)] px-3 py-2 ${item.chipTone}`}
+      >
         <span className="inline-flex size-11 items-center justify-center rounded-full bg-[var(--surface-inverse)] text-base font-semibold text-[var(--color-light)]">
           {item.initials}
         </span>
