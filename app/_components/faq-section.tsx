@@ -44,7 +44,7 @@ export default function FaqSection() {
       className="relative isolate overflow-hidden bg-[var(--color-dark-08)] py-14 md:py-16 lg:py-20"
     >
       <Image
-        src="/faq.jpg"
+        src="/process.jpg"
         alt=""
         fill
         sizes="100vw"

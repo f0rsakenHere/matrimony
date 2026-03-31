@@ -13,7 +13,7 @@ export function FlourishDivider({
     <div
       aria-hidden="true"
       className={cn(
-        "inline-flex items-center",
+        "flex w-full items-center",
         inverted
           ? "text-[var(--color-light-72)]"
           : "text-[var(--color-dark-28)]",
