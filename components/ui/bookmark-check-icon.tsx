@@ -12,6 +12,7 @@ export interface BookmarkCheckIconHandle {
 
 interface BookmarkCheckIconProps extends HTMLMotionProps<"div"> {
   size?: number;
+  strokeWidth?: number;
   duration?: number;
   isAnimated?: boolean;
 }
@@ -26,6 +27,7 @@ const BookmarkCheckIcon = forwardRef<
       onMouseLeave,
       className,
       size = 24,
+      strokeWidth = 2,
       duration = 1,
       isAnimated = true,
       ...props
@@ -102,7 +104,7 @@ const BookmarkCheckIcon = forwardRef<
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
-          strokeWidth="2"
+          strokeWidth={strokeWidth}
           strokeLinecap="round"
           strokeLinejoin="round"
           animate={controls}

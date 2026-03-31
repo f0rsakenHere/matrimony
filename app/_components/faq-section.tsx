@@ -1,4 +1,7 @@
 import Image from "next/image";
+import { brandScript } from "@/app/fonts";
+import { goldIconButtonClass } from "@/components/ui/button-styles";
+import { FlourishDivider } from "@/components/ui/flourish-divider";
 import { MotionSection } from "@/components/ui/motion-section";
 
 const faqs = [
@@ -41,30 +44,35 @@ export default function FaqSection() {
       className="relative isolate overflow-hidden bg-[var(--color-dark-08)] py-14 md:py-16 lg:py-20"
     >
       <Image
-        src="/faqs.jpg"
+        src="/faq.jpg"
         alt=""
         fill
         sizes="100vw"
-        className="absolute inset-0 object-cover object-center opacity-100"
+        className="absolute inset-0 object-cover object-center opacity-95 [filter:sepia(0.24)_saturate(0.82)_hue-rotate(-10deg)]"
       />
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,var(--color-light-72)_0%,var(--color-light-18)_100%)]" />
 
       <div className="relative z-10 mx-auto max-w-[980px] px-6 md:px-8">
-        <p className="text-center subheading uppercase tracking-[0.08em] text-[var(--color-dark)]">
-          FAQ
+        <p
+          className={`${brandScript.className} text-center text-[28px] leading-none text-[var(--color-dark-72)] md:text-[34px]`}
+        >
+          Questions families ask before they begin
         </p>
         <h2 className="mt-4 text-center text-[var(--color-dark)]">
-          Common Questions
+          Everything you may want to know before joining
         </h2>
         <p className="mx-auto mt-6 max-w-[60ch] text-center text-[var(--color-dark-72)]">
-          Everything you need to know about our halal Muslim matchmaking
-          process, privacy standards, and family involvement.
+          A few of the questions we hear most often from families who want a
+          private, faith-led, and respectful route toward marriage.
         </p>
+
+        <FlourishDivider className="mt-8 justify-center" />
 
         <div className="mt-10 space-y-4">
           {faqs.map((item, index) => (
             <details
               key={item.question}
-              className={`group border border-[var(--color-dark-12)] ${
+              className={`group overflow-hidden rounded-[24px] border border-[var(--color-dark-12)] shadow-[0_16px_34px_rgb(109_35_49_/_0.08)] ${
                 index % 2 === 0
                   ? "bg-[var(--surface)]"
                   : "bg-[var(--color-light-90)]"
@@ -74,7 +82,9 @@ export default function FaqSection() {
                 <span className="subheading text-[var(--foreground)]">
                   {item.question}
                 </span>
-                <span className="text-[var(--color-dark-72)] transition-transform group-open:rotate-45">
+                <span
+                  className={`${goldIconButtonClass} inline-flex size-10 shrink-0 items-center justify-center rounded-full text-lg font-semibold transition-transform duration-200 group-open:rotate-45`}
+                >
                   +
                 </span>
               </summary>

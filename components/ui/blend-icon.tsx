@@ -12,6 +12,7 @@ export interface BlendHandle {
 
 interface BlendProps extends HTMLMotionProps<"div"> {
   size?: number;
+  strokeWidth?: number;
   duration?: number;
   isAnimated?: boolean;
 }
@@ -23,6 +24,7 @@ const BlendIcon = forwardRef<BlendHandle, BlendProps>(
       onMouseLeave,
       className,
       size = 24,
+      strokeWidth = 2,
       duration = 1,
       isAnimated = true,
       ...props
@@ -120,7 +122,7 @@ const BlendIcon = forwardRef<BlendHandle, BlendProps>(
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
-          strokeWidth="2"
+          strokeWidth={strokeWidth}
           strokeLinecap="round"
           strokeLinejoin="round"
           className="lucide lucide-blend-icon lucide-blend"

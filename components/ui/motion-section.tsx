@@ -1,9 +1,9 @@
 "use client";
 
-import type { ComponentPropsWithoutRef } from "react";
 import { motion, useReducedMotion } from "motion/react";
+import type { HTMLMotionProps } from "motion/react";
 
-type MotionSectionProps = ComponentPropsWithoutRef<"section"> & {
+type MotionSectionProps = HTMLMotionProps<"section"> & {
   delay?: number;
 };
 

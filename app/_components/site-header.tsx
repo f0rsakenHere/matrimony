@@ -1,39 +1,48 @@
 import { Fragment } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { soraSans } from "@/app/fonts";
-import { FacebookIcon } from "@/components/ui/facebook-icon";
-import { InstagramIcon } from "@/components/ui/instagram-icon";
-import { TwitterIcon } from "@/components/ui/twitter-icon";
+import { BrandLogo as SiteBrandLogo } from "@/components/ui/brand-logo";
+import { goldButtonClass } from "@/components/ui/button-styles";
+import {
+  SiteOrnament,
+  siteOrnamentAssets,
+} from "@/components/ui/site-ornament";
 
 const utilityLinks = [
-  { href: "/#guide", label: "Wali Guidelines" },
-  { href: "/#faq", label: "FAQ" },
+  { href: "/#our-approach", label: "Our Approach" },
+  { href: "/#faq", label: "Questions" },
   { href: "/#contact", label: "Contact" },
 ];
 
 const navigationLinks = [
   { href: "/#how-it-works", label: "How It Works" },
-  { href: "/#success-stories", label: "Success Stories" },
-  { href: "/#pricing", label: "Pricing" },
+  { href: "/#success-stories", label: "Family Stories" },
+  { href: "/#faq", label: "Questions" },
 ];
 
 const registerLink = { href: "/#register", label: "Register Free" };
 
-const socialLinks = [
-  { href: "/#top", label: "Facebook", icon: FacebookIcon },
-  { href: "/#top", label: "Twitter", icon: TwitterIcon },
-  { href: "/#top", label: "Instagram", icon: InstagramIcon },
-];
+const trustPoints = ["Private profiles", "Family-aware", "Canada-wide"];
 
 export default function SiteHeader() {
   return (
     <header
       id="top"
-      className={`${soraSans.className} w-full bg-[var(--surface)] text-[var(--foreground)]`}
+      className={`${soraSans.className} relative isolate w-full overflow-hidden bg-[linear-gradient(180deg,var(--surface-muted)_0%,var(--surface)_100%)] text-[var(--foreground)]`}
     >
-      <div className="hidden min-[1100px]:block">
-        <div className="grid h-[50px] grid-cols-[29.5%_39.3%_31.2%] bg-[var(--surface-inverse)] text-[var(--color-light)]">
+      <SiteOrnament
+        {...siteOrnamentAssets.asset2}
+        className="absolute top-0 left-[-12px] z-0 w-[72px] opacity-55 md:w-[90px] lg:w-[110px]"
+        sizes="(min-width: 1024px) 7vw, 12vw"
+      />
+      <SiteOrnament
+        {...siteOrnamentAssets.asset4}
+        className="absolute right-[-10px] bottom-[-70px] z-0 w-[72px] opacity-55 md:w-[88px] lg:w-[102px]"
+        sizes="(min-width: 1024px) 7vw, 11vw"
+      />
+
+      <div className="relative z-10 hidden min-[1100px]:block">
+        <div className="grid h-[50px] grid-cols-[29.5%_39.3%_31.2%] bg-[linear-gradient(135deg,var(--color-dark)_0%,var(--color-dark-88)_56%,var(--color-dark-72)_100%)] text-[var(--color-light)]">
           <nav
             aria-label="Utility navigation"
             className="flex items-center justify-center text-[12.5px] font-semibold"
@@ -57,32 +66,33 @@ export default function SiteHeader() {
           </nav>
 
           <p className="flex items-center justify-center px-4 text-center text-[12.5px] font-semibold text-[var(--color-light)]">
-            Strictly Confidential. Wali Verified Profiles Only.{" "}
+            Private introductions for marriage-minded Muslim families.{" "}
             <Link
-              href="/#contact"
+              href="/#register"
               className="ml-1 font-bold underline underline-offset-[2px]"
             >
-              Secure Your Seat Now
+              Begin your journey
             </Link>
           </p>
 
-          <div className="flex items-center justify-center gap-[28px] text-[12.5px] font-semibold">
-            {socialLinks.map(({ href, label, icon: Icon }) => (
-              <Link
-                key={label}
-                href={href}
-                className="inline-flex items-center gap-[9px] text-[var(--color-light)] transition-opacity hover:opacity-100"
-              >
-                <Icon size={13} duration={1} />
-                <span>{label}</span>
-              </Link>
+          <div className="flex items-center justify-center text-[12.5px] font-semibold text-[var(--color-light)]">
+            {trustPoints.map((item, index) => (
+              <Fragment key={item}>
+                <span>{item}</span>
+                {index < trustPoints.length - 1 ? (
+                  <span
+                    aria-hidden="true"
+                    className="mx-[16px] h-4 w-px bg-[var(--color-light-18)]"
+                  />
+                ) : null}
+              </Fragment>
             ))}
           </div>
         </div>
 
         <div className="grid h-[122px] grid-cols-[29.5%_39.3%_31.2%] border-b border-[var(--border-subtle)] bg-[var(--surface)]">
           <div className="flex items-center justify-center border-r border-[var(--border-subtle)]">
-            <Link href="/" aria-label="Qahira home">
+            <Link href="/" aria-label="BDCanNikah home">
               <BrandLogo />
             </Link>
           </div>
@@ -107,9 +117,9 @@ export default function SiteHeader() {
           <div className="flex items-center justify-center px-8">
             <Link
               href={registerLink.href}
-              className="inline-flex h-[56px] min-w-[206px] items-center justify-center bg-[var(--surface-inverse)] px-6 transition-opacity hover:opacity-90"
+              className={`${goldButtonClass} inline-flex h-[56px] min-w-[206px] items-center justify-center px-6`}
             >
-              <span className="text-[16px] font-semibold text-[var(--color-light)] whitespace-nowrap">
+              <span className="text-[16px] font-semibold whitespace-nowrap">
                 {registerLink.label}
               </span>
             </Link>
@@ -117,24 +127,24 @@ export default function SiteHeader() {
         </div>
       </div>
 
-      <div className="min-[1100px]:hidden">
-        <div className="border-b border-[var(--border-subtle)] bg-[var(--surface-inverse)] px-4 py-3 text-[var(--color-light)]">
+      <div className="relative z-10 min-[1100px]:hidden">
+        <div className="border-b border-[var(--border-subtle)] bg-[linear-gradient(135deg,var(--color-dark)_0%,var(--color-dark-88)_56%,var(--color-dark-72)_100%)] px-4 py-3 text-[var(--color-light)]">
           <p className="text-center text-[12px] font-semibold">
-            Secure and Reliable Umrah Experience.
+            Private introductions for marriage-minded Muslim families.
           </p>
         </div>
 
         <div className="border-b border-[var(--border-subtle)] bg-[var(--surface)] px-4 py-4">
           <div className="flex items-center justify-between gap-3">
-            <Link href="/" aria-label="Qahira home" className="shrink-0">
+            <Link href="/" aria-label="BDCanNikah home" className="shrink-0">
               <BrandLogo compact />
             </Link>
 
             <Link
               href={registerLink.href}
-              className="inline-flex h-11 min-w-[132px] items-center justify-center bg-[var(--surface-inverse)] px-4 transition-opacity hover:opacity-90"
+              className={`${goldButtonClass} inline-flex h-11 min-w-[132px] items-center justify-center px-4`}
             >
-              <span className="text-[14px] font-semibold text-[var(--color-light)] whitespace-nowrap">
+              <span className="text-[14px] font-semibold whitespace-nowrap">
                 {registerLink.label}
               </span>
             </Link>
@@ -187,14 +197,9 @@ export default function SiteHeader() {
 }
 
 function BrandLogo({ compact = false }: { compact?: boolean }) {
-  return (
-    <Image
-      src="/bdcannikah-logo.png"
-      alt="BDCanNikah Logo"
-      width={511}
-      height={77}
-      preload
-      className={compact ? "h-auto w-[176px]" : "h-auto w-[248px]"}
-    />
-  );
+  return <BrandLogoMask compact={compact} />;
+}
+
+function BrandLogoMask({ compact = false }: { compact?: boolean }) {
+  return <SiteBrandLogo className={compact ? "w-[176px]" : "w-[248px]"} />;
 }

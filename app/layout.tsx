@@ -7,8 +7,8 @@ import { cn } from "@/lib/utils";
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
-  title: "BdCanNikah",
-  description: "Umrah and Hajj travel landing page preview",
+  title: "BDCanNikah",
+  description: "A Graceful Path to the Right Marriage",
 };
 
 export default function RootLayout({
