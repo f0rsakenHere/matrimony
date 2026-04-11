@@ -1,5 +1,11 @@
 import type { Metadata } from "next";
-import { geistMono, headingManrope, soraSans } from "./fonts";
+import {
+  arabicSerif,
+  bengaliSerif,
+  geistMono,
+  headingManrope,
+  soraSans,
+} from "./fonts";
 import "./globals.css";
 import { Geist } from "next/font/google";
 import { cn } from "@/lib/utils";
@@ -26,6 +32,8 @@ export default function RootLayout({
         soraSans.variable,
         headingManrope.variable,
         geistMono.variable,
+        bengaliSerif.variable,
+        arabicSerif.variable,
         "font-sans",
         geist.variable,
       )}

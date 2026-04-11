@@ -1,205 +1,99 @@
-import { Fragment } from "react";
 import Link from "next/link";
 import { soraSans } from "@/app/fonts";
 import { BrandLogo as SiteBrandLogo } from "@/components/ui/brand-logo";
 import { goldButtonClass } from "@/components/ui/button-styles";
-import {
-  SiteOrnament,
-  siteOrnamentAssets,
-} from "@/components/ui/site-ornament";
-
-const utilityLinks = [
-  { href: "/#our-approach", label: "Our Approach" },
-  { href: "/#faq", label: "Questions" },
-  { href: "/#contact", label: "Contact" },
-];
 
 const navigationLinks = [
   { href: "/#how-it-works", label: "How It Works" },
+  { href: "/#our-approach", label: "Our Approach" },
   { href: "/#success-stories", label: "Family Stories" },
   { href: "/#faq", label: "Questions" },
 ];
 
-const registerLink = { href: "/#register", label: "Register Free" };
-
-const trustPoints = ["Private profiles", "Family-aware", "Canada-wide"];
+const registerLink = { href: "/#register", label: "Begin Your Profile" };
 
 export default function SiteHeader() {
   return (
     <header
       id="top"
-      className={`${soraSans.className} relative isolate w-full overflow-hidden bg-[linear-gradient(180deg,var(--surface-muted)_0%,var(--surface)_100%)] text-[var(--foreground)]`}
+      className={`${soraSans.className} relative isolate w-full bg-[var(--surface)] text-[var(--foreground)]`}
     >
-      <SiteOrnament
-        {...siteOrnamentAssets.asset2}
-        className="absolute top-0 left-[-12px] z-0 w-[72px] opacity-55 md:w-[90px] lg:w-[110px]"
-        sizes="(min-width: 1024px) 7vw, 12vw"
-      />
-      <SiteOrnament
-        {...siteOrnamentAssets.asset4}
-        className="absolute right-[-10px] bottom-[-70px] z-0 w-[72px] opacity-55 md:w-[88px] lg:w-[102px]"
-        sizes="(min-width: 1024px) 7vw, 11vw"
-      />
-
-      <div className="relative z-10 hidden min-[1100px]:block">
-        <div className="grid h-[50px] grid-cols-[29.5%_39.3%_31.2%] bg-[linear-gradient(135deg,var(--color-dark)_0%,var(--color-dark-88)_56%,var(--color-dark-72)_100%)] text-[var(--color-light)]">
-          <nav
-            aria-label="Utility navigation"
-            className="flex items-center justify-center text-[12.5px] font-semibold"
-          >
-            {utilityLinks.map((item, index) => (
-              <Fragment key={item.label}>
-                <Link
-                  href={item.href}
-                  className="leading-none text-[var(--color-light)] transition-opacity hover:opacity-100"
-                >
-                  {item.label}
-                </Link>
-                {index < utilityLinks.length - 1 ? (
-                  <span
-                    aria-hidden="true"
-                    className="mx-[17px] h-4 w-px bg-[var(--color-light-18)]"
-                  />
-                ) : null}
-              </Fragment>
-            ))}
-          </nav>
-
-          <p className="flex items-center justify-center px-4 text-center text-[12.5px] font-semibold text-[var(--color-light)]">
-            Private introductions for marriage-minded Muslim families.{" "}
-            <Link
-              href="/#register"
-              className="ml-1 font-bold underline underline-offset-[2px]"
-            >
-              Begin your journey
-            </Link>
+      <div className="bg-[var(--surface-inverse)] text-[var(--color-light)]">
+        <div className="mx-auto flex max-w-[1520px] items-center justify-center px-5 py-2 sm:px-6 sm:py-2.5 md:px-8 lg:px-10">
+          <p className="text-center text-[11px] leading-snug tracking-[0.12em] uppercase text-[var(--color-light-90)] sm:text-[12px] sm:tracking-[0.14em]">
+            Private introductions for Bangladeshi Canadian Muslim families
           </p>
-
-          <div className="flex items-center justify-center text-[12.5px] font-semibold text-[var(--color-light)]">
-            {trustPoints.map((item, index) => (
-              <Fragment key={item}>
-                <span>{item}</span>
-                {index < trustPoints.length - 1 ? (
-                  <span
-                    aria-hidden="true"
-                    className="mx-[16px] h-4 w-px bg-[var(--color-light-18)]"
-                  />
-                ) : null}
-              </Fragment>
-            ))}
-          </div>
-        </div>
-
-        <div className="grid h-[122px] grid-cols-[29.5%_39.3%_31.2%] border-b border-[var(--border-subtle)] bg-[var(--surface)]">
-          <div className="flex items-center justify-center border-r border-[var(--border-subtle)]">
-            <Link href="/" aria-label="BDCanNikah home">
-              <BrandLogo />
-            </Link>
-          </div>
-
-          <div className="flex items-center justify-center border-r border-[var(--border-subtle)]">
-            <nav
-              aria-label="Primary navigation"
-              className="flex items-center gap-[25px] text-[16px] font-semibold text-[var(--foreground)]"
-            >
-              {navigationLinks.map((item) => (
-                <Link
-                  key={item.label}
-                  href={item.href}
-                  className="inline-flex h-[42px] items-center justify-center px-[16px] leading-none text-[var(--foreground)] transition-colors hover:bg-[var(--color-dark-08)]"
-                >
-                  <span>{item.label}</span>
-                </Link>
-              ))}
-            </nav>
-          </div>
-
-          <div className="flex items-center justify-center px-8">
-            <Link
-              href={registerLink.href}
-              className={`${goldButtonClass} inline-flex h-[56px] min-w-[206px] items-center justify-center px-6`}
-            >
-              <span className="text-[16px] font-semibold whitespace-nowrap">
-                {registerLink.label}
-              </span>
-            </Link>
-          </div>
         </div>
       </div>
 
-      <div className="relative z-10 min-[1100px]:hidden">
-        <div className="border-b border-[var(--border-subtle)] bg-[linear-gradient(135deg,var(--color-dark)_0%,var(--color-dark-88)_56%,var(--color-dark-72)_100%)] px-4 py-3 text-[var(--color-light)]">
-          <p className="text-center text-[12px] font-semibold">
-            Private introductions for marriage-minded Muslim families.
-          </p>
-        </div>
+      <div className="border-b border-[var(--border-subtle)]">
+        <div className="mx-auto flex h-[76px] max-w-[1520px] items-center justify-between gap-4 px-5 sm:h-[88px] sm:gap-6 sm:px-6 md:px-8 lg:h-[104px] lg:px-10">
+          <Link
+            href="/"
+            aria-label="BDCanNikah home"
+            className="shrink-0"
+          >
+            <SiteBrandLogo className="w-[160px] sm:w-[180px] md:w-[220px] lg:w-[240px]" />
+          </Link>
 
-        <div className="border-b border-[var(--border-subtle)] bg-[var(--surface)] px-4 py-4">
-          <div className="flex items-center justify-between gap-3">
-            <Link href="/" aria-label="BDCanNikah home" className="shrink-0">
-              <BrandLogo compact />
-            </Link>
+          <nav
+            aria-label="Primary navigation"
+            className="hidden items-center gap-8 text-[15px] font-semibold text-[var(--foreground)] min-[900px]:flex"
+          >
+            {navigationLinks.map((item) => (
+              <Link
+                key={item.label}
+                href={item.href}
+                className="leading-none text-[var(--foreground)] transition-opacity hover:opacity-70"
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
 
+          <div className="flex items-center gap-3">
             <Link
               href={registerLink.href}
-              className={`${goldButtonClass} inline-flex h-11 min-w-[132px] items-center justify-center px-4`}
+              className={`${goldButtonClass} hidden h-12 items-center justify-center px-6 text-[14px] font-semibold whitespace-nowrap min-[900px]:inline-flex lg:h-14 lg:px-7 lg:text-[15px]`}
             >
-              <span className="text-[14px] font-semibold whitespace-nowrap">
-                {registerLink.label}
-              </span>
+              {registerLink.label}
             </Link>
+
+            <details className="group relative min-[900px]:hidden">
+              <summary className="flex h-11 w-11 cursor-pointer list-none items-center justify-center border border-[var(--color-dark-18)]">
+                <span className="sr-only">Open menu</span>
+                <span className="relative inline-flex size-5 items-center justify-center">
+                  <span className="absolute h-0.5 w-4 bg-[var(--foreground)] transition-transform duration-200 group-open:rotate-45" />
+                  <span className="absolute h-0.5 w-4 bg-[var(--foreground)] transition-transform duration-200 group-open:-rotate-45" />
+                  <span className="absolute h-0.5 w-4 -translate-y-1.5 bg-[var(--foreground)] transition-opacity duration-150 group-open:opacity-0" />
+                  <span className="absolute h-0.5 w-4 translate-y-1.5 bg-[var(--foreground)] transition-opacity duration-150 group-open:opacity-0" />
+                </span>
+              </summary>
+
+              <div className="absolute right-0 z-30 mt-2 w-[min(260px,calc(100vw-3rem))] border border-[var(--color-dark-18)] bg-[var(--surface)] p-4 shadow-[0_18px_40px_rgb(109_35_49_/_0.12)]">
+                <nav aria-label="Primary navigation" className="grid gap-1">
+                  {navigationLinks.map((item) => (
+                    <Link
+                      key={item.label}
+                      href={item.href}
+                      className="px-3 py-3 text-[15px] font-semibold text-[var(--foreground)] hover:bg-[var(--color-dark-08)]"
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                </nav>
+
+                <Link
+                  href={registerLink.href}
+                  className={`${goldButtonClass} mt-3 inline-flex h-12 w-full items-center justify-center text-[14px] font-semibold`}
+                >
+                  {registerLink.label}
+                </Link>
+              </div>
+            </details>
           </div>
-
-          <details className="group mt-4">
-            <summary className="flex h-11 cursor-pointer list-none items-center justify-between border border-[var(--color-dark-12)] px-4 text-[15px] font-semibold text-[var(--foreground)]">
-              <span>Menu</span>
-              <span className="relative inline-flex size-5 items-center justify-center">
-                <span className="absolute h-0.5 w-4 bg-[var(--foreground)] transition-transform duration-200 group-open:rotate-45" />
-                <span className="absolute h-0.5 w-4 bg-[var(--foreground)] transition-transform duration-200 group-open:-rotate-45" />
-                <span className="absolute h-0.5 w-4 -translate-y-1.5 bg-[var(--foreground)] transition-opacity duration-150 group-open:opacity-0" />
-                <span className="absolute h-0.5 w-4 translate-y-1.5 bg-[var(--foreground)] transition-opacity duration-150 group-open:opacity-0" />
-              </span>
-            </summary>
-
-            <div className="mt-2 space-y-3 border border-[var(--color-dark-12)] p-3">
-              <nav aria-label="Primary navigation" className="grid gap-2">
-                {navigationLinks.map((item) => (
-                  <Link
-                    key={item.label}
-                    href={item.href}
-                    className="inline-flex h-10 items-center border border-[var(--color-dark-12)] bg-[var(--color-dark-08)] px-3 text-[15px] font-semibold text-[var(--foreground)]"
-                  >
-                    <span>{item.label}</span>
-                  </Link>
-                ))}
-              </nav>
-
-              <nav
-                aria-label="Utility navigation"
-                className="flex flex-wrap items-center gap-4 text-[12px] font-semibold text-[var(--color-dark-72)]"
-              >
-                {utilityLinks.map((item) => (
-                  <Link
-                    key={item.label}
-                    href={item.href}
-                    className="leading-none"
-                  >
-                    {item.label}
-                  </Link>
-                ))}
-              </nav>
-            </div>
-          </details>
         </div>
       </div>
     </header>
   );
-}
-
-function BrandLogo({ compact = false }: { compact?: boolean }) {
-  return <BrandLogoMask compact={compact} />;
-}
-
-function BrandLogoMask({ compact = false }: { compact?: boolean }) {
-  return <SiteBrandLogo className={compact ? "w-[176px]" : "w-[248px]"} />;
 }

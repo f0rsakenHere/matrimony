@@ -236,6 +236,17 @@ button {
     font-weight: 600;
   }
 
+  .bengali {
+    font-family: var(--font-bengali), serif;
+    font-feature-settings: "kern", "liga";
+  }
+
+  .arabic {
+    font-family: var(--font-arabic), serif;
+    direction: rtl;
+    line-height: 1.85;
+  }
+
   @media (min-width: 768px) {
     h1 {
       font-size: var(--font-size-h1);
