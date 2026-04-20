@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { soraSans } from "@/app/fonts";
 import { BrandLogo as SiteBrandLogo } from "@/components/ui/brand-logo";
-import { goldButtonClass } from "@/components/ui/button-styles";
+import { AuthButtons, MobileAuthButtons } from "./auth-buttons";
 
 const navigationLinks = [
   { href: "/#how-it-works", label: "How It Works" },
@@ -9,8 +9,6 @@ const navigationLinks = [
   { href: "/#success-stories", label: "Family Stories" },
   { href: "/#faq", label: "Questions" },
 ];
-
-const registerLink = { href: "/#register", label: "Begin Your Profile" };
 
 export default function SiteHeader() {
   return (
@@ -52,12 +50,7 @@ export default function SiteHeader() {
           </nav>
 
           <div className="flex items-center gap-3">
-            <Link
-              href={registerLink.href}
-              className={`${goldButtonClass} hidden h-12 items-center justify-center px-6 text-[14px] font-semibold whitespace-nowrap min-[900px]:inline-flex lg:h-14 lg:px-7 lg:text-[15px]`}
-            >
-              {registerLink.label}
-            </Link>
+            <AuthButtons />
 
             <details className="group relative min-[900px]:hidden">
               <summary className="flex h-11 w-11 cursor-pointer list-none items-center justify-center border border-[var(--color-dark-18)]">
@@ -70,7 +63,7 @@ export default function SiteHeader() {
                 </span>
               </summary>
 
-              <div className="absolute right-0 z-30 mt-2 w-[min(260px,calc(100vw-3rem))] border border-[var(--color-dark-18)] bg-[var(--surface)] p-4 shadow-[0_18px_40px_rgb(109_35_49_/_0.12)]">
+              <div className="absolute right-0 z-30 mt-2 w-[min(260px,calc(100vw-3rem))] border border-[var(--color-dark-18)] bg-[var(--surface)] p-4 shadow-[0_18px_40px_rgb(30_58_95_/_0.12)]">
                 <nav aria-label="Primary navigation" className="grid gap-1">
                   {navigationLinks.map((item) => (
                     <Link
@@ -83,12 +76,7 @@ export default function SiteHeader() {
                   ))}
                 </nav>
 
-                <Link
-                  href={registerLink.href}
-                  className={`${goldButtonClass} mt-3 inline-flex h-12 w-full items-center justify-center text-[14px] font-semibold`}
-                >
-                  {registerLink.label}
-                </Link>
+                <MobileAuthButtons />
               </div>
             </details>
           </div>

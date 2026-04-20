@@ -5,22 +5,22 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --color-light: #f6e2d2;
-  --color-dark: #6d2331;
-  --color-light-96: rgb(246 226 210 / 0.96);
-  --color-light-90: rgb(246 226 210 / 0.9);
-  --color-light-72: rgb(246 226 210 / 0.72);
-  --color-light-18: rgb(246 226 210 / 0.18);
-  --color-light-12: rgb(246 226 210 / 0.12);
-  --color-light-08: rgb(246 226 210 / 0.08);
-  --color-dark-88: rgb(109 35 49 / 0.88);
-  --color-dark-72: rgb(109 35 49 / 0.72);
-  --color-dark-56: rgb(109 35 49 / 0.56);
-  --color-dark-28: rgb(109 35 49 / 0.28);
-  --color-dark-18: rgb(109 35 49 / 0.18);
-  --color-dark-14: rgb(109 35 49 / 0.14);
-  --color-dark-12: rgb(109 35 49 / 0.12);
-  --color-dark-08: rgb(109 35 49 / 0.08);
+  --color-light: #f0f4f8;
+  --color-dark: #1e3a5f;
+  --color-light-96: rgb(240 244 248 / 0.96);
+  --color-light-90: rgb(240 244 248 / 0.9);
+  --color-light-72: rgb(240 244 248 / 0.72);
+  --color-light-18: rgb(240 244 248 / 0.18);
+  --color-light-12: rgb(240 244 248 / 0.12);
+  --color-light-08: rgb(240 244 248 / 0.08);
+  --color-dark-88: rgb(30 58 95 / 0.88);
+  --color-dark-72: rgb(30 58 95 / 0.72);
+  --color-dark-56: rgb(30 58 95 / 0.56);
+  --color-dark-28: rgb(30 58 95 / 0.28);
+  --color-dark-18: rgb(30 58 95 / 0.18);
+  --color-dark-14: rgb(30 58 95 / 0.14);
+  --color-dark-12: rgb(30 58 95 / 0.12);
+  --color-dark-08: rgb(30 58 95 / 0.08);
   --surface: var(--color-light);
   --surface-inverse: var(--color-dark);
   --surface-muted: var(--color-light-90);
@@ -29,7 +29,7 @@
   --button-gold-mid: #e4b968;
   --button-gold-dark: #cf9a4b;
   --button-gold-border: rgb(180 130 63 / 0.68);
-  --button-gold-text: #5b201d;
+  --button-gold-text: #1e3a5f;
   --font-size-h1: 72px;
   --font-size-h2: 48px;
   --font-size-h3: 32px;

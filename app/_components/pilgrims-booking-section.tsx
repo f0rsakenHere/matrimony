@@ -112,7 +112,7 @@ export default function PilgrimsBookingSection() {
           className="absolute inset-0 object-cover"
           style={{ objectPosition: "center top" }}
         />
-        <div className="absolute inset-0 bg-[linear-gradient(110deg,var(--color-dark)_0%,var(--color-dark-72)_55%,var(--color-dark-28)_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(110deg,var(--color-dark-72)_0%,var(--color-dark-56)_55%,var(--color-dark-18)_100%)]" />
 
         <div className="relative z-10 mx-auto grid max-w-[1520px] gap-8 px-6 py-14 sm:gap-10 sm:py-16 md:px-10 md:py-20 lg:grid-cols-[1fr_420px] lg:items-end lg:px-14 lg:py-20">
           <div className="max-w-[620px] lg:self-start">
@@ -144,7 +144,7 @@ export default function PilgrimsBookingSection() {
             </Link>
           </div>
 
-          <aside className="border border-[var(--color-light-18)] bg-[rgb(109_35_49_/_0.55)] p-6 text-[var(--color-light)] backdrop-blur-[3px] sm:p-7 md:p-8">
+          <aside className="border border-[var(--color-light-18)] bg-[rgb(30_58_95_/_0.55)] p-6 text-[var(--color-light)] backdrop-blur-[3px] sm:p-7 md:p-8">
             <h3 className="text-[var(--color-light)]">
               Our promise to your family
             </h3>

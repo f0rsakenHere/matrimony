@@ -9,6 +9,7 @@ import {
 import "./globals.css";
 import { Geist } from "next/font/google";
 import { cn } from "@/lib/utils";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -42,7 +43,7 @@ export default function RootLayout({
         suppressHydrationWarning
         className="flex min-h-full flex-col bg-[var(--background)] text-[var(--foreground)] font-sans"
       >
-        {children}
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );

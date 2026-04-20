@@ -38,7 +38,7 @@ const serviceCards = [
     title: "Bangladeshi roots, Canadian life",
     description:
       "We understand the balance of keeping our family traditions alive while building a confident future here.",
-    href: "/#register",
+    href: "/register",
     linkLabel: "Begin with us",
   },
 ];
@@ -54,11 +54,11 @@ export default function Home() {
             src="/hero-image.webp"
             alt=""
             fill
-            preload
+            loading="eager"
             sizes="100vw"
             className="absolute inset-0 object-cover object-center"
           />
-          <div className="absolute inset-0 bg-[linear-gradient(96deg,var(--color-dark)_0%,var(--color-dark-72)_55%,var(--color-dark-28)_100%)]" />
+          <div className="absolute inset-0 bg-[linear-gradient(96deg,var(--color-dark-72)_0%,var(--color-dark-56)_55%,var(--color-dark-18)_100%)]" />
 
           <div className="relative z-10 mx-auto flex min-h-[600px] max-w-[1520px] items-center px-5 py-14 text-[var(--color-light)] sm:min-h-[calc(100vh-148px)] sm:px-6 sm:py-16 md:px-8 md:py-20 min-[1100px]:min-h-[calc(100vh-188px)] min-[1100px]:py-24 lg:px-10">
             <div className="w-full max-w-[760px]">
@@ -83,7 +83,7 @@ export default function Home() {
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:gap-4">
                 <Link
-                  href="/#register"
+                  href="/register"
                   className={`${goldButtonClass} inline-flex w-full min-w-0 items-center justify-center gap-3 px-6 py-4 text-[15px] font-semibold sm:w-auto sm:min-w-[210px] sm:gap-4 sm:px-8 sm:py-5 sm:text-base`}
                 >
                   <span>Begin Your Profile</span>
@@ -132,7 +132,7 @@ export default function Home() {
               {serviceCards.map((card) => (
                 <article
                   key={card.title}
-                  className="relative flex min-h-[300px] overflow-hidden border border-[var(--color-dark-12)] bg-[var(--surface)] px-6 py-8 transition-shadow duration-300 hover:shadow-[0_18px_40px_rgb(109_35_49_/_0.10)] sm:px-7 sm:py-10 md:px-9"
+                  className="relative flex min-h-[300px] overflow-hidden border border-[var(--color-dark-12)] bg-[var(--surface)] px-6 py-8 transition-shadow duration-300 hover:shadow-[0_18px_40px_rgb(30_58_95_/_0.10)] sm:px-7 sm:py-10 md:px-9"
                 >
                   <div className="absolute inset-x-0 top-0 h-[2px] bg-[linear-gradient(90deg,var(--button-gold-light)_0%,var(--button-gold-dark)_100%)]" />
                   <div className="flex h-full w-full max-w-[420px] flex-col">
