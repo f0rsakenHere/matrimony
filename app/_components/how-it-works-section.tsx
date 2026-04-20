@@ -54,7 +54,7 @@ export default function HowItWorksSection() {
             <div className="relative mt-10">
               <div className="relative h-[320px] overflow-hidden border border-[var(--color-dark-12)] md:h-[440px]">
                 <Image
-                  src="/table-decor.jpg"
+                  src="/wedding-decoration.jpg"
                   alt=""
                   fill
                   sizes="(min-width: 1024px) 47vw, 100vw"
