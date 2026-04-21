@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { soraSans } from "@/app/fonts";
 import { BrandLogo as SiteBrandLogo } from "@/components/ui/brand-logo";
-import { AuthButtons, MobileAuthButtons } from "./auth-buttons";
+import { AuthButtons } from "./auth-buttons";
+import { MobileMenu } from "./mobile-menu";
 
 const navigationLinks = [
   { href: "/#how-it-works", label: "How It Works" },
@@ -51,34 +52,7 @@ export default function SiteHeader() {
 
           <div className="flex items-center gap-3">
             <AuthButtons />
-
-            <details className="group relative min-[900px]:hidden">
-              <summary className="flex h-11 w-11 cursor-pointer list-none items-center justify-center border border-[var(--color-dark-18)]">
-                <span className="sr-only">Open menu</span>
-                <span className="relative inline-flex size-5 items-center justify-center">
-                  <span className="absolute h-0.5 w-4 bg-[var(--foreground)] transition-transform duration-200 group-open:rotate-45" />
-                  <span className="absolute h-0.5 w-4 bg-[var(--foreground)] transition-transform duration-200 group-open:-rotate-45" />
-                  <span className="absolute h-0.5 w-4 -translate-y-1.5 bg-[var(--foreground)] transition-opacity duration-150 group-open:opacity-0" />
-                  <span className="absolute h-0.5 w-4 translate-y-1.5 bg-[var(--foreground)] transition-opacity duration-150 group-open:opacity-0" />
-                </span>
-              </summary>
-
-              <div className="absolute right-0 z-30 mt-2 w-[min(260px,calc(100vw-3rem))] border border-[var(--color-dark-18)] bg-[var(--surface)] p-4 shadow-[0_18px_40px_rgb(30_58_95_/_0.12)]">
-                <nav aria-label="Primary navigation" className="grid gap-1">
-                  {navigationLinks.map((item) => (
-                    <Link
-                      key={item.label}
-                      href={item.href}
-                      className="px-3 py-3 text-[15px] font-semibold text-[var(--foreground)] hover:bg-[var(--color-dark-08)]"
-                    >
-                      {item.label}
-                    </Link>
-                  ))}
-                </nav>
-
-                <MobileAuthButtons />
-              </div>
-            </details>
+            <MobileMenu />
           </div>
         </div>
       </div>
