@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
@@ -44,34 +45,36 @@ export function MobileMenu() {
         {open ? <X className="size-5" /> : <Menu className="size-5" />}
       </button>
 
-      {open && (
-        <>
-          {/* Backdrop */}
-          <div
-            className="fixed inset-0 z-[999] bg-black/30"
-            onClick={() => setOpen(false)}
-          />
-          {/* Dropdown */}
-          <div
-            className="fixed right-4 z-[1000] w-[min(260px,calc(100vw-2rem))] border border-[var(--color-dark-18)] bg-[var(--surface)] p-4 shadow-[0_18px_40px_rgb(30_58_95_/_0.12)]"
-            style={{ top: dropdownTop }}
-          >
-            <nav aria-label="Primary navigation" className="grid gap-1">
-              {navigationLinks.map((item) => (
-                <Link
-                  key={item.label}
-                  href={item.href}
-                  onClick={() => setOpen(false)}
-                  className="px-3 py-3 text-[15px] font-semibold text-[var(--foreground)] hover:bg-[var(--color-dark-08)]"
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </nav>
-            <MobileAuthButtons />
-          </div>
-        </>
-      )}
+      {open &&
+        createPortal(
+          <>
+            {/* Backdrop */}
+            <div
+              className="fixed inset-0 z-[999] bg-black/30"
+              onClick={() => setOpen(false)}
+            />
+            {/* Dropdown */}
+            <div
+              className="fixed right-4 z-[1000] w-[min(260px,calc(100vw-2rem))] border border-[var(--color-dark-18)] bg-[var(--surface)] p-4 shadow-[0_18px_40px_rgb(30_58_95_/_0.12)]"
+              style={{ top: dropdownTop }}
+            >
+              <nav aria-label="Primary navigation" className="grid gap-1">
+                {navigationLinks.map((item) => (
+                  <Link
+                    key={item.label}
+                    href={item.href}
+                    onClick={() => setOpen(false)}
+                    className="px-3 py-3 text-[15px] font-semibold text-[var(--foreground)] hover:bg-[var(--color-dark-08)]"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </nav>
+              <MobileAuthButtons />
+            </div>
+          </>,
+          document.body
+        )}
     </div>
   );
 }
