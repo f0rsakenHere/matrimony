@@ -24,14 +24,6 @@ export function MobileMenu() {
     setOpen(false);
   }, [pathname]);
 
-  // Prevent body scroll when open
-  useEffect(() => {
-    document.body.style.overflow = open ? "hidden" : "";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [open]);
-
   function handleToggle() {
     if (!open && buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
