@@ -1,8 +1,8 @@
 import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const FROM = "NikahCanda <onboarding@resend.dev>";
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL!;
+const FROM = process.env.EMAIL_FROM ?? "NikahCanda <onboarding@resend.dev>";
+const ADMIN_EMAILS = (process.env.ADMIN_EMAIL ?? "").split(",").map((e) => e.trim()).filter(Boolean);
 
 // ─── Core sender ─────────────────────────────────────────────────────────────
 
@@ -11,7 +11,7 @@ export async function sendEmail({
   subject,
   html,
 }: {
-  to: string;
+  to: string | string[];
   subject: string;
   html: string;
 }) {
@@ -130,7 +130,7 @@ export async function sendAdminNewUserEmail(user: {
     </table>
     ${button("View in Admin Dashboard", "https://matrimony-drab.vercel.app/dashboard/admin")}
   `;
-  return sendEmail({ to: ADMIN_EMAIL, subject: `New signup: ${user.email}`, html: layout(content) });
+  return sendEmail({ to: ADMIN_EMAILS, subject: `New signup: ${user.email}`, html: layout(content) });
 }
 
 // ─── Email: Admin — user completed biodata ───────────────────────────────────
@@ -152,7 +152,7 @@ export async function sendAdminBiodataEmail(user: {
     </table>
     ${button("Review Profile", "https://matrimony-drab.vercel.app/dashboard/admin")}
   `;
-  return sendEmail({ to: ADMIN_EMAIL, subject: `Biodata ready for review: ${user.email}`, html: layout(content) });
+  return sendEmail({ to: ADMIN_EMAILS, subject: `Biodata ready for review: ${user.email}`, html: layout(content) });
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────

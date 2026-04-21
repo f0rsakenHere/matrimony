@@ -194,6 +194,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const result = await createUserWithEmailAndPassword(auth, email, password);
     await updateProfile(result.user, { displayName: name });
     const syncResult = await syncUserToMongo(result.user, "email");
+    // onAuthStateChanged races ahead and fetches profile before the user exists
+    // in MongoDB — re-fetch after sync so profile is never null for new users.
+    await fetchProfile(result.user.uid);
     return syncResult;
   }
 
@@ -206,6 +209,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function signInWithGoogle() {
     const result = await signInWithPopup(auth, googleProvider);
     const syncResult = await syncUserToMongo(result.user, "google");
+    // Same race condition applies for first-time Google sign-in
+    await fetchProfile(result.user.uid);
     return syncResult;
   }
 
