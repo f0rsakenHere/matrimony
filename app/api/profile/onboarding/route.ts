@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import User from "@/models/User";
+import { sendBiodataReminderEmail } from "@/lib/email";
 
 export async function POST(request: Request) {
   try {
@@ -53,6 +54,12 @@ export async function POST(request: Request) {
 
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    // After onboarding completes, remind the user to fill their biodata
+    if (step === 3) {
+      sendBiodataReminderEmail(user.email, user.firstName || "")
+        .catch((err) => console.error("Biodata reminder email error:", err));
     }
 
     return NextResponse.json({ user });

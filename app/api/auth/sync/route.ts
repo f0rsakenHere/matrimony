@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import User from "@/models/User";
 import Notification from "@/models/Notification";
+import { sendWelcomeEmail, sendAdminNewUserEmail } from "@/lib/email";
 
 export async function POST(request: Request) {
   try {
@@ -66,6 +67,18 @@ export async function POST(request: Request) {
               "Your biodata is incomplete. Fill in your personal details, family info, and Wali contact to appear in search results.",
           },
         ]);
+
+        // Send emails (non-blocking — don't fail the request if email fails)
+        Promise.all([
+          sendWelcomeEmail(email, user!.firstName || ""),
+          sendAdminNewUserEmail({
+            email,
+            firstName: user!.firstName,
+            lastName: user!.lastName,
+            provider: user!.provider,
+            createdAt: user!.createdAt,
+          }),
+        ]).catch((err) => console.error("Signup email error:", err));
       }
     }
 

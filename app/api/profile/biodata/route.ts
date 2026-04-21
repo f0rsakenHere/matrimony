@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import User from "@/models/User";
+import { sendAdminBiodataEmail } from "@/lib/email";
+import { getProfileCompletion } from "@/lib/profile-completion";
 
 export async function PUT(request: Request) {
   try {
@@ -37,6 +39,17 @@ export async function PUT(request: Request) {
     console.log("[biodata API] updateKey:", updateKey);
     console.log("[biodata API] data received:", JSON.stringify(data));
 
+    // Snapshot completion before update
+    const userBefore = await User.findOne({ firebaseUid: uid });
+    const completionBefore = userBefore
+      ? getProfileCompletion({
+          profileName: userBefore.profileName || "",
+          firstName: userBefore.firstName || "",
+          lastName: userBefore.lastName || "",
+          biodata: userBefore.biodata as Parameters<typeof getProfileCompletion>[0]["biodata"],
+        })
+      : 0;
+
     const user = await User.findOneAndUpdate(
       { firebaseUid: uid },
       { $set: { [updateKey]: data } },
@@ -50,6 +63,22 @@ export async function PUT(request: Request) {
 
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    // Notify admin once when profile crosses the 80% completion threshold
+    const completionAfter = getProfileCompletion({
+      profileName: user.profileName || "",
+      firstName: user.firstName || "",
+      lastName: user.lastName || "",
+      biodata: user.biodata as Parameters<typeof getProfileCompletion>[0]["biodata"],
+    });
+    if (completionBefore < 80 && completionAfter >= 80) {
+      sendAdminBiodataEmail({
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        completionPct: completionAfter,
+      }).catch((err) => console.error("Admin biodata email error:", err));
     }
 
     return NextResponse.json({ user });
