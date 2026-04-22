@@ -1,47 +1,111 @@
 import Link from "next/link";
 import Image from "next/image";
-import { bengaliSerif } from "./fonts";
 import SiteHeader from "./_components/site-header";
-import PilgrimsBookingSection from "./_components/pilgrims-booking-section";
-import HowItWorksSection from "./_components/how-it-works-section";
-import JourneyCtaSection from "./_components/journey-cta-section";
-import TestimonialSection from "./_components/testimonial-section";
-import FaqSection from "./_components/faq-section";
 import SiteFooter from "./_components/site-footer";
 import { MotionSection } from "@/components/ui/motion-section";
-import { ChevronRightIcon } from "@/components/ui/chevron-right-icon";
-import { AyahBlock } from "@/components/ui/ayah-block";
 import {
-  goldButtonClass,
-  goldIconButtonClass,
-} from "@/components/ui/button-styles";
+  ShieldCheck,
+  UserCheck,
+  Heart,
+  UserPlus,
+  User,
+  EyeOff,
+  ImageOff,
+  BadgeCheck,
+  ScanSearch,
+  HeartHandshake,
+  FileText,
+  CircleCheckBig,
+  Users,
+  Handshake,
+  Lock,
+  MessageCircle,
+} from "lucide-react";
 
-const serviceCards = [
+/* ─── Data ─── */
+
+const struggles = [
+  "Long sponsorship process and delays",
+  "Differences in mindset and lifestyle",
+  "Language and cultural barriers",
+  "Lack of trust and serious intentions on general platforms",
+];
+
+const solutions = [
+  "Understanding of Western lifestyle with Islamic values",
+  "Matching based on compatibility and values",
+  "Focus on serious, long-term marriage",
+  "Community-focused and trusted approach",
+];
+
+const whyChooseFeatures = [
   {
-    eyebrow: "Real people, real care",
-    title: "Thoughtful introductions, not random matching",
-    description:
-      "We personally review every profile. This way, your first conversation starts with genuine potential and respect.",
-    href: "/#how-it-works",
-    linkLabel: "See the process",
+    icon: Users,
+    title: "No Public Profiles",
+    description: "Your profile is never publicly displayed",
   },
   {
-    eyebrow: "Faith first",
-    title: "A halal and private approach",
-    description:
-      "Families stay involved and boundaries are clear. We make sure every step protects your dignity.",
-    href: "/#faq",
-    linkLabel: "How privacy works",
+    icon: ImageOff,
+    title: "No Picture Sharing",
+    description: "Pictures shared only with consent",
   },
   {
-    eyebrow: "Canada focused",
-    title: "Bangladeshi roots, Canadian life",
-    description:
-      "We understand the balance of keeping our family traditions alive while building a confident future here.",
-    href: "/register",
-    linkLabel: "Begin with us",
+    icon: BadgeCheck,
+    title: "100% Verified Profiles",
+    description: "No scammers, no fake users",
+  },
+  {
+    icon: ScanSearch,
+    title: "Human Screening & Personalized Matching",
+    description: "Quality over quantity",
+  },
+  {
+    icon: EyeOff,
+    title: "Privacy & Modesty First",
+    description: "Respecting your privacy and values",
+  },
+  {
+    icon: HeartHandshake,
+    title: "Serious Marriage Seekers Only",
+    description: "Only for those who are truly serious",
   },
 ];
+
+const howItWorksSteps = [
+  {
+    number: "1",
+    icon: FileText,
+    title: "Submit Your Profile",
+    description: "Fill out the form with your basic details and preferences.",
+  },
+  {
+    number: "2",
+    icon: CircleCheckBig,
+    title: "We Review & Verify",
+    description: "Our team verifies your information carefully.",
+  },
+  {
+    number: "3",
+    icon: Users,
+    title: "We Find Matches",
+    description: "We match you with compatible and suitable profiles.",
+  },
+  {
+    number: "4",
+    icon: Handshake,
+    title: "Connect with Consent",
+    description: "We facilitate the next steps with your full consent.",
+  },
+];
+
+const islamicValues = [
+  { icon: Heart, title: "Deen & Character First" },
+  { icon: Users, title: "Family Involvement (Optional)" },
+  { icon: HeartHandshake, title: "Honest Intentions Only" },
+  { icon: Lock, title: "Respect & Confidentiality" },
+];
+
+/* ─── Page ─── */
 
 export default function Home() {
   return (
@@ -49,156 +113,352 @@ export default function Home() {
       <SiteHeader />
 
       <main className="flex-1">
-        <MotionSection className="relative isolate overflow-hidden bg-[var(--surface-inverse)]">
-          <Image
-            src="/hero-image.webp"
-            alt=""
-            fill
-            loading="eager"
-            sizes="100vw"
-            className="absolute inset-0 object-cover object-center"
-          />
-          <div className="absolute inset-0 bg-[linear-gradient(96deg,var(--color-dark-72)_0%,var(--color-dark-56)_55%,var(--color-dark-18)_100%)]" />
-
-          <div className="relative z-10 mx-auto flex min-h-[600px] max-w-[1520px] items-center px-5 py-14 text-[var(--color-light)] sm:min-h-[calc(100vh-148px)] sm:px-6 sm:py-16 md:px-8 md:py-20 min-[1100px]:min-h-[calc(100vh-188px)] min-[1100px]:py-24 lg:px-10">
-            <div className="w-full max-w-[760px]">
-              <p
-                className={`${bengaliSerif.className} text-[24px] leading-none text-[var(--color-light-90)] sm:text-[26px] md:text-[32px]`}
-              >
-                বিবাহ ও বরকত
+        {/* ════════ HERO ════════ */}
+        <MotionSection className="relative flex flex-col overflow-hidden bg-[var(--background)] lg:block lg:h-[calc(100dvh-150px)] lg:min-h-[640px]">
+          {/* Background image — right half on desktop, below text on mobile */}
+          <div className="relative order-2 min-h-[280px] sm:min-h-[420px] lg:absolute lg:inset-y-0 lg:right-0 lg:min-h-0 lg:w-[55%]">
+            <Image
+              src="/hero.png"
+              alt="Muslim couple"
+              fill
+              loading="eager"
+              sizes="(max-width: 1024px) 100vw, 55vw"
+              className="object-cover"
+            />
+            {/* Gradient fade into background on the left edge */}
+            <div className="hidden lg:block absolute inset-y-0 left-0 w-40 bg-gradient-to-r from-[var(--background)] to-transparent" />
+            {/* Quran verse card */}
+            <div className="absolute inset-x-0 bottom-0 mx-auto max-w-[420px] rounded-t-xl bg-[var(--foreground)]/85 p-4 text-center backdrop-blur-sm sm:inset-x-auto sm:bottom-6 sm:left-auto sm:right-6 sm:rounded-2xl sm:p-6 sm:text-left lg:bottom-[90px] lg:right-8" style={{ color: "#fff" }}>
+              <span className="text-[24px] font-bold leading-none sm:text-[32px]" style={{ color: "var(--button-gold-dark)" }}>&ldquo;</span>
+              <p className="mt-1 text-[13px] leading-[1.6] opacity-90 sm:text-[15px] sm:leading-[1.7]">
+                And among His signs is that He created for you from yourselves
+                mates that you may find tranquility in them and He placed
+                between you affection and mercy. Indeed in that are signs for a
+                people who give thought.
               </p>
-              <h1 className="mt-4 max-w-[14ch] text-[var(--color-light)] [text-wrap:balance]">
-                A quieter, better way to find the right person
-              </h1>
-              <p
-                className={`${bengaliSerif.className} mt-6 max-w-[46ch] text-[18px] leading-[1.65] text-[var(--color-light-90)] md:text-[20px]`}
-              >
-                প্রতিটি সূচনা হোক শালীনতা, সম্মান ও সুন্দর সদিচ্ছার সাথে।
+              <p className="mt-3 text-[13px] font-semibold opacity-70">
+                &ndash; Quran 30:21
               </p>
-              <p className="mt-4 max-w-[58ch] text-[var(--color-light-96)]">
-                We help marriage minded Muslims and their families meet in a
-                way that values privacy, respect, and real compatibility. No
-                public profiles, just thoughtful introductions.
-              </p>
+            </div>
+          </div>
 
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:gap-4">
-                <Link
-                  href="/register"
-                  className={`${goldButtonClass} inline-flex w-full min-w-0 items-center justify-center gap-3 px-6 py-4 text-[15px] font-semibold sm:w-auto sm:min-w-[210px] sm:gap-4 sm:px-8 sm:py-5 sm:text-base`}
-                >
-                  <span>Begin Your Profile</span>
-                  <ArrowRightIcon className="size-5" />
-                </Link>
+          {/* Content overlay — shows first on mobile via order */}
+          <div className="relative z-10 order-1 mx-auto flex h-full max-w-[1520px] flex-col px-5 sm:px-6 md:px-8 lg:order-none lg:px-10">
+            {/* Text content — left side */}
+            <div className="flex flex-1 items-center py-8 sm:py-14 lg:w-[45%] lg:py-0 lg:pr-12">
+              <div>
+                <p className="text-[12px] font-semibold tracking-[0.18em] text-[var(--foreground)] uppercase">
+                  A trusted matrimonial service for
+                </p>
+                <h1 className="mt-4 text-[28px] leading-[1.15] text-[var(--foreground)] sm:text-[36px] md:text-[48px] lg:text-[54px]">
+                  Bangladeshi Muslims in Canada &amp; North America
+                </h1>
 
-                <Link
-                  href="/#how-it-works"
-                  className="inline-flex w-full min-w-0 items-center justify-center border border-[var(--color-light)]/40 bg-[var(--color-light)]/10 px-6 py-4 text-[15px] font-semibold !text-[var(--color-light)] backdrop-blur-[2px] transition-colors hover:bg-[var(--color-light)]/20 sm:w-auto sm:min-w-[210px] sm:px-8 sm:py-5 sm:text-base"
-                >
-                  See How It Works
-                </Link>
+                <p className="mt-4 max-w-[42ch] text-[14px] text-[var(--color-dark-72)] sm:mt-6 sm:text-[16px]">
+                  Connecting hearts with faith, culture and understanding. Find a
+                  compatible life partner who shares your values, mindset and
+                  goals.
+                </p>
+
+                <div className="mt-6 flex flex-col gap-3 sm:mt-7 sm:flex-row sm:gap-4">
+                  <Link
+                    href="/register"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--foreground)] px-5 py-3 text-[14px] font-semibold shadow-[0_4px_14px_rgb(75_45_127_/_0.3)] transition-all hover:shadow-[0_6px_20px_rgb(75_45_127_/_0.4)] sm:w-auto sm:min-w-[200px] sm:gap-2.5 sm:px-8 sm:py-3.5 sm:text-[15px]"
+                    style={{ color: "#fff" }}
+                  >
+                    <UserPlus className="size-4 sm:size-5" />
+                    Register for Free
+                  </Link>
+                  <Link
+                    href="/login"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-[var(--foreground)]/25 px-5 py-3 text-[14px] font-semibold text-[var(--foreground)] transition-colors hover:bg-[var(--foreground)]/5 sm:w-auto sm:min-w-[200px] sm:gap-2.5 sm:px-8 sm:py-3.5 sm:text-[15px]"
+                  >
+                    <User className="size-4 sm:size-5" />
+                    Submit Your Profile
+                  </Link>
+                </div>
+
+                {/* Trust badges */}
+                <div className="mt-6 grid grid-cols-3 gap-3 sm:mt-8 sm:gap-4">
+                  <div className="flex flex-col items-center gap-1.5 sm:flex-row sm:items-center sm:gap-2.5">
+                    <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[var(--foreground)]/10">
+                      <ShieldCheck className="size-4 text-[var(--foreground)]" />
+                    </div>
+                    <div className="text-center sm:text-left">
+                      <p className="text-[11px] font-semibold text-[var(--foreground)] sm:text-[13px]">Private &amp; Secure</p>
+                      <p className="hidden text-[12px] text-[var(--color-dark-56)] sm:block">Your privacy is our priority</p>
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-center gap-1.5 sm:flex-row sm:items-center sm:gap-2.5">
+                    <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[var(--foreground)]/10">
+                      <UserCheck className="size-4 text-[var(--foreground)]" />
+                    </div>
+                    <div className="text-center sm:text-left">
+                      <p className="text-[11px] font-semibold text-[var(--foreground)] sm:text-[13px]">Verified Profiles</p>
+                      <p className="hidden text-[12px] text-[var(--color-dark-56)] sm:block">100% verified members</p>
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-center gap-1.5 sm:flex-row sm:items-center sm:gap-2.5">
+                    <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[var(--foreground)]/10">
+                      <Heart className="size-4 text-[var(--foreground)]" />
+                    </div>
+                    <div className="text-center sm:text-left">
+                      <p className="text-[11px] font-semibold text-[var(--foreground)] sm:text-[13px]">Serious Matches</p>
+                      <p className="hidden text-[12px] text-[var(--color-dark-56)] sm:block">For a lifetime</p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </MotionSection>
 
+        {/* ════════ WHY STRUGGLING / WE UNDERSTAND / SERVICE BUILT FOR ════════ */}
         <MotionSection
-          className="bg-[var(--surface)] py-16 md:py-20 lg:py-24"
+          id="about"
+          className="bg-[var(--surface-muted)] py-12 md:py-20 lg:py-24"
           delay={0.05}
         >
-          <div className="mx-auto max-w-[1520px] px-6 md:px-8 lg:px-10">
-            <div className="mx-auto max-w-[680px] text-center">
-              <p className="text-[12px] font-semibold tracking-[0.18em] text-[var(--color-dark-56)] uppercase">
-                <span
-                  className={`${bengaliSerif.className} text-[15px] tracking-normal normal-case`}
-                >
-                  আমাদের স্বকীয়তা
-                </span>
-                <span aria-hidden="true" className="mx-2 opacity-50">
-                  ·
-                </span>
-                What sets us apart
-              </p>
-              <h2 className="mt-4 text-[var(--foreground)]">
-                Built for families who want a better way to search
+          <div className="mx-auto max-w-[1520px] px-4 sm:px-6 md:px-8 lg:px-10">
+            <div className="grid gap-4 sm:gap-6 lg:grid-cols-3 lg:gap-5">
+              {/* Left — Struggles */}
+              <div className="relative overflow-hidden rounded-2xl bg-white p-5 shadow-sm sm:p-8 lg:p-10">
+                <h3 className="text-[var(--foreground)]">
+                  Why Many Are Struggling to Find the Right Match
+                </h3>
+                <span className="mt-4 block h-[2px] w-12 bg-[var(--color-dark-28)]" />
+                <ul className="mt-6 space-y-4">
+                  {struggles.map((item) => (
+                    <li key={item} className="flex items-start gap-3">
+                      <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-[var(--foreground)]">
+                        <svg className="size-3.5" viewBox="0 0 14 14" fill="none"><path d="M3 7l3 3 5-5" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                      </span>
+                      <span className="text-[var(--color-dark-72)]">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Center — We Understand card */}
+              <div className="relative flex flex-col items-center justify-center overflow-hidden rounded-2xl px-5 py-8 text-center sm:px-7 sm:py-12" style={{ backgroundColor: "var(--foreground)", color: "#fff" }}>
+                {/* Corner mandala patterns — top-left & top-right only */}
+                <Image src="/4x/asset1.png" alt="" width={140} height={140} className="pointer-events-none absolute -top-6 -left-6 size-32 opacity-[0.3]" style={{ filter: "sepia(1) saturate(2) brightness(1.5) hue-rotate(10deg)" }} aria-hidden="true" />
+                <Image src="/4x/asset1.png" alt="" width={140} height={140} className="pointer-events-none absolute -top-6 -right-6 size-32 rotate-90 opacity-[0.3]" style={{ filter: "sepia(1) saturate(2) brightness(1.5) hue-rotate(10deg)" }} aria-hidden="true" />
+                {/* Mosque icon */}
+                <Image
+                  src="/4x/crescent.png"
+                  alt=""
+                  width={80}
+                  height={80}
+                  className="relative z-10 size-20 brightness-0 invert"
+                  aria-hidden="true"
+                />
+                <h3 className="mt-5" style={{ color: "#fff" }}>
+                  We Understand.<br />We&apos;re Here to Help.
+                </h3>
+                <p className="mt-4 text-[14px] leading-relaxed opacity-85">
+                  BDCanNikah is built exclusively for Bangladeshi Muslims in
+                  Canada &amp; North America who are looking for a serious and
+                  halal marriage.
+                </p>
+                
+              </div>
+
+              {/* Right — Solutions */}
+              <div className="relative overflow-hidden rounded-2xl bg-white p-5 shadow-sm sm:p-8 lg:p-10">
+                <h3 className="text-[var(--foreground)]">
+                  A Service Built for Bangladeshi Muslims in North America
+                </h3>
+                <span className="mt-4 block h-[2px] w-12 bg-[var(--color-dark-28)]" />
+                <ul className="mt-6 space-y-4">
+                  {solutions.map((item) => (
+                    <li key={item} className="flex items-start gap-3">
+                      <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-[var(--foreground)]">
+                        <svg className="size-3.5" viewBox="0 0 14 14" fill="none"><path d="M3 7l3 3 5-5" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                      </span>
+                      <span className="text-[var(--color-dark-72)]">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+        </MotionSection>
+
+        {/* ════════ WHY CHOOSE US ════════ */}
+        <MotionSection
+          id="why-choose"
+          className="bg-[var(--surface-muted)] py-12 md:py-20 lg:py-24"
+          delay={0.05}
+        >
+          <div className="mx-auto max-w-[1520px] px-4 sm:px-6 md:px-8 lg:px-10">
+            <div className="text-center">
+              <h2 className="text-[var(--foreground)]">
+                Why Choose BDCanNikah?
               </h2>
-              <p className="mt-6 text-[var(--color-dark-72)]">
-                This is not a public dating app. It is a private space for
-                families who value deen, compatibility, and barakah in the
-                process.
-              </p>
             </div>
 
-            <div className="mt-12 grid gap-6 sm:mt-14 lg:grid-cols-3">
-              {serviceCards.map((card) => (
-                <article
-                  key={card.title}
-                  className="relative flex min-h-[300px] overflow-hidden border border-[var(--color-dark-12)] bg-[var(--surface)] px-6 py-8 transition-shadow duration-300 hover:shadow-[0_18px_40px_rgb(30_58_95_/_0.10)] sm:px-7 sm:py-10 md:px-9"
-                >
-                  <div className="absolute inset-x-0 top-0 h-[2px] bg-[linear-gradient(90deg,var(--button-gold-light)_0%,var(--button-gold-dark)_100%)]" />
-                  <div className="flex h-full w-full max-w-[420px] flex-col">
-                    <p className="text-[12px] font-semibold tracking-[0.18em] text-[var(--color-dark-56)] uppercase">
-                      {card.eyebrow}
-                    </p>
-                    <h3 className="mt-4 text-[var(--foreground)]">
-                      {card.title}
-                    </h3>
-
-                    <p className="mt-6 max-w-[34ch] text-[var(--color-dark-72)]">
-                      {card.description}
-                    </p>
-
-                    <Link
-                      href={card.href}
-                      className="mt-auto inline-flex items-center gap-4 pt-8 text-[15px] font-semibold text-[var(--foreground)]"
-                    >
-                      <span
-                        className={`${goldIconButtonClass} flex size-11 items-center justify-center rounded-full`}
-                      >
-                        <ChevronRightIcon size={22} />
-                      </span>
-                      <span>{card.linkLabel}</span>
-                    </Link>
+            <div className="mt-10 grid grid-cols-2 gap-x-4 gap-y-8 sm:mt-14 sm:gap-6 md:grid-cols-3 lg:grid-cols-6">
+              {whyChooseFeatures.map(({ icon: Icon, title, description }) => (
+                <div key={title} className="flex flex-col items-center text-center">
+                  <div className="flex size-14 items-center justify-center rounded-full border border-[var(--color-dark-14)] bg-[var(--background)] sm:size-16">
+                    <Icon className="size-6 text-[var(--foreground)] sm:size-7" strokeWidth={1.5} />
                   </div>
-                </article>
+                  <p className="mt-3 text-[13px] font-semibold text-[var(--foreground)] sm:mt-4 sm:text-[14px]">
+                    {title}
+                  </p>
+                  <p className="mt-1 text-[12px] text-[var(--color-dark-56)] sm:mt-1.5 sm:text-[13px]">
+                    {description}
+                  </p>
+                </div>
               ))}
             </div>
           </div>
         </MotionSection>
 
-        <PilgrimsBookingSection />
-        <HowItWorksSection />
+        {/* ════════ HOW IT WORKS ════════ */}
+        <MotionSection
+          id="how-it-works"
+          className="bg-[var(--surface-muted)] py-12 md:py-20 lg:py-24"
+          delay={0.05}
+        >
+          <div className="mx-auto max-w-[1520px] px-4 sm:px-6 md:px-8 lg:px-10">
+            <div className="text-center">
+              <h2 className="text-[var(--foreground)]">How It Works</h2>
+            </div>
 
-        <MotionSection className="bg-[var(--surface)] py-16 md:py-20 lg:py-24">
-          <div className="mx-auto max-w-[1520px] px-6 md:px-8 lg:px-10">
-            <AyahBlock />
+            <div className="mx-auto mt-10 grid max-w-5xl grid-cols-2 gap-6 sm:mt-14 sm:grid-cols-2 lg:grid-cols-4 lg:gap-0">
+              {howItWorksSteps.map(({ number, icon: Icon, title, description }, index) => (
+                <div key={title} className="relative flex flex-col items-center text-center">
+                  {/* Icon circle with step number badge */}
+                  <div className="relative">
+                    <div className="flex size-[56px] items-center justify-center rounded-xl bg-[var(--foreground)] sm:size-[72px] sm:rounded-2xl">
+                      <Icon className="size-6 text-[var(--color-light)] sm:size-8" strokeWidth={1.5} />
+                    </div>
+                    <span className="absolute -top-1.5 -right-1.5 flex size-6 items-center justify-center rounded-full border-2 border-[var(--surface-muted)] bg-[var(--button-gold-mid)] text-[11px] font-bold text-white sm:-top-2 sm:-right-2 sm:size-7 sm:text-[12px]">
+                      {number}
+                    </span>
+                  </div>
+                  {/* Dotted connector (desktop only, not on last) */}
+                  {index < howItWorksSteps.length - 1 && (
+                    <div className="absolute top-[36px] left-[calc(50%+44px)] hidden w-[calc(100%-88px)] items-center xl:flex">
+                      <span className="h-px flex-1 border-t-2 border-dashed border-[var(--color-dark-18)]" />
+                      <svg className="size-3 shrink-0 text-[var(--color-dark-28)]" viewBox="0 0 12 12" fill="currentColor"><path d="M4 2l4 4-4 4" /></svg>
+                    </div>
+                  )}
+                  <p className="mt-4 text-[13px] font-semibold text-[var(--foreground)] sm:mt-5 sm:text-[15px]">
+                    {title}
+                  </p>
+                  <p className="mt-1.5 text-[12px] leading-relaxed text-[var(--color-dark-56)] sm:mt-2 sm:max-w-[200px] sm:text-[13px]">
+                    {description}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
         </MotionSection>
 
-        <JourneyCtaSection />
-        <TestimonialSection />
-        <FaqSection />
+        {/* ════════ BUILT ON ISLAMIC VALUES + CTA ════════ */}
+        <MotionSection className="bg-[var(--surface-muted)] py-12 md:py-20 lg:py-24">
+          <div className="mx-auto max-w-[1520px] px-4 sm:px-6 md:px-8 lg:px-10">
+            {/* Built on Islamic Values — single horizontal card */}
+            <div className="overflow-hidden rounded-2xl bg-[#ece2ee] shadow-sm">
+              <div className="flex flex-col lg:flex-row lg:items-center lg:gap-8 lg:py-5 lg:pl-6 lg:pr-10">
+                {/* Trust building image */}
+                <div className="hidden shrink-0 lg:block">
+                  <Image
+                    src="/4x/trust-building.png"
+                    alt=""
+                    width={160}
+                    height={160}
+                    className="size-[160px] rounded-xl object-contain"
+                  />
+                </div>
+
+                {/* Text */}
+                <div className="px-4 py-4 sm:px-8 sm:py-5 lg:flex-1 lg:px-0 lg:py-0">
+                  <h2 className="text-[var(--foreground)]" style={{ fontSize: "var(--font-size-h3)" }}>
+                    Built on Islamic Values
+                  </h2>
+                  <p className="mt-3 max-w-[48ch] text-[14px] leading-relaxed text-[var(--color-dark-72)]">
+                    We believe marriage is a sacred bond built on deen, trust and
+                    respect. Our platform is designed to help you find a partner
+                    who shares your faith, values and life goals.
+                  </p>
+                </div>
+
+                {/* 4 value icons */}
+                <div className="grid shrink-0 grid-cols-2 gap-x-6 gap-y-4 px-4 pb-5 sm:flex sm:gap-8 sm:px-8 lg:gap-10 lg:px-0 lg:pb-0">
+                  {islamicValues.map(({ icon: Icon, title }) => (
+                    <div key={title} className="flex flex-col items-center text-center">
+                      <div className="flex size-10 items-center justify-center rounded-full border border-[var(--button-gold-dark)]/40 sm:size-14">
+                        <Icon className="size-5 text-[var(--button-gold-dark)] sm:size-7" strokeWidth={1.5} />
+                      </div>
+                      <p className="mt-1.5 text-[11px] font-semibold leading-tight text-[var(--foreground)] sm:mt-3 sm:w-[90px] sm:text-[13px]">
+                        {title}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* CTA Bar — Ready to Find Your Life Partner? */}
+            <div
+              id="register"
+              className="mt-6 overflow-hidden rounded-2xl lg:flex lg:items-center lg:gap-8 lg:py-5 lg:pl-6 lg:pr-10"
+              style={{ backgroundColor: "var(--foreground)", color: "#fff" }}
+            >
+              {/* Find partner image */}
+              <div className="hidden shrink-0 lg:block">
+                <Image
+                  src="/4x/find-partner.png"
+                  alt=""
+                  width={160}
+                  height={160}
+                  className="size-[160px] rounded-xl object-contain"
+                />
+              </div>
+
+              {/* Text */}
+              <div className="px-4 py-4 sm:px-8 sm:py-5 lg:flex-1 lg:px-0 lg:py-0">
+                <h2 style={{ color: "#fff", fontSize: "var(--font-size-h3)" }}>
+                  Ready to Find Your Life Partner?
+                </h2>
+                <p className="mt-3 max-w-[44ch] text-[15px] opacity-85">
+                  Join a trusted community of Bangladeshi Muslims in Canada &amp;
+                  North America looking for a meaningful and lasting marriage.
+                </p>
+              </div>
+
+              {/* Buttons */}
+              <div className="px-4 pb-5 sm:px-8 lg:shrink-0 lg:px-0 lg:pb-0">
+                <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
+                  <Link
+                    href="/register"
+                    className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-[var(--button-gold-border)] bg-[linear-gradient(180deg,var(--button-gold-light)_0%,var(--button-gold-mid)_56%,var(--button-gold-dark)_100%)] px-6 text-[14px] font-semibold text-[var(--button-gold-text)] shadow-[inset_0_1px_0_rgb(255_249_233_/_0.78),0_10px_20px_rgb(72_26_34_/_0.16)] transition-[filter] hover:[filter:brightness(1.03)] sm:h-13 sm:px-8 sm:text-[15px] lg:min-w-[240px]"
+                  >
+                    <UserPlus className="size-4 sm:size-5" />
+                    Register Now
+                  </Link>
+                  <Link
+                    href="https://wa.me/17042791249"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-white/30 bg-white/10 px-6 text-[14px] font-semibold backdrop-blur-[2px] transition-colors hover:bg-white/20 sm:h-13 sm:px-8 sm:text-[15px] lg:min-w-[240px]"
+                    style={{ color: "#fff" }}
+                  >
+                    <MessageCircle className="size-4 sm:size-5" />
+                    Contact Us on WhatsApp
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </MotionSection>
       </main>
 
       <SiteFooter />
     </div>
-  );
-}
-
-function ArrowRightIcon({ className = "" }: { className?: string }) {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      className={className}
-      fill="none"
-    >
-      <path
-        d="M5 12h14m-5-5 5 5-5 5"
-        stroke="currentColor"
-        strokeWidth="2.2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
   );
 }

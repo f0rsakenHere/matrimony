@@ -2,6 +2,7 @@ import {
   Amiri,
   Berkshire_Swash,
   Geist_Mono,
+  Libre_Baskerville,
   Manrope,
   Noto_Serif_Bengali,
   Sora,
@@ -26,8 +27,15 @@ export const brandScript = Berkshire_Swash({
 });
 
 export const headingManrope = Manrope({
+  variable: "--font-manrope",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+export const headingSerif = Libre_Baskerville({
   variable: "--font-heading",
   subsets: ["latin"],
+  weight: ["400", "700"],
   display: "swap",
 });
 

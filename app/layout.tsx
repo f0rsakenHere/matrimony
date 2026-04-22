@@ -4,6 +4,7 @@ import {
   bengaliSerif,
   geistMono,
   headingManrope,
+  headingSerif,
   soraSans,
 } from "./fonts";
 import "./globals.css";
@@ -31,6 +32,7 @@ export default function RootLayout({
         "h-full",
         "antialiased",
         soraSans.variable,
+        headingSerif.variable,
         headingManrope.variable,
         geistMono.variable,
         bengaliSerif.variable,

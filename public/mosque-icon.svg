@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Crescent moon -->
+  <circle cx="32" cy="10" r="5" stroke="#cf9a4b" stroke-width="1.8" fill="none"/>
+  <circle cx="34" cy="9" r="3.5" fill="#4B2D7F"/>
+  <!-- Main dome -->
+  <path d="M16 40 Q16 22 32 18 Q48 22 48 40" stroke="#cf9a4b" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+  <!-- Inner smaller dome -->
+  <path d="M22 40 Q22 30 32 26 Q42 30 42 40" stroke="#cf9a4b" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+  <!-- Base walls -->
+  <rect x="16" y="40" width="32" height="16" stroke="#cf9a4b" stroke-width="1.8" fill="none"/>
+  <!-- Door arch -->
+  <path d="M28 56 L28 48 Q28 44 32 44 Q36 44 36 48 L36 56" stroke="#cf9a4b" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+</svg>

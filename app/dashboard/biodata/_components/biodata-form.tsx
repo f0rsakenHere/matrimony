@@ -249,8 +249,8 @@ export default function BiodataForm() {
 
   return (
     <div>
-      {/* Tabs — pill style */}
-      <div className="flex gap-2 overflow-x-auto pb-1">
+      {/* Tabs — scrollable pills */}
+      <div className="-mx-3 flex gap-1.5 overflow-x-auto px-3 pb-1 sm:mx-0 sm:gap-2 sm:px-0">
         {TABS.map(({ id, label, icon: Icon }) => {
           const isActive = activeTab === id;
           const filled = tabStatus[id];
@@ -259,7 +259,7 @@ export default function BiodataForm() {
               key={id}
               onClick={() => setActiveTab(id)}
               className={cn(
-                "relative flex shrink-0 items-center gap-2 rounded-full px-4 py-2.5 text-[13px] font-semibold transition-colors",
+                "relative flex shrink-0 items-center gap-1.5 rounded-full px-3 py-2 text-[12px] font-semibold transition-colors sm:gap-2 sm:px-4 sm:py-2.5 sm:text-[13px]",
                 isActive
                   ? "bg-[var(--foreground)] shadow-sm"
                   : filled
@@ -268,11 +268,11 @@ export default function BiodataForm() {
               )}
               style={isActive ? { color: "var(--background)" } : undefined}
             >
-              <Icon className="size-4" />
-              {label}
+              <Icon className="size-3.5 sm:size-4" />
+              <span className="whitespace-nowrap">{label}</span>
               {filled && !isActive && (
-                <span className="flex size-4 items-center justify-center rounded-full bg-[var(--foreground)]">
-                  <Check className="size-2.5" style={{ color: "var(--background)" }} />
+                <span className="flex size-3.5 items-center justify-center rounded-full bg-[var(--foreground)] sm:size-4">
+                  <Check className="size-2 sm:size-2.5" style={{ color: "var(--background)" }} />
                 </span>
               )}
             </button>
@@ -281,7 +281,7 @@ export default function BiodataForm() {
       </div>
 
       {/* Tab content inside a card */}
-      <div className="mt-6 rounded-2xl border border-[var(--color-dark-12)] bg-[var(--color-dark-04,rgba(30,58,95,0.04))] p-4 sm:p-6 md:p-8">
+      <div className="mt-4 rounded-xl border border-[var(--color-dark-12)] bg-[var(--color-dark-04,rgba(30,58,95,0.04))] p-3 sm:mt-6 sm:rounded-2xl sm:p-6 md:p-8">
         {activeTab === "personal" && (
           <TabPersonal
             data={biodata.personal}
@@ -360,9 +360,9 @@ function SectionHeader({
   description: string;
 }) {
   return (
-    <div className="mb-8">
-      <h3 className="text-[var(--foreground)]">{title}</h3>
-      <p className="mt-1 text-[14px] text-[var(--color-dark-56)]">{description}</p>
+    <div className="mb-5 sm:mb-8">
+      <h3 className="text-[18px] text-[var(--foreground)] sm:text-[24px]">{title}</h3>
+      <p className="mt-1 text-[13px] text-[var(--color-dark-56)] sm:text-[14px]">{description}</p>
     </div>
   );
 }
@@ -381,13 +381,13 @@ function SaveButton({
   disabled?: boolean;
 }) {
   return (
-    <div className="mt-10 flex flex-wrap items-center gap-3 border-t border-[var(--color-dark-08)] pt-6">
+    <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-[var(--color-dark-08)] pt-4 sm:mt-10 sm:pt-6">
       <button
         onClick={onSave}
         disabled={saving || disabled}
         className={cn(
           goldButtonClass,
-          "inline-flex h-11 items-center justify-center gap-2 rounded-full px-8 text-[14px] font-semibold disabled:opacity-50"
+          "inline-flex h-10 w-full items-center justify-center gap-2 rounded-full px-6 text-[13px] font-semibold disabled:opacity-50 sm:h-11 sm:w-auto sm:px-8 sm:text-[14px]"
         )}
       >
         {saving ? (
@@ -433,7 +433,7 @@ function FieldInput({
 }) {
   return (
     <div>
-      <label className="block text-[13px] font-semibold tracking-wide text-[var(--color-dark-56)]">
+      <label className="block text-[12px] font-semibold tracking-wide text-[var(--color-dark-56)] sm:text-[13px]">
         {label}
       </label>
       <input
@@ -441,7 +441,7 @@ function FieldInput({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="mt-2 w-full rounded-lg border border-[var(--color-dark-14)] bg-[var(--background)] px-3.5 py-2.5 text-[15px] text-[var(--foreground)] outline-none transition-colors focus:border-[var(--foreground)] focus:ring-1 focus:ring-[var(--foreground)] placeholder:text-[var(--color-dark-28)]"
+        className="mt-1.5 w-full rounded-lg border border-[var(--color-dark-14)] bg-[var(--background)] px-3 py-2 text-[14px] text-[var(--foreground)] outline-none transition-colors focus:border-[var(--foreground)] focus:ring-1 focus:ring-[var(--foreground)] placeholder:text-[var(--color-dark-28)] sm:mt-2 sm:px-3.5 sm:py-2.5 sm:text-[15px]"
       />
     </div>
   );
@@ -481,14 +481,14 @@ function FieldDateSelect({
   }
 
   const selectClass =
-    "w-full rounded-lg border border-[var(--color-dark-14)] bg-[var(--background)] px-3 py-2.5 text-[15px] text-[var(--foreground)] outline-none transition-colors focus:border-[var(--foreground)] focus:ring-1 focus:ring-[var(--foreground)]";
+    "w-full rounded-lg border border-[var(--color-dark-14)] bg-[var(--background)] px-2 py-2 text-[13px] text-[var(--foreground)] outline-none transition-colors focus:border-[var(--foreground)] focus:ring-1 focus:ring-[var(--foreground)] sm:px-3 sm:py-2.5 sm:text-[15px]";
 
   return (
     <div>
-      <label className="block text-[13px] font-semibold tracking-wide text-[var(--color-dark-56)]">
+      <label className="block text-[12px] font-semibold tracking-wide text-[var(--color-dark-56)] sm:text-[13px]">
         {label}
       </label>
-      <div className="mt-2 grid grid-cols-3 gap-2">
+      <div className="mt-1.5 grid grid-cols-3 gap-1.5 sm:mt-2 sm:gap-2">
         <select
           value={month}
           onChange={(e) => update(year, e.target.value, day)}
@@ -545,13 +545,13 @@ function FieldSelect({
 }) {
   return (
     <div>
-      <label className="block text-[13px] font-semibold tracking-wide text-[var(--color-dark-56)]">
+      <label className="block text-[12px] font-semibold tracking-wide text-[var(--color-dark-56)] sm:text-[13px]">
         {label}
       </label>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-2 w-full rounded-lg border border-[var(--color-dark-14)] bg-[var(--background)] px-3.5 py-2.5 text-[15px] text-[var(--foreground)] outline-none transition-colors focus:border-[var(--foreground)] focus:ring-1 focus:ring-[var(--foreground)]"
+        className="mt-1.5 w-full rounded-lg border border-[var(--color-dark-14)] bg-[var(--background)] px-3 py-2 text-[14px] text-[var(--foreground)] outline-none transition-colors focus:border-[var(--foreground)] focus:ring-1 focus:ring-[var(--foreground)] sm:mt-2 sm:px-3.5 sm:py-2.5 sm:text-[15px]"
       >
         <option value="">{placeholder}</option>
         {options.map((opt) => (
@@ -577,17 +577,17 @@ function ChipSelect({
 }) {
   return (
     <div>
-      <label className="block text-[13px] font-semibold tracking-wide text-[var(--color-dark-56)]">
+      <label className="block text-[12px] font-semibold tracking-wide text-[var(--color-dark-56)] sm:text-[13px]">
         {label}
       </label>
-      <div className="mt-2.5 flex flex-wrap gap-2">
+      <div className="mt-2 flex flex-wrap gap-1.5 sm:mt-2.5 sm:gap-2">
         {options.map((opt) => (
           <button
             key={opt}
             type="button"
             onClick={() => onChange(opt)}
             className={cn(
-              "rounded-full border px-4 py-2 text-[13px] font-semibold transition-all",
+              "rounded-full border px-3 py-1.5 text-[12px] font-semibold transition-all sm:px-4 sm:py-2 sm:text-[13px]",
               value === opt
                 ? "border-[var(--foreground)] bg-[var(--foreground)] shadow-sm"
                 : "border-[var(--color-dark-18)] bg-[var(--background)] text-[var(--foreground)] hover:border-[var(--foreground)]"
@@ -626,7 +626,7 @@ function TabPersonal({
         description="Basic details about yourself"
       />
 
-      <div className="grid gap-6 sm:grid-cols-2">
+      <div className="grid gap-4 sm:gap-6 sm:grid-cols-2">
         <FieldDateSelect
           label="Date of Birth"
           value={data.dateOfBirth}
@@ -715,7 +715,7 @@ function TabEducation({
         description="Your qualifications and professional background"
       />
 
-      <div className="grid gap-6 sm:grid-cols-2">
+      <div className="grid gap-4 sm:gap-6 sm:grid-cols-2">
         <FieldSelect
           label="Education Level"
           value={data.educationLevel}
@@ -785,7 +785,7 @@ function TabFamily({
         description="Information about your family"
       />
 
-      <div className="grid gap-6 sm:grid-cols-2">
+      <div className="grid gap-4 sm:gap-6 sm:grid-cols-2">
         <FieldInput
           label="Father's Name"
           value={data.fatherName}

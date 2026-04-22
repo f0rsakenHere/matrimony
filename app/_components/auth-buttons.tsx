@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
-import { goldButtonClass } from "@/components/ui/button-styles";
-import { LayoutDashboard } from "lucide-react";
+import { LayoutDashboard, UserPlus, User } from "lucide-react";
 
 export function AuthButtons() {
   const { user, loading, logout } = useAuth();
@@ -40,15 +39,18 @@ export function AuthButtons() {
     <div className="hidden items-center gap-3 min-[900px]:flex">
       <Link
         href="/login"
-        className="h-12 items-center justify-center border border-[var(--border)] px-5 text-[14px] font-semibold text-[var(--foreground)] transition-colors hover:bg-[var(--color-dark-08)] inline-flex lg:h-14 lg:px-6 lg:text-[15px]"
+        className="h-12 items-center justify-center gap-2 rounded-lg border border-[var(--border)] px-5 text-[14px] font-semibold text-[var(--foreground)] transition-colors hover:bg-[var(--color-dark-08)] inline-flex lg:h-14 lg:px-6 lg:text-[15px]"
       >
-        Sign In
+        <User className="size-4" />
+        Member Login
       </Link>
       <Link
         href="/register"
-        className={`${goldButtonClass} h-12 items-center justify-center px-6 text-[14px] font-semibold whitespace-nowrap inline-flex lg:h-14 lg:px-7 lg:text-[15px]`}
+        className="h-12 items-center justify-center gap-2 rounded-lg bg-[var(--foreground)] px-6 text-[14px] font-semibold whitespace-nowrap inline-flex shadow-[0_4px_14px_rgb(75_45_127_/_0.3)] transition-all hover:shadow-[0_6px_20px_rgb(75_45_127_/_0.4)] lg:h-14 lg:px-7 lg:text-[15px]"
+        style={{ color: "#fff" }}
       >
-        Sign Up
+        <UserPlus className="size-4" />
+        Register Now
       </Link>
     </div>
   );
@@ -85,15 +87,18 @@ export function MobileAuthButtons() {
     <div className="mt-3 grid gap-1">
       <Link
         href="/login"
-        className="px-3 py-3 text-[15px] font-semibold text-[var(--foreground)] hover:bg-[var(--color-dark-08)]"
+        className="flex items-center gap-2 px-3 py-3 text-[15px] font-semibold text-[var(--foreground)] hover:bg-[var(--color-dark-08)]"
       >
-        Sign In
+        <User className="size-4" />
+        Member Login
       </Link>
       <Link
         href="/register"
-        className={`${goldButtonClass} inline-flex h-12 w-full items-center justify-center text-[14px] font-semibold`}
+        className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-[var(--foreground)] text-[14px] font-semibold"
+        style={{ color: "#fff" }}
       >
-        Sign Up
+        <UserPlus className="size-4" />
+        Register Now
       </Link>
     </div>
   );

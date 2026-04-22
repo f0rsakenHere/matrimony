@@ -8,10 +8,10 @@ import { Menu, X } from "lucide-react";
 import { MobileAuthButtons } from "./auth-buttons";
 
 const navigationLinks = [
+  { href: "/", label: "Home" },
+  { href: "/#about", label: "About Us" },
   { href: "/#how-it-works", label: "How It Works" },
-  { href: "/#our-approach", label: "Our Approach" },
-  { href: "/#success-stories", label: "Family Stories" },
-  { href: "/#faq", label: "Questions" },
+  { href: "/#contact", label: "Contact" },
 ];
 
 export function MobileMenu() {
