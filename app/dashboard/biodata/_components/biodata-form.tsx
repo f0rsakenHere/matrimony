@@ -1,9 +1,30 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useId } from "react";
 import { useAuth, type BiodataSection } from "@/contexts/AuthContext";
+import { EMPTY_BIODATA } from "@/lib/types/biodata";
 import { cn } from "@/lib/utils";
 import { goldButtonClass } from "@/components/ui/button-styles";
+import {
+  GENDER_OPTIONS,
+  MARITAL_STATUS_OPTIONS,
+  HEIGHT_OPTIONS,
+  COMPLEXION_OPTIONS,
+  BLOOD_GROUP_OPTIONS,
+  EDUCATION_LEVEL_OPTIONS,
+  INCOME_OPTIONS,
+  FAMILY_TYPE_OPTIONS,
+  FAMILY_STATUS_OPTIONS,
+  WALI_RELATIONSHIP_OPTIONS,
+  RELIGIOUS_HISTORY_OPTIONS,
+  SECT_OPTIONS,
+  PRAYER_ROUTINE_OPTIONS,
+  MODESTY_OPTIONS,
+  BEARD_OPTIONS,
+  QURAN_READING_OPTIONS,
+  DIET_OPTIONS,
+  SMOKING_OPTIONS,
+} from "@/lib/constants/biodata-options";
 import {
   User,
   GraduationCap,
@@ -27,74 +48,6 @@ const TABS = [
 
 type TabId = (typeof TABS)[number]["id"];
 
-/* ─── Option lists ─── */
-
-const GENDER_OPTIONS = ["Male", "Female"];
-const MARITAL_STATUS_OPTIONS = ["Never Married", "Divorced", "Widowed"];
-const HEIGHT_OPTIONS = Array.from({ length: 25 }, (_, i) => {
-  const totalInches = 54 + i;
-  const ft = Math.floor(totalInches / 12);
-  const inch = totalInches % 12;
-  return `${ft}'${inch}"`;
-});
-const COMPLEXION_OPTIONS = ["Fair", "Medium", "Olive", "Brown", "Dark"];
-const BLOOD_GROUP_OPTIONS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
-
-const EDUCATION_LEVEL_OPTIONS = [
-  "High School",
-  "Diploma",
-  "Bachelor's",
-  "Master's",
-  "PhD / Doctoral",
-  "Islamic Scholar",
-  "Other",
-];
-const INCOME_OPTIONS = [
-  "Prefer not to say",
-  "Below $30,000",
-  "$30,000 – $50,000",
-  "$50,000 – $75,000",
-  "$75,000 – $100,000",
-  "$100,000 – $150,000",
-  "Above $150,000",
-];
-
-const FAMILY_TYPE_OPTIONS = ["Nuclear", "Joint", "Extended"];
-const FAMILY_STATUS_OPTIONS = ["Middle Class", "Upper Middle Class", "Upper Class"];
-const WALI_RELATIONSHIP_OPTIONS = [
-  "Father",
-  "Brother",
-  "Uncle (Paternal)",
-  "Uncle (Maternal)",
-  "Grandfather",
-  "Other Male Guardian",
-];
-
-const RELIGIOUS_HISTORY_OPTIONS = ["Muslim Since Birth", "Revert Muslim"];
-const SECT_OPTIONS = ["Sunni Muslim", "Shia Muslim", "Simply Muslim"];
-const PRAYER_ROUTINE_OPTIONS = [
-  "Always prays",
-  "Occasionally miss Fajr, make up later",
-  "Rarely miss prayers, compensate later",
-  "Occasionally prays",
-  "Intend to start praying",
-];
-const MODESTY_OPTIONS = [
-  "Not Wearing Hijab",
-  "Occasionally Wears Hijab",
-  "Always Wears Hijab",
-  "Always Wears Niqab",
-];
-const QURAN_READING_OPTIONS = [
-  "Can read Arabic fluently",
-  "Learning to read",
-  "Cannot read Arabic",
-  "Reads with translation",
-];
-
-const DIET_OPTIONS = ["Strictly Halal", "Halal when possible", "No restrictions"];
-const SMOKING_OPTIONS = ["Never", "Occasionally", "Trying to quit", "Yes"];
-
 const MONTHS = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
@@ -106,7 +59,7 @@ function daysInMonth(month: number, year: number): number {
 }
 
 export default function BiodataForm() {
-  const { user, profile, refreshProfile } = useAuth();
+  const { user, profile, refreshProfile, getAuthHeaders } = useAuth();
   const [activeTab, setActiveTab] = useState<TabId>("personal");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -186,43 +139,58 @@ export default function BiodataForm() {
       section === "aboutMe"
         ? biodataRef.current.aboutMe
         : biodataRef.current[section as keyof Omit<BiodataSection, "aboutMe">];
-    console.log("[biodata save] sending:", section, JSON.stringify(sectionData));
     setSaving(true);
     setSaved(false);
     setSaveError(null);
     try {
+      const authHeaders = await getAuthHeaders();
       const res = await fetch("/api/profile/biodata", {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ uid: user.uid, section, data: sectionData }),
+        headers: { ...authHeaders, "Content-Type": "application/json" },
+        body: JSON.stringify({ section, data: sectionData }),
       });
       const result = await res.json();
-      console.log("[biodata save] response:", res.status, JSON.stringify(result));
       if (!res.ok) {
         setSaveError(result?.error ?? "Failed to save. Please try again.");
         return;
       }
       const savedUser = result.user;
       if (savedUser?.biodata) {
-        const EMPTY: BiodataSection = {
-          personal: { dateOfBirth: "", gender: "", maritalStatus: "", height: "", weight: "", complexion: "", bloodGroup: "", nationality: "", city: "", country: "" },
-          education: { educationLevel: "", institution: "", fieldOfStudy: "", occupation: "", employer: "", income: "" },
-          family: { fatherName: "", fatherOccupation: "", motherName: "", motherOccupation: "", siblings: "", familyType: "", familyStatus: "", waliName: "", waliRelationship: "", waliPhone: "", waliEmail: "" },
-          religious: { religiousHistory: "", sect: "", prayerRoutine: "", modesty: "", quranReading: "", islamicEducation: "" },
-          lifestyle: { diet: "", smoking: "", hobbies: "", languages: "" },
-          aboutMe: "",
-        };
         setBiodata({
-          personal: { ...EMPTY.personal, ...savedUser.biodata.personal },
-          education: { ...EMPTY.education, ...savedUser.biodata.education },
-          family: { ...EMPTY.family, ...savedUser.biodata.family },
-          religious: { ...EMPTY.religious, ...savedUser.biodata.religious },
-          lifestyle: { ...EMPTY.lifestyle, ...savedUser.biodata.lifestyle },
+          personal: { ...EMPTY_BIODATA.personal, ...savedUser.biodata.personal },
+          education: { ...EMPTY_BIODATA.education, ...savedUser.biodata.education },
+          family: { ...EMPTY_BIODATA.family, ...savedUser.biodata.family },
+          religious: { ...EMPTY_BIODATA.religious, ...savedUser.biodata.religious },
+          lifestyle: { ...EMPTY_BIODATA.lifestyle, ...savedUser.biodata.lifestyle },
           aboutMe: savedUser.biodata.aboutMe ?? "",
         });
       }
       refreshProfile();
       setSaved(true);
+
+      // Auto-navigate to the next incomplete tab
+      const updated: BiodataSection = savedUser?.biodata
+        ? {
+            personal: { ...EMPTY_BIODATA.personal, ...savedUser.biodata.personal },
+            education: { ...EMPTY_BIODATA.education, ...savedUser.biodata.education },
+            family: { ...EMPTY_BIODATA.family, ...savedUser.biodata.family },
+            religious: { ...EMPTY_BIODATA.religious, ...savedUser.biodata.religious },
+            lifestyle: { ...EMPTY_BIODATA.lifestyle, ...savedUser.biodata.lifestyle },
+            aboutMe: savedUser.biodata.aboutMe ?? "",
+          }
+        : biodataRef.current!;
+      const isFilled = (obj: Record<string, string>) => Object.values(obj).some((v) => v && v.trim() !== "");
+      const tabOrder: TabId[] = ["personal", "education", "family", "religious", "lifestyle", "aboutMe"];
+      const currentIdx = tabOrder.indexOf(section as TabId);
+      const nextIncomplete = tabOrder.find((tab, i) => {
+        if (i <= currentIdx) return false;
+        if (tab === "aboutMe") return updated.aboutMe.trim().length === 0;
+        return !isFilled(updated[tab] as unknown as Record<string, string>);
+      });
+      if (nextIncomplete) {
+        setTimeout(() => setActiveTab(nextIncomplete), 600);
+      }
+
       setTimeout(() => setSaved(false), 2000);
     } catch (err) {
       console.error("Save failed:", err);
@@ -250,13 +218,16 @@ export default function BiodataForm() {
   return (
     <div>
       {/* Tabs — scrollable pills */}
-      <div className="-mx-3 flex gap-1.5 overflow-x-auto px-3 pb-1 sm:mx-0 sm:gap-2 sm:px-0">
+      <div role="tablist" className="-mx-3 flex gap-1.5 overflow-x-auto px-3 pb-1 sm:mx-0 sm:gap-2 sm:px-0">
         {TABS.map(({ id, label, icon: Icon }) => {
           const isActive = activeTab === id;
           const filled = tabStatus[id];
           return (
             <button
               key={id}
+              role="tab"
+              aria-selected={isActive}
+              aria-controls={`panel-${id}`}
               onClick={() => setActiveTab(id)}
               className={cn(
                 "relative flex shrink-0 items-center gap-1.5 rounded-full px-3 py-2 text-[12px] font-semibold transition-colors sm:gap-2 sm:px-4 sm:py-2.5 sm:text-[13px]",
@@ -281,7 +252,7 @@ export default function BiodataForm() {
       </div>
 
       {/* Tab content inside a card */}
-      <div className="mt-4 rounded-xl border border-[var(--color-dark-12)] bg-[var(--color-dark-04,rgba(30,58,95,0.04))] p-3 sm:mt-6 sm:rounded-2xl sm:p-6 md:p-8">
+      <div role="tabpanel" id={`panel-${activeTab}`} className="mt-4 rounded-xl border border-[var(--color-dark-12)] bg-[var(--color-dark-04,rgba(30,58,95,0.04))] p-3 sm:mt-6 sm:rounded-2xl sm:p-6 md:p-8">
         {activeTab === "personal" && (
           <TabPersonal
             data={biodata.personal}
@@ -316,6 +287,7 @@ export default function BiodataForm() {
         {activeTab === "religious" && (
           <TabReligious
             data={biodata.religious}
+            gender={biodata.personal.gender}
             onChange={updateReligious}
             onSave={() => save("religious")}
             saving={saving}
@@ -431,12 +403,14 @@ function FieldInput({
   onChange: (val: string) => void;
   placeholder?: string;
 }) {
+  const id = useId();
   return (
     <div>
-      <label className="block text-[12px] font-semibold tracking-wide text-[var(--color-dark-56)] sm:text-[13px]">
+      <label htmlFor={id} className="block text-[12px] font-semibold tracking-wide text-[var(--color-dark-56)] sm:text-[13px]">
         {label}
       </label>
       <input
+        id={id}
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -483,13 +457,16 @@ function FieldDateSelect({
   const selectClass =
     "w-full rounded-lg border border-[var(--color-dark-14)] bg-[var(--background)] px-2 py-2 text-[13px] text-[var(--foreground)] outline-none transition-colors focus:border-[var(--foreground)] focus:ring-1 focus:ring-[var(--foreground)] sm:px-3 sm:py-2.5 sm:text-[15px]";
 
+  const groupId = useId();
+
   return (
-    <div>
-      <label className="block text-[12px] font-semibold tracking-wide text-[var(--color-dark-56)] sm:text-[13px]">
+    <div role="group" aria-labelledby={groupId}>
+      <label id={groupId} className="block text-[12px] font-semibold tracking-wide text-[var(--color-dark-56)] sm:text-[13px]">
         {label}
       </label>
       <div className="mt-1.5 grid grid-cols-3 gap-1.5 sm:mt-2 sm:gap-2">
         <select
+          aria-label="Month"
           value={month}
           onChange={(e) => update(year, e.target.value, day)}
           className={selectClass}
@@ -502,6 +479,7 @@ function FieldDateSelect({
           ))}
         </select>
         <select
+          aria-label="Day"
           value={day}
           onChange={(e) => update(year, month, e.target.value)}
           className={selectClass}
@@ -514,6 +492,7 @@ function FieldDateSelect({
           ))}
         </select>
         <select
+          aria-label="Year"
           value={year}
           onChange={(e) => update(e.target.value, month, day)}
           className={selectClass}
@@ -543,12 +522,14 @@ function FieldSelect({
   options: string[];
   placeholder?: string;
 }) {
+  const id = useId();
   return (
     <div>
-      <label className="block text-[12px] font-semibold tracking-wide text-[var(--color-dark-56)] sm:text-[13px]">
+      <label htmlFor={id} className="block text-[12px] font-semibold tracking-wide text-[var(--color-dark-56)] sm:text-[13px]">
         {label}
       </label>
       <select
+        id={id}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className="mt-1.5 w-full rounded-lg border border-[var(--color-dark-14)] bg-[var(--background)] px-3 py-2 text-[14px] text-[var(--foreground)] outline-none transition-colors focus:border-[var(--foreground)] focus:ring-1 focus:ring-[var(--foreground)] sm:mt-2 sm:px-3.5 sm:py-2.5 sm:text-[15px]"
@@ -575,16 +556,19 @@ function ChipSelect({
   onChange: (val: string) => void;
   options: string[];
 }) {
+  const labelId = useId();
   return (
     <div>
-      <label className="block text-[12px] font-semibold tracking-wide text-[var(--color-dark-56)] sm:text-[13px]">
+      <label id={labelId} className="block text-[12px] font-semibold tracking-wide text-[var(--color-dark-56)] sm:text-[13px]">
         {label}
       </label>
-      <div className="mt-2 flex flex-wrap gap-1.5 sm:mt-2.5 sm:gap-2">
+      <div role="radiogroup" aria-labelledby={labelId} className="mt-2 flex flex-wrap gap-1.5 sm:mt-2.5 sm:gap-2">
         {options.map((opt) => (
           <button
             key={opt}
             type="button"
+            role="radio"
+            aria-checked={value === opt}
             onClick={() => onChange(opt)}
             className={cn(
               "rounded-full border px-3 py-1.5 text-[12px] font-semibold transition-all sm:px-4 sm:py-2 sm:text-[13px]",
@@ -888,6 +872,7 @@ function TabFamily({
 
 function TabReligious({
   data,
+  gender,
   onChange,
   onSave,
   saving,
@@ -895,6 +880,7 @@ function TabReligious({
   saveError,
 }: {
   data: BiodataSection["religious"];
+  gender: string;
   onChange: (key: keyof BiodataSection["religious"], val: string) => void;
   onSave: () => void;
   saving: boolean;
@@ -927,12 +913,22 @@ function TabReligious({
           onChange={(v) => onChange("prayerRoutine", v)}
           options={PRAYER_ROUTINE_OPTIONS}
         />
-        <ChipSelect
-          label="Modesty"
-          value={data.modesty}
-          onChange={(v) => onChange("modesty", v)}
-          options={MODESTY_OPTIONS}
-        />
+        {gender === "Female" && (
+          <ChipSelect
+            label="Modesty"
+            value={data.modesty}
+            onChange={(v) => onChange("modesty", v)}
+            options={MODESTY_OPTIONS}
+          />
+        )}
+        {gender === "Male" && (
+          <ChipSelect
+            label="Beard"
+            value={data.beard}
+            onChange={(v) => onChange("beard", v)}
+            options={BEARD_OPTIONS}
+          />
+        )}
         <ChipSelect
           label="Quran Reading"
           value={data.quranReading}

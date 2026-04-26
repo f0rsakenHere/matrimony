@@ -2,27 +2,20 @@ import { NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import User from "@/models/User";
 import ManualMatch from "@/models/ManualMatch";
-
-async function verifyAdmin(uid: string | null) {
-  if (!uid) return false;
-  const user = await User.findOne({ firebaseUid: uid }).select("isAdmin").lean();
-  return !!(user as { isAdmin?: boolean })?.isAdmin;
-}
+import { requireAdmin } from "@/lib/auth";
 
 // GET — list manual matches
 export async function GET(request: Request) {
   try {
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) return authResult;
+
     const { searchParams } = new URL(request.url);
-    const adminUid = searchParams.get("adminUid");
     const status = searchParams.get("status");
     const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
     const limit = Math.min(50, Math.max(1, parseInt(searchParams.get("limit") || "20", 10)));
 
     await connectDB();
-
-    if (!(await verifyAdmin(adminUid))) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-    }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const filter: Record<string, any> = {};
@@ -64,9 +57,13 @@ export async function GET(request: Request) {
 // POST — create a manual match
 export async function POST(request: Request) {
   try {
-    const { adminUid, user1Id, user2Id, notes } = await request.json();
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const adminUid = authResult.uid;
 
-    if (!adminUid || !user1Id || !user2Id) {
+    const { user1Id, user2Id, notes } = await request.json();
+
+    if (!user1Id || !user2Id) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 });
     }
 
@@ -75,10 +72,6 @@ export async function POST(request: Request) {
     }
 
     await connectDB();
-
-    if (!(await verifyAdmin(adminUid))) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-    }
 
     const [u1, u2] = await Promise.all([
       User.findById(user1Id).lean(),
@@ -125,17 +118,16 @@ export async function POST(request: Request) {
 // PATCH — update match status or notes
 export async function PATCH(request: Request) {
   try {
-    const { adminUid, matchId, status, notes } = await request.json();
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) return authResult;
 
-    if (!adminUid || !matchId) {
+    const { matchId, status, notes } = await request.json();
+
+    if (!matchId) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 });
     }
 
     await connectDB();
-
-    if (!(await verifyAdmin(adminUid))) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-    }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updates: Record<string, any> = {};
@@ -162,13 +154,12 @@ export async function PATCH(request: Request) {
 // DELETE — remove a match
 export async function DELETE(request: Request) {
   try {
-    const { adminUid, matchId } = await request.json();
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) return authResult;
+
+    const { matchId } = await request.json();
 
     await connectDB();
-
-    if (!(await verifyAdmin(adminUid))) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-    }
 
     const deleted = await ManualMatch.findByIdAndDelete(matchId);
     if (!deleted) {

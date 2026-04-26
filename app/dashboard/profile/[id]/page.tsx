@@ -19,6 +19,7 @@ import {
   Crown,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { calculateAge, formatDate } from "@/lib/date-utils";
 import { cn } from "@/lib/utils";
 import { goldButtonClass } from "@/components/ui/button-styles";
 
@@ -65,6 +66,7 @@ interface FullMatchProfile {
       sect: string;
       prayerRoutine: string;
       modesty: string;
+      beard: string;
       quranReading: string;
       islamicEducation: string;
     };
@@ -78,35 +80,13 @@ interface FullMatchProfile {
   };
 }
 
-function calculateAge(dob: string): number | null {
-  if (!dob) return null;
-  const birth = new Date(dob);
-  if (isNaN(birth.getTime())) return null;
-  const today = new Date();
-  let age = today.getFullYear() - birth.getFullYear();
-  const m = today.getMonth() - birth.getMonth();
-  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
-  return age;
-}
-
-function formatDate(dob: string): string {
-  if (!dob) return "";
-  const d = new Date(dob);
-  if (isNaN(d.getTime())) return dob;
-  return d.toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
-}
-
 export default function ProfileViewPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const { user, profile: myProfile, refreshProfile } = useAuth();
+  const { user, profile: myProfile, refreshProfile, getAuthHeaders } = useAuth();
   const [profile, setProfile] = useState<FullMatchProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("details");
@@ -124,7 +104,8 @@ export default function ProfileViewPage({
     if (!user) return;
     async function fetchData() {
       try {
-        const res = await fetch(`/api/profiles/${id}?viewerUid=${user!.uid}`);
+        const authHeaders = await getAuthHeaders();
+        const res = await fetch(`/api/profiles/${id}`, { headers: authHeaders });
         if (res.ok) {
           const data = await res.json();
           setProfile(data.profile);
@@ -133,7 +114,8 @@ export default function ProfileViewPage({
           const profileUser = data.profile as { firebaseUid?: string };
           if (profileUser?.firebaseUid) {
             const statusRes = await fetch(
-              `/api/invitations/status?uid=${user!.uid}&profileUid=${profileUser.firebaseUid}`
+              `/api/invitations/status?profileUid=${profileUser.firebaseUid}`,
+              { headers: authHeaders }
             );
             if (statusRes.ok) {
               const s = await statusRes.json();
@@ -195,10 +177,11 @@ export default function ProfileViewPage({
     setSendingInvite(true);
     setInviteError(null);
     try {
+      const authHeaders = await getAuthHeaders();
       const res = await fetch("/api/invitations", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ senderUid: user.uid, receiverProfileId: id }),
+        headers: { ...authHeaders, "Content-Type": "application/json" },
+        body: JSON.stringify({ receiverProfileId: id }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -219,10 +202,11 @@ export default function ProfileViewPage({
     if (!user || !invitationId) return;
     setRespondingInvite(true);
     try {
+      const authHeaders = await getAuthHeaders();
       const res = await fetch("/api/invitations", {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ uid: user.uid, invitationId, action }),
+        headers: { ...authHeaders, "Content-Type": "application/json" },
+        body: JSON.stringify({ invitationId, action }),
       });
       if (res.ok) {
         if (action === "accept") {
@@ -403,7 +387,12 @@ export default function ProfileViewPage({
                   label="Prayer Routine"
                   value={religious.prayerRoutine}
                 />
-                <DetailRow label="Modesty" value={religious.modesty} />
+                {personal.gender === "Female" && (
+                  <DetailRow label="Modesty" value={religious.modesty} />
+                )}
+                {personal.gender === "Male" && (
+                  <DetailRow label="Beard" value={religious.beard} />
+                )}
                 <DetailRow
                   label="Quran Reading"
                   value={religious.quranReading}

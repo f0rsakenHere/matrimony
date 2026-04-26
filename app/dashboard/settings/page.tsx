@@ -6,7 +6,7 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 export default function SettingsPage() {
-  const { user, profile, refreshProfile, logout } = useAuth();
+  const { user, profile, refreshProfile, getAuthHeaders, logout } = useAuth();
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [form, setForm] = useState({
@@ -30,10 +30,11 @@ export default function SettingsPage() {
     setSaving(true);
     setSaved(false);
     try {
+      const authHeaders = await getAuthHeaders();
       const res = await fetch("/api/profile/settings", {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ uid: user.uid, data: form }),
+        headers: { ...authHeaders, "Content-Type": "application/json" },
+        body: JSON.stringify({ data: form }),
       });
       if (res.ok) {
         setSaved(true);

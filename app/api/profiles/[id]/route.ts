@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import User from "@/models/User";
 import Notification from "@/models/Notification";
+import Invitation from "@/models/Invitation";
+import { verifyAuth } from "@/lib/auth";
 
 export async function GET(
   req: NextRequest,
@@ -9,7 +11,8 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const viewerUid = req.nextUrl.searchParams.get("viewerUid");
+    const authResult = await verifyAuth(req);
+    const viewerUid = authResult?.uid ?? null;
 
     await connectDB();
 
@@ -54,7 +57,26 @@ export async function GET(
       }
     }
 
-    return NextResponse.json({ profile: user });
+    // Strip wali contact details unless an accepted invitation exists
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const profileData = { ...(user as any) };
+    if (viewerUid && profileUser.firebaseUid && viewerUid !== profileUser.firebaseUid) {
+      const acceptedInvite = await Invitation.findOne({
+        $or: [
+          { senderUid: viewerUid, receiverUid: profileUser.firebaseUid, status: "accepted" },
+          { senderUid: profileUser.firebaseUid, receiverUid: viewerUid, status: "accepted" },
+        ],
+      });
+      if (!acceptedInvite && profileData.biodata?.family) {
+        profileData.biodata.family = { ...profileData.biodata.family };
+        profileData.biodata.family.waliName = "";
+        profileData.biodata.family.waliPhone = "";
+        profileData.biodata.family.waliEmail = "";
+        profileData.biodata.family.waliRelationship = "";
+      }
+    }
+
+    return NextResponse.json({ profile: profileData });
   } catch (error) {
     console.error("Error fetching single profile:", error);
     return NextResponse.json(

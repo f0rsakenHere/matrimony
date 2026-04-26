@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
+import { calculateAge } from "@/lib/date-utils";
 import { cn } from "@/lib/utils";
 import { goldButtonClass } from "@/components/ui/button-styles";
 import {
@@ -72,6 +73,7 @@ interface Filters {
   sect: string;
   prayerRoutine: string;
   modesty: string;
+  beard: string;
   diet: string;
   smoking: string;
 }
@@ -89,25 +91,15 @@ const EMPTY_FILTERS: Filters = {
   sect: "",
   prayerRoutine: "",
   modesty: "",
+  beard: "",
   diet: "",
   smoking: "",
 };
 
-function calculateAge(dob: string): number | null {
-  if (!dob) return null;
-  const birth = new Date(dob);
-  if (isNaN(birth.getTime())) return null;
-  const today = new Date();
-  let age = today.getFullYear() - birth.getFullYear();
-  const m = today.getMonth() - birth.getMonth();
-  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
-  return age;
-}
-
 /* ─── Page ─── */
 
 export default function SearchPage() {
-  const { user, profile: myProfile } = useAuth();
+  const { user, profile: myProfile, getAuthHeaders } = useAuth();
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
@@ -136,7 +128,6 @@ export default function SearchPage() {
     setLoading(true);
     try {
       const p = new URLSearchParams();
-      p.set("uid", user.uid);
       p.set("page", String(page));
       p.set("limit", "12");
       if (debouncedQuery) p.set("q", debouncedQuery);
@@ -144,7 +135,10 @@ export default function SearchPage() {
         if (v) p.set(k, v);
       });
 
-      const res = await fetch(`/api/profiles/search?${p.toString()}`);
+      const authHeaders = await getAuthHeaders();
+      const res = await fetch(`/api/profiles/search?${p.toString()}`, {
+        headers: authHeaders,
+      });
       if (res.ok) {
         const data = await res.json();
         setProfiles(data.profiles ?? []);
@@ -156,7 +150,7 @@ export default function SearchPage() {
     } finally {
       setLoading(false);
     }
-  }, [user, page, debouncedQuery, filters]);
+  }, [user, page, debouncedQuery, filters, getAuthHeaders]);
 
   useEffect(() => {
     fetchResults();
@@ -287,7 +281,12 @@ export default function SearchPage() {
 
             <FilterRow label="Religious & Lifestyle">
               <FilterSelect label="Prayer Routine" value={filters.prayerRoutine} onChange={(v) => setFilters((f) => ({ ...f, prayerRoutine: v }))} options={PRAYER_ROUTINE_OPTIONS} />
-              <FilterSelect label="Modesty" value={filters.modesty} onChange={(v) => setFilters((f) => ({ ...f, modesty: v }))} options={MODESTY_OPTIONS} />
+              {myProfile?.biodata?.personal?.gender === "Male" && (
+                <FilterSelect label="Modesty" value={filters.modesty} onChange={(v) => setFilters((f) => ({ ...f, modesty: v }))} options={MODESTY_OPTIONS} />
+              )}
+              {myProfile?.biodata?.personal?.gender === "Female" && (
+                <FilterSelect label="Beard" value={filters.beard} onChange={(v) => setFilters((f) => ({ ...f, beard: v }))} options={["Yes", "No"]} />
+              )}
               <FilterSelect label="Diet" value={filters.diet} onChange={(v) => setFilters((f) => ({ ...f, diet: v }))} options={DIET_OPTIONS} />
               <FilterSelect label="Smoking" value={filters.smoking} onChange={(v) => setFilters((f) => ({ ...f, smoking: v }))} options={SMOKING_OPTIONS} />
             </FilterRow>

@@ -37,6 +37,32 @@ export const MODESTY_OPTIONS = [
   "Always Wears Hijab",
   "Always Wears Niqab",
 ];
+export const BEARD_OPTIONS = ["Yes", "No"];
+export const QURAN_READING_OPTIONS = [
+  "Can read Arabic fluently",
+  "Learning to read",
+  "Cannot read Arabic",
+  "Reads with translation",
+];
+
+export const INCOME_OPTIONS = [
+  "Prefer not to say",
+  "Below $30,000",
+  "$30,000 – $50,000",
+  "$50,000 – $75,000",
+  "$75,000 – $100,000",
+  "$100,000 – $150,000",
+  "Above $150,000",
+];
+
+export const WALI_RELATIONSHIP_OPTIONS = [
+  "Father",
+  "Brother",
+  "Uncle (Paternal)",
+  "Uncle (Maternal)",
+  "Grandfather",
+  "Other Male Guardian",
+];
 
 export const DIET_OPTIONS = ["Strictly Halal", "Halal when possible", "No restrictions"];
 export const SMOKING_OPTIONS = ["Never", "Occasionally", "Trying to quit", "Yes"];

@@ -3,18 +3,19 @@ import connectDB from "@/lib/mongodb";
 import User from "@/models/User";
 import Invitation from "@/models/Invitation";
 import Notification from "@/models/Notification";
+import { requireAuth } from "@/lib/auth";
+import { inviteLimiter } from "@/lib/rate-limit";
 
 // GET — fetch invitations for a user (sent + received)
 export async function GET(request: Request) {
   try {
+    const authResult = await requireAuth(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const uid = authResult.uid;
+
     const { searchParams } = new URL(request.url);
-    const uid = searchParams.get("uid");
     const type = searchParams.get("type"); // "sent" | "received"
     const status = searchParams.get("status"); // "pending" | "accepted" | "declined"
-
-    if (!uid) {
-      return NextResponse.json({ error: "Missing uid" }, { status: 400 });
-    }
 
     await connectDB();
 
@@ -43,9 +44,18 @@ export async function GET(request: Request) {
 // POST — send an invitation
 export async function POST(request: Request) {
   try {
-    const { senderUid, receiverProfileId } = await request.json();
+    const authResult = await requireAuth(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const senderUid = authResult.uid;
 
-    if (!senderUid || !receiverProfileId) {
+    const { success } = inviteLimiter.check(senderUid);
+    if (!success) {
+      return NextResponse.json({ error: "Too many invitations. Please try again later." }, { status: 429 });
+    }
+
+    const { receiverProfileId } = await request.json();
+
+    if (!receiverProfileId) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 });
     }
 
@@ -146,9 +156,13 @@ export async function POST(request: Request) {
 // PATCH — accept or decline an invitation
 export async function PATCH(request: Request) {
   try {
-    const { uid, invitationId, action } = await request.json();
+    const authResult = await requireAuth(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const uid = authResult.uid;
 
-    if (!uid || !invitationId || !["accept", "decline"].includes(action)) {
+    const { invitationId, action } = await request.json();
+
+    if (!invitationId || !["accept", "decline"].includes(action)) {
       return NextResponse.json({ error: "Invalid request" }, { status: 400 });
     }
 

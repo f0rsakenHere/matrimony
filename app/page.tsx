@@ -116,19 +116,22 @@ export default function Home() {
         {/* ════════ HERO ════════ */}
         <MotionSection className="relative flex flex-col overflow-hidden bg-[var(--background)] lg:block lg:h-[calc(100dvh-150px)] lg:min-h-[640px]">
           {/* Background image — right half on desktop, below text on mobile */}
-          <div className="relative order-2 min-h-[280px] sm:min-h-[420px] lg:absolute lg:inset-y-0 lg:right-0 lg:min-h-0 lg:w-[55%]">
-            <Image
-              src="/hero.png"
-              alt="Muslim couple"
-              fill
-              loading="eager"
-              sizes="(max-width: 1024px) 100vw, 55vw"
-              className="object-cover"
-            />
-            {/* Gradient fade into background on the left edge */}
-            <div className="hidden lg:block absolute inset-y-0 left-0 w-40 bg-gradient-to-r from-[var(--background)] to-transparent" />
-            {/* Quran verse card */}
-            <div className="absolute inset-x-0 bottom-0 mx-auto max-w-[420px] rounded-t-xl bg-[var(--foreground)]/85 p-4 text-center backdrop-blur-sm sm:inset-x-auto sm:bottom-6 sm:left-auto sm:right-6 sm:rounded-2xl sm:p-6 sm:text-left lg:bottom-[90px] lg:right-8" style={{ color: "#fff" }}>
+          <div className="order-2 flex flex-col lg:absolute lg:inset-y-0 lg:right-0 lg:block lg:w-[55%]">
+            {/* Image */}
+            <div className="relative min-h-[280px] sm:min-h-[360px] lg:absolute lg:inset-0">
+              <Image
+                src="/nika-hero.png"
+                alt="Muslim couple"
+                fill
+                loading="eager"
+                sizes="(max-width: 1024px) 100vw, 55vw"
+                className="object-cover object-[center_20%] lg:object-center"
+              />
+              {/* Gradient fade into background on the left edge */}
+              <div className="hidden lg:block absolute inset-y-0 left-0 w-40 bg-gradient-to-r from-[var(--background)] to-transparent" />
+            </div>
+            {/* Quran verse card — flows below image on mobile, overlays on desktop */}
+            <div className="relative z-10 -mt-6 mx-3 rounded-2xl bg-[var(--foreground)]/85 p-4 text-center backdrop-blur-sm sm:mx-auto sm:max-w-[420px] sm:p-6 lg:absolute lg:bottom-[90px] lg:right-8 lg:mx-0 lg:mt-0 lg:text-left" style={{ color: "#fff" }}>
               <span className="text-[24px] font-bold leading-none sm:text-[32px]" style={{ color: "var(--button-gold-dark)" }}>&ldquo;</span>
               <p className="mt-1 text-[13px] leading-[1.6] opacity-90 sm:text-[15px] sm:leading-[1.7]">
                 And among His signs is that He created for you from yourselves

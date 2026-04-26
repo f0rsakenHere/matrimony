@@ -3,14 +3,26 @@ import connectDB from "@/lib/mongodb";
 import User from "@/models/User";
 import Notification from "@/models/Notification";
 import { sendWelcomeEmail, sendAdminNewUserEmail } from "@/lib/email";
+import { requireAuth } from "@/lib/auth";
+import { authLimiter } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
   try {
-    const { uid, email, photoURL, provider } = await request.json();
+    const ip = request.headers.get("x-forwarded-for") ?? "unknown";
+    const { success } = authLimiter.check(ip);
+    if (!success) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+    }
 
-    if (!uid || !email) {
+    const authResult = await requireAuth(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const uid = authResult.uid;
+
+    const { email, photoURL, provider } = await request.json();
+
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return NextResponse.json(
-        { error: "Missing required fields" },
+        { error: "Missing or invalid email" },
         { status: 400 }
       );
     }

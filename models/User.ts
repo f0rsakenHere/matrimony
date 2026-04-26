@@ -107,6 +107,7 @@ export interface IBiodataReligious {
   sect: string;
   prayerRoutine: string;
   modesty: string;
+  beard: string;
   quranReading: string;
   islamicEducation: string;
 }
@@ -117,6 +118,7 @@ const BiodataReligiousSchema = new Schema<IBiodataReligious>(
     sect: { type: String, default: "" },
     prayerRoutine: { type: String, default: "" },
     modesty: { type: String, default: "" },
+    beard: { type: String, default: "" },
     quranReading: { type: String, default: "" },
     islamicEducation: { type: String, default: "" },
   },

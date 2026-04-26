@@ -1,24 +1,16 @@
 import { NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import User from "@/models/User";
-
-// Verify the requesting user is an admin
-async function verifyAdmin(uid: string | null) {
-  if (!uid) return false;
-  const user = await User.findOne({ firebaseUid: uid }).select("isAdmin").lean();
-  return !!(user as { isAdmin?: boolean })?.isAdmin;
-}
+import { requireAdmin } from "@/lib/auth";
+import { escapeRegex } from "@/lib/sanitize";
 
 export async function GET(request: Request) {
   try {
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) return authResult;
+
     const { searchParams } = new URL(request.url);
-    const adminUid = searchParams.get("adminUid");
-
     await connectDB();
-
-    if (!(await verifyAdmin(adminUid))) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-    }
 
     // Filters
     const search = searchParams.get("q")?.trim();
@@ -33,6 +25,7 @@ export async function GET(request: Request) {
     const onboardingComplete = searchParams.get("onboardingComplete");
     const provider = searchParams.get("provider");
     const hasWali = searchParams.get("hasWali");
+    const beard = searchParams.get("beard");
     const sortBy = searchParams.get("sortBy") || "createdAt";
     const sortOrder = searchParams.get("sortOrder") === "asc" ? 1 : -1;
     const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
@@ -45,6 +38,7 @@ export async function GET(request: Request) {
     if (maritalStatus) filter["biodata.personal.maritalStatus"] = maritalStatus;
     if (educationLevel) filter["biodata.education.educationLevel"] = educationLevel;
     if (sect) filter["biodata.religious.sect"] = sect;
+    if (beard) filter["biodata.religious.beard"] = beard;
     if (provider) filter.provider = provider;
 
     if (onboardingComplete === "true") filter.onboardingComplete = true;
@@ -54,20 +48,25 @@ export async function GET(request: Request) {
       filter["biodata.family.waliName"] = { $ne: "" };
       filter["biodata.family.waliPhone"] = { $ne: "" };
     }
+
+    // Collect $or conditions to avoid overwriting
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const orConditions: Record<string, any>[][] = [];
+
     if (hasWali === "false") {
-      filter.$or = [
+      orConditions.push([
         { "biodata.family.waliName": "" },
         { "biodata.family.waliName": { $exists: false } },
         { "biodata.family.waliPhone": "" },
         { "biodata.family.waliPhone": { $exists: false } },
-      ];
+      ]);
     }
 
     if (country) {
-      filter["biodata.personal.country"] = { $regex: `^${country}$`, $options: "i" };
+      filter["biodata.personal.country"] = { $regex: `^${escapeRegex(country)}$`, $options: "i" };
     }
     if (city) {
-      filter["biodata.personal.city"] = { $regex: city, $options: "i" };
+      filter["biodata.personal.city"] = { $regex: escapeRegex(city), $options: "i" };
     }
 
     // Age range
@@ -90,15 +89,23 @@ export async function GET(request: Request) {
 
     // Text search
     if (search) {
-      filter.$or = [
-        { profileName: { $regex: search, $options: "i" } },
-        { email: { $regex: search, $options: "i" } },
-        { firstName: { $regex: search, $options: "i" } },
-        { lastName: { $regex: search, $options: "i" } },
-        { "biodata.personal.city": { $regex: search, $options: "i" } },
-        { "biodata.personal.country": { $regex: search, $options: "i" } },
-        { "biodata.education.occupation": { $regex: search, $options: "i" } },
-      ];
+      const escaped = escapeRegex(search);
+      orConditions.push([
+        { profileName: { $regex: escaped, $options: "i" } },
+        { email: { $regex: escaped, $options: "i" } },
+        { firstName: { $regex: escaped, $options: "i" } },
+        { lastName: { $regex: escaped, $options: "i" } },
+        { "biodata.personal.city": { $regex: escaped, $options: "i" } },
+        { "biodata.personal.country": { $regex: escaped, $options: "i" } },
+        { "biodata.education.occupation": { $regex: escaped, $options: "i" } },
+      ]);
+    }
+
+    // Combine multiple $or conditions with $and
+    if (orConditions.length === 1) {
+      filter.$or = orConditions[0];
+    } else if (orConditions.length > 1) {
+      filter.$and = orConditions.map((cond) => ({ $or: cond }));
     }
 
     const skip = (page - 1) * limit;
@@ -128,13 +135,12 @@ export async function GET(request: Request) {
 // DELETE a user
 export async function DELETE(request: Request) {
   try {
-    const { adminUid, userId } = await request.json();
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) return authResult;
+
+    const { userId } = await request.json();
 
     await connectDB();
-
-    if (!(await verifyAdmin(adminUid))) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-    }
 
     const deleted = await User.findByIdAndDelete(userId);
     if (!deleted) {
@@ -151,13 +157,12 @@ export async function DELETE(request: Request) {
 // PATCH — toggle admin, etc.
 export async function PATCH(request: Request) {
   try {
-    const { adminUid, userId, updates } = await request.json();
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) return authResult;
+
+    const { userId, updates } = await request.json();
 
     await connectDB();
-
-    if (!(await verifyAdmin(adminUid))) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-    }
 
     // Only allow safe fields
     const allowed: Record<string, boolean> = {

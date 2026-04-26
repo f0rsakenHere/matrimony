@@ -1,12 +1,17 @@
 import { NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import User from "@/models/User";
+import { requireAuth } from "@/lib/auth";
 
 export async function PUT(request: Request) {
   try {
-    const { uid, data } = await request.json();
+    const authResult = await requireAuth(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const uid = authResult.uid;
 
-    if (!uid || !data) {
+    const { data } = await request.json();
+
+    if (!data) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }

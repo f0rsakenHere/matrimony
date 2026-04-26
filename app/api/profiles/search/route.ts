@@ -1,11 +1,22 @@
 import { NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import User from "@/models/User";
+import { requireAuth } from "@/lib/auth";
+import { escapeRegex } from "@/lib/sanitize";
+import { apiLimiter } from "@/lib/rate-limit";
 
 export async function GET(request: Request) {
   try {
+    const authResult = await requireAuth(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const uid = authResult.uid;
+
+    const { success } = apiLimiter.check(uid);
+    if (!success) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+    }
+
     const { searchParams } = new URL(request.url);
-    const uid = searchParams.get("uid");
     const search = searchParams.get("q")?.trim();
     const gender = searchParams.get("gender");
     const maritalStatus = searchParams.get("maritalStatus");
@@ -18,6 +29,7 @@ export async function GET(request: Request) {
     const diet = searchParams.get("diet");
     const smoking = searchParams.get("smoking");
     const modesty = searchParams.get("modesty");
+    const beard = searchParams.get("beard");
     const ageMin = searchParams.get("ageMin");
     const ageMax = searchParams.get("ageMax");
     const heightMin = searchParams.get("heightMin"); // e.g. "5'0\""
@@ -31,18 +43,14 @@ export async function GET(request: Request) {
     const filter: Record<string, any> = {};
 
     // Exclude current user and show only opposite gender
-    if (uid) {
-      filter.firebaseUid = { $ne: uid };
-      const currentUser = await User.findOne({ firebaseUid: uid })
-        .select("biodata.personal.gender")
-        .lean();
-      const userGender = (currentUser as { biodata?: { personal?: { gender?: string } } })
-        ?.biodata?.personal?.gender;
-      if (userGender) {
-        filter["biodata.personal.gender"] = userGender === "Male" ? "Female" : "Male";
-      } else {
-        filter["biodata.personal.gender"] = { $in: ["Male", "Female"] };
-      }
+    filter.firebaseUid = { $ne: uid };
+    const currentUser = await User.findOne({ firebaseUid: uid })
+      .select("biodata.personal.gender")
+      .lean();
+    const userGender = (currentUser as { biodata?: { personal?: { gender?: string } } })
+      ?.biodata?.personal?.gender;
+    if (userGender) {
+      filter["biodata.personal.gender"] = userGender === "Male" ? "Female" : "Male";
     } else {
       filter["biodata.personal.gender"] = { $in: ["Male", "Female"] };
     }
@@ -55,14 +63,15 @@ export async function GET(request: Request) {
     if (sect) filter["biodata.religious.sect"] = sect;
     if (prayerRoutine) filter["biodata.religious.prayerRoutine"] = prayerRoutine;
     if (modesty) filter["biodata.religious.modesty"] = modesty;
+    if (beard) filter["biodata.religious.beard"] = beard;
     if (diet) filter["biodata.lifestyle.diet"] = diet;
     if (smoking) filter["biodata.lifestyle.smoking"] = smoking;
 
     if (country) {
-      filter["biodata.personal.country"] = { $regex: `^${country}$`, $options: "i" };
+      filter["biodata.personal.country"] = { $regex: `^${escapeRegex(country)}$`, $options: "i" };
     }
     if (city) {
-      filter["biodata.personal.city"] = { $regex: city, $options: "i" };
+      filter["biodata.personal.city"] = { $regex: escapeRegex(city), $options: "i" };
     }
 
     // Age range → DOB boundaries (dateOfBirth stored as "YYYY-MM-DD" string)
@@ -89,13 +98,14 @@ export async function GET(request: Request) {
 
     // Text search
     if (search) {
+      const escaped = escapeRegex(search);
       filter.$or = [
-        { profileName: { $regex: search, $options: "i" } },
-        { "biodata.personal.city": { $regex: search, $options: "i" } },
-        { "biodata.personal.country": { $regex: search, $options: "i" } },
-        { "biodata.education.occupation": { $regex: search, $options: "i" } },
-        { "biodata.education.institution": { $regex: search, $options: "i" } },
-        { "biodata.education.fieldOfStudy": { $regex: search, $options: "i" } },
+        { profileName: { $regex: escaped, $options: "i" } },
+        { "biodata.personal.city": { $regex: escaped, $options: "i" } },
+        { "biodata.personal.country": { $regex: escaped, $options: "i" } },
+        { "biodata.education.occupation": { $regex: escaped, $options: "i" } },
+        { "biodata.education.institution": { $regex: escaped, $options: "i" } },
+        { "biodata.education.fieldOfStudy": { $regex: escaped, $options: "i" } },
       ];
     }
 

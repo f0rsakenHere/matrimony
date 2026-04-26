@@ -1,19 +1,19 @@
 import { NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import Notification from "@/models/Notification";
+import { requireAuth } from "@/lib/auth";
 
 // GET — fetch notifications for a user
 export async function GET(request: Request) {
   try {
+    const authResult = await requireAuth(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const uid = authResult.uid;
+
     const { searchParams } = new URL(request.url);
-    const uid = searchParams.get("uid");
     const unreadOnly = searchParams.get("unreadOnly") === "true";
     const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
     const limit = Math.min(50, Math.max(1, parseInt(searchParams.get("limit") || "20", 10)));
-
-    if (!uid) {
-      return NextResponse.json({ error: "Missing uid" }, { status: 400 });
-    }
 
     await connectDB();
 
@@ -49,11 +49,11 @@ export async function GET(request: Request) {
 // PATCH — mark notifications as read
 export async function PATCH(request: Request) {
   try {
-    const { uid, notificationId, markAll } = await request.json();
+    const authResult = await requireAuth(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const uid = authResult.uid;
 
-    if (!uid) {
-      return NextResponse.json({ error: "Missing uid" }, { status: 400 });
-    }
+    const { notificationId, markAll } = await request.json();
 
     await connectDB();
 

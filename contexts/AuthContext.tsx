@@ -17,57 +17,10 @@ import {
   type User,
 } from "firebase/auth";
 import { auth, googleProvider } from "@/lib/firebase";
+import { EMPTY_BIODATA } from "@/lib/types/biodata";
+import type { BiodataSection } from "@/lib/types/biodata";
 
-export interface BiodataSection {
-  personal: {
-    dateOfBirth: string;
-    gender: string;
-    maritalStatus: string;
-    height: string;
-    weight: string;
-    complexion: string;
-    bloodGroup: string;
-    nationality: string;
-    city: string;
-    country: string;
-  };
-  education: {
-    educationLevel: string;
-    institution: string;
-    fieldOfStudy: string;
-    occupation: string;
-    employer: string;
-    income: string;
-  };
-  family: {
-    fatherName: string;
-    fatherOccupation: string;
-    motherName: string;
-    motherOccupation: string;
-    siblings: string;
-    familyType: string;
-    familyStatus: string;
-    waliName: string;
-    waliRelationship: string;
-    waliPhone: string;
-    waliEmail: string;
-  };
-  religious: {
-    religiousHistory: string;
-    sect: string;
-    prayerRoutine: string;
-    modesty: string;
-    quranReading: string;
-    islamicEducation: string;
-  };
-  lifestyle: {
-    diet: string;
-    smoking: string;
-    hobbies: string;
-    languages: string;
-  };
-  aboutMe: string;
-}
+export type { BiodataSection };
 
 export interface ProfileData {
   email: string;
@@ -86,6 +39,7 @@ interface AuthContextType {
   loading: boolean;
   profile: ProfileData | null;
   refreshProfile: () => Promise<void>;
+  getAuthHeaders: () => Promise<Record<string, string>>;
   signUpWithEmail: (
     email: string,
     password: string,
@@ -101,26 +55,24 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-const EMPTY_BIODATA: BiodataSection = {
-  personal: { dateOfBirth: "", gender: "", maritalStatus: "", height: "", weight: "", complexion: "", bloodGroup: "", nationality: "", city: "", country: "" },
-  education: { educationLevel: "", institution: "", fieldOfStudy: "", occupation: "", employer: "", income: "" },
-  family: { fatherName: "", fatherOccupation: "", motherName: "", motherOccupation: "", siblings: "", familyType: "", familyStatus: "", waliName: "", waliRelationship: "", waliPhone: "", waliEmail: "" },
-  religious: { religiousHistory: "", sect: "", prayerRoutine: "", modesty: "", quranReading: "", islamicEducation: "" },
-  lifestyle: { diet: "", smoking: "", hobbies: "", languages: "" },
-  aboutMe: "",
-};
+async function getAuthHeadersForUser(
+  firebaseUser: User
+): Promise<Record<string, string>> {
+  const token = await firebaseUser.getIdToken();
+  return { Authorization: `Bearer ${token}` };
+}
 
 async function syncUserToMongo(
-  user: User,
+  firebaseUser: User,
   provider: "email" | "google"
 ): Promise<{ isNewUser: boolean }> {
+  const headers = await getAuthHeadersForUser(firebaseUser);
   const res = await fetch("/api/auth/sync", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { ...headers, "Content-Type": "application/json" },
     body: JSON.stringify({
-      uid: user.uid,
-      email: user.email,
-      photoURL: user.photoURL,
+      email: firebaseUser.email,
+      photoURL: firebaseUser.photoURL,
       provider,
     }),
   });
@@ -133,9 +85,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<ProfileData | null>(null);
 
-  async function fetchProfile(uid: string) {
+  async function fetchProfile(firebaseUser: User) {
     try {
-      const res = await fetch(`/api/profile?uid=${uid}`);
+      const headers = await getAuthHeadersForUser(firebaseUser);
+      const res = await fetch("/api/profile", { headers });
       if (res.ok) {
         const data = await res.json();
         const u = data.user;
@@ -167,9 +120,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  async function getAuthHeaders(): Promise<Record<string, string>> {
+    if (!user) return {};
+    return getAuthHeadersForUser(user);
+  }
+
   async function refreshProfile() {
     if (user) {
-      await fetchProfile(user.uid);
+      await fetchProfile(user);
     }
   }
 
@@ -177,7 +135,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
       if (firebaseUser) {
-        await fetchProfile(firebaseUser.uid);
+        await fetchProfile(firebaseUser);
       } else {
         setProfile(null);
       }
@@ -196,7 +154,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const syncResult = await syncUserToMongo(result.user, "email");
     // onAuthStateChanged races ahead and fetches profile before the user exists
     // in MongoDB — re-fetch after sync so profile is never null for new users.
-    await fetchProfile(result.user.uid);
+    await fetchProfile(result.user);
     return syncResult;
   }
 
@@ -210,7 +168,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const result = await signInWithPopup(auth, googleProvider);
     const syncResult = await syncUserToMongo(result.user, "google");
     // Same race condition applies for first-time Google sign-in
-    await fetchProfile(result.user.uid);
+    await fetchProfile(result.user);
     return syncResult;
   }
 
@@ -226,6 +184,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loading,
         profile,
         refreshProfile,
+        getAuthHeaders,
         signUpWithEmail,
         signInWithEmail,
         signInWithGoogle,

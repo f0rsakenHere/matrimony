@@ -2,12 +2,17 @@ import { NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import User from "@/models/User";
 import { sendBiodataReminderEmail } from "@/lib/email";
+import { requireAuth } from "@/lib/auth";
 
 export async function POST(request: Request) {
   try {
-    const { uid, step, data } = await request.json();
+    const authResult = await requireAuth(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const uid = authResult.uid;
 
-    if (!uid || step === undefined) {
+    const { step, data } = await request.json();
+
+    if (step === undefined) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }

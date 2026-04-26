@@ -54,7 +54,7 @@ function timeAgo(iso: string): string {
 }
 
 export default function AlertsPage() {
-  const { user } = useAuth();
+  const { user, getAuthHeaders } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -68,12 +68,14 @@ export default function AlertsPage() {
     setLoading(true);
     try {
       const p = new URLSearchParams();
-      p.set("uid", user.uid);
       p.set("page", String(page));
       p.set("limit", "15");
       if (filter === "unread") p.set("unreadOnly", "true");
 
-      const res = await fetch(`/api/notifications?${p.toString()}`);
+      const authHeaders = await getAuthHeaders();
+      const res = await fetch(`/api/notifications?${p.toString()}`, {
+        headers: authHeaders,
+      });
       if (res.ok) {
         const data = await res.json();
         setNotifications(data.notifications ?? []);
@@ -85,7 +87,7 @@ export default function AlertsPage() {
     } finally {
       setLoading(false);
     }
-  }, [user, page, filter]);
+  }, [user, page, filter, getAuthHeaders]);
 
   useEffect(() => {
     fetchNotifications();
@@ -98,10 +100,11 @@ export default function AlertsPage() {
   async function markAsRead(notificationId: string) {
     if (!user) return;
     try {
+      const authHeaders = await getAuthHeaders();
       await fetch("/api/notifications", {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ uid: user.uid, notificationId }),
+        headers: { ...authHeaders, "Content-Type": "application/json" },
+        body: JSON.stringify({ notificationId }),
       });
       setNotifications((prev) =>
         prev.map((n) => (n._id === notificationId ? { ...n, read: true } : n))
@@ -116,10 +119,11 @@ export default function AlertsPage() {
     if (!user) return;
     setMarkingAll(true);
     try {
+      const authHeaders = await getAuthHeaders();
       await fetch("/api/notifications", {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ uid: user.uid, markAll: true }),
+        headers: { ...authHeaders, "Content-Type": "application/json" },
+        body: JSON.stringify({ markAll: true }),
       });
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
       setUnreadCount(0);

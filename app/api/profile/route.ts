@@ -1,18 +1,13 @@
 import { NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import User from "@/models/User";
+import { requireAuth } from "@/lib/auth";
 
 export async function GET(request: Request) {
   try {
-    const { searchParams } = new URL(request.url);
-    const uid = searchParams.get("uid");
-
-    if (!uid) {
-      return NextResponse.json(
-        { error: "Missing uid parameter" },
-        { status: 400 }
-      );
-    }
+    const authResult = await requireAuth(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const uid = authResult.uid;
 
     await connectDB();
 

@@ -1,4 +1,4 @@
-import type { BiodataSection } from "@/contexts/AuthContext";
+import type { BiodataSection } from "@/lib/types/biodata";
 
 /**
  * Counts filled (non-empty string) fields across the profile and biodata
@@ -27,8 +27,13 @@ export function getProfileCompletion(profile: {
     profile.biodata.lifestyle,
   ];
 
+  const gender = profile.biodata.personal.gender;
+
   for (const section of sections) {
-    for (const value of Object.values(section)) {
+    for (const [key, value] of Object.entries(section)) {
+      // Skip gender-irrelevant religious fields
+      if (key === "beard" && gender !== "Male") continue;
+      if (key === "modesty" && gender !== "Female") continue;
       total += 1;
       if (typeof value === "string" && value.trim().length > 0) {
         filled += 1;

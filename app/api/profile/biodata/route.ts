@@ -3,12 +3,18 @@ import connectDB from "@/lib/mongodb";
 import User from "@/models/User";
 import { sendAdminBiodataEmail } from "@/lib/email";
 import { getProfileCompletion } from "@/lib/profile-completion";
+import { requireAuth } from "@/lib/auth";
+import { sanitizeBiodataSection } from "@/lib/sanitize";
 
 export async function PUT(request: Request) {
   try {
-    const { uid, section, data } = await request.json();
+    const authResult = await requireAuth(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const uid = authResult.uid;
 
-    if (!uid || !section) {
+    const { section, data } = await request.json();
+
+    if (!section) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
@@ -30,14 +36,21 @@ export async function PUT(request: Request) {
       );
     }
 
+    // Sanitize: strip unknown keys, enforce string types and length limits
+    const sanitized = section === "aboutMe"
+      ? (typeof data === "string" ? data.slice(0, 1000) : "")
+      : sanitizeBiodataSection(section, data);
+
+    if (sanitized === null) {
+      return NextResponse.json({ error: "Invalid data format" }, { status: 400 });
+    }
+
+    const cleanData = section === "aboutMe" ? sanitized : sanitized;
+
     await connectDB();
 
     const updateKey =
       section === "aboutMe" ? "biodata.aboutMe" : `biodata.${section}`;
-
-    console.log("[biodata API] section:", section);
-    console.log("[biodata API] updateKey:", updateKey);
-    console.log("[biodata API] data received:", JSON.stringify(data));
 
     // Snapshot completion before update
     const userBefore = await User.findOne({ firebaseUid: uid });
@@ -52,14 +65,9 @@ export async function PUT(request: Request) {
 
     const user = await User.findOneAndUpdate(
       { firebaseUid: uid },
-      { $set: { [updateKey]: data } },
+      { $set: { [updateKey]: cleanData } },
       { new: true }
     );
-
-    if (user) {
-      const savedSection = section === "aboutMe" ? user.biodata?.aboutMe : user.biodata?.[section as keyof typeof user.biodata];
-      console.log("[biodata API] saved result:", JSON.stringify(savedSection));
-    }
 
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });

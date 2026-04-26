@@ -1,15 +1,19 @@
 import { NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import Invitation from "@/models/Invitation";
+import { requireAuth } from "@/lib/auth";
 
 // GET — check invitation status between current user and a profile
 export async function GET(request: Request) {
   try {
+    const authResult = await requireAuth(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const uid = authResult.uid;
+
     const { searchParams } = new URL(request.url);
-    const uid = searchParams.get("uid");
     const profileUid = searchParams.get("profileUid");
 
-    if (!uid || !profileUid) {
+    if (!profileUid) {
       return NextResponse.json({ error: "Missing params" }, { status: 400 });
     }
 
