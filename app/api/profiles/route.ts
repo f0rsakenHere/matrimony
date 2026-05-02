@@ -29,10 +29,13 @@ export async function GET(request: Request) {
     // Determine opposite gender
     const targetGender = userGender === "Male" ? "Female" : "Male";
 
-    // Fetch profiles of opposite gender, exclude current user
+    // Fetch profiles of opposite gender, exclude current user.
+    // Hide shadow users (auto-created from anonymous submissions); they're
+    // not yet claimed by a real signed-up account.
     const profiles = await User.find({
       firebaseUid: { $ne: uid },
       "biodata.personal.gender": targetGender,
+      isShadow: { $ne: true },
     })
       .select(
         "profileName photoURL biodata.personal biodata.education biodata.religious biodata.lifestyle biodata.aboutMe"

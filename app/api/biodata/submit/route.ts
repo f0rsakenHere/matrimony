@@ -75,9 +75,13 @@ export async function POST(request: Request) {
     }
 
     const biodata = sanitizeBiodata(payload.biodata);
+    const submitterFirstName = sanitizeString(payload.submitterFirstName, 80);
+    const submitterLastName = sanitizeString(payload.submitterLastName, 80);
 
     // Required-field validation
     const errors: string[] = [];
+    if (!submitterFirstName) errors.push("First name is required.");
+    if (!submitterLastName) errors.push("Last name is required.");
     if (!biodata.personal.gender) errors.push("Gender is required.");
     if (!biodata.personal.dateOfBirth) errors.push("Date of birth is required.");
     if (!biodata.family.waliName) errors.push("Wali's name is required.");
@@ -91,6 +95,8 @@ export async function POST(request: Request) {
     await connectDB();
     const submission = await BiodataSubmission.create({
       biodata,
+      submitterFirstName,
+      submitterLastName,
       moderationStatus: "pending",
       ipHash: hashIp(ip),
       userAgent: (request.headers.get("user-agent") ?? "").slice(0, 500),

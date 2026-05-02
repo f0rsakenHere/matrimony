@@ -10,7 +10,7 @@ import { requireAuth } from "@/lib/auth";
 // (email, isAdmin, invitesRemaining, partnerPreferences, onboardingStep,
 // firstName/lastName, raw firebaseUid) are intentionally omitted.
 const PUBLIC_PROFILE_FIELDS =
-  "_id profileName photoURL biodata createdAt firebaseUid";
+  "_id profileName photoURL biodata createdAt firebaseUid isShadow";
 
 export async function GET(
   req: NextRequest,
@@ -35,7 +35,19 @@ export async function GET(
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const profileUser = user as { firebaseUid?: string; _id?: string };
+    const profileUser = user as { firebaseUid?: string; _id?: string; isShadow?: boolean };
+
+    // Shadow profiles (auto-created from anonymous submissions) are only
+    // viewable by admins until the actual person signs up and claims them.
+    if (profileUser.isShadow) {
+      const viewer = await User.findOne({ firebaseUid: viewerUid })
+        .select("isAdmin")
+        .lean();
+      const isAdmin = (viewer as { isAdmin?: boolean } | null)?.isAdmin === true;
+      if (!isAdmin) {
+        return NextResponse.json({ error: "User not found" }, { status: 404 });
+      }
+    }
 
     // Track profile view — create a notification for the profile owner
     if (profileUser.firebaseUid && viewerUid !== profileUser.firebaseUid) {

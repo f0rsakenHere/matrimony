@@ -106,12 +106,21 @@ export interface IBiodataSubmission extends Document {
   moderatedByUid?: string;
   moderatedAt?: Date;
 
+  // Submitter's own name — required so admins know who they're matching.
+  submitterFirstName: string;
+  submitterLastName: string;
+
   ipHash: string;
   userAgent?: string;
 
   // Reserved for future "ask for email" / "claim profile" feature.
   email?: string;
   claimedByUid?: string;
+
+  // _id of the shadow User created when this submission is approved. Used to
+  // (a) avoid duplicate shadows on re-approval and (b) keep the User in sync
+  // if the submission's biodata is later edited.
+  shadowUserId?: string;
 
   createdAt: Date;
   updatedAt: Date;
@@ -130,11 +139,15 @@ const BiodataSubmissionSchema = new Schema<IBiodataSubmission>(
     moderatedByUid: { type: String },
     moderatedAt: { type: Date },
 
+    submitterFirstName: { type: String, default: "" },
+    submitterLastName: { type: String, default: "" },
+
     ipHash: { type: String, required: true, index: true },
     userAgent: { type: String, default: "" },
 
     email: { type: String },
     claimedByUid: { type: String },
+    shadowUserId: { type: String },
   },
   { timestamps: true }
 );

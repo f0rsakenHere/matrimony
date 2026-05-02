@@ -21,6 +21,18 @@ import {
   User as UserIcon,
 } from "lucide-react";
 import type { BiodataSection } from "@/lib/types/biodata";
+import {
+  AdminUserFilters,
+  EMPTY_FILTERS,
+  type Filters,
+} from "../_components/admin-user-filters";
+
+// onboardingComplete and provider are User-only concepts and don't apply
+// to anonymous public submissions — hide them here.
+const HIDDEN_FILTERS: ReadonlyArray<keyof Filters> = [
+  "onboardingComplete",
+  "provider",
+];
 
 type Status = "pending" | "approved" | "rejected" | "spam";
 
@@ -31,6 +43,9 @@ type Submission = {
   moderationNote?: string;
   moderatedByUid?: string;
   moderatedAt?: string;
+  submitterFirstName?: string;
+  submitterLastName?: string;
+  shadowUserId?: string;
   createdAt: string;
   updatedAt: string;
 };
@@ -60,6 +75,12 @@ export default function AdminSubmissionsPage() {
   const [loading, setLoading] = useState(true);
   const [actionId, setActionId] = useState<string | null>(null);
 
+  const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
+  const [showFilters, setShowFilters] = useState(false);
+  const activeFilterCount = (Object.keys(filters) as Array<keyof Filters>)
+    .filter((k) => !HIDDEN_FILTERS.includes(k) && filters[k] !== "")
+    .length;
+
   // Gate: redirect non-admins
   useEffect(() => {
     if (profile && !profile.isAdmin) {
@@ -69,7 +90,7 @@ export default function AdminSubmissionsPage() {
 
   useEffect(() => {
     setPage(1);
-  }, [activeStatus]);
+  }, [activeStatus, filters]);
 
   const fetchSubmissions = useCallback(async () => {
     if (!user) return;
@@ -79,6 +100,12 @@ export default function AdminSubmissionsPage() {
       p.set("status", activeStatus);
       p.set("page", String(page));
       p.set("limit", "20");
+      // Demographic filters — server ignores ones it doesn't recognize.
+      (Object.entries(filters) as Array<[keyof Filters, string]>).forEach(
+        ([k, v]) => {
+          if (v && !HIDDEN_FILTERS.includes(k)) p.set(k, v);
+        }
+      );
 
       const headers = await getAuthHeaders();
       const res = await fetch(`/api/admin/submissions?${p.toString()}`, {
@@ -101,7 +128,7 @@ export default function AdminSubmissionsPage() {
     } finally {
       setLoading(false);
     }
-  }, [user, activeStatus, page, getAuthHeaders]);
+  }, [user, activeStatus, page, filters, getAuthHeaders]);
 
   useEffect(() => {
     fetchSubmissions();
@@ -198,10 +225,19 @@ export default function AdminSubmissionsPage() {
         })}
       </div>
 
+      <AdminUserFilters
+        filters={filters}
+        setFilters={setFilters}
+        showFilters={showFilters}
+        setShowFilters={setShowFilters}
+        activeFilterCount={activeFilterCount}
+        hidden={HIDDEN_FILTERS}
+      />
+
       <p className="mt-5 text-[13px] font-medium text-[var(--color-dark-56)]">
         {loading
           ? "Loading..."
-          : `${total} ${activeStatus} submission${total !== 1 ? "s" : ""}`}
+          : `${total} ${activeStatus} submission${total !== 1 ? "s" : ""}${activeFilterCount > 0 ? " matching filters" : ""}`}
       </p>
 
       {/* List */}
@@ -294,10 +330,24 @@ function SubmissionCard({
     timeStyle: "short",
   });
 
+  const fullName = [submission.submitterFirstName, submission.submitterLastName]
+    .filter((s) => s && s.trim())
+    .join(" ");
+
   return (
     <div className="rounded-2xl border border-[var(--color-dark-12)] bg-[var(--background)] p-4 sm:p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
+          {fullName && (
+            <p className="mb-1 text-[16px] font-bold text-[var(--foreground)] sm:text-[17px]">
+              {fullName}
+              {submission.shadowUserId && (
+                <span className="ml-2 rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-green-700">
+                  Shadow user
+                </span>
+              )}
+            </p>
+          )}
           <div className="flex flex-wrap items-center gap-2">
             <UserIcon className="size-4 text-[var(--color-dark-56)]" />
             <span className="text-[15px] font-semibold text-[var(--foreground)]">

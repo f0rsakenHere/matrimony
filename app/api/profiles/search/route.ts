@@ -44,6 +44,10 @@ export async function GET(request: Request) {
 
     // Exclude current user and show only opposite gender
     filter.firebaseUid = { $ne: uid };
+    // Hide shadow users (auto-created from anonymous submissions) from
+    // public-facing search — they haven't consented to being viewed by
+    // other registered users until they sign up and claim their record.
+    filter.isShadow = { $ne: true };
     const currentUser = await User.findOne({ firebaseUid: uid })
       .select("biodata.personal.gender")
       .lean();

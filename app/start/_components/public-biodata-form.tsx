@@ -38,6 +38,14 @@ const TABS = [
 type TabId = (typeof TABS)[number]["id"];
 
 const STORAGE_KEY = "biodata-public-draft-v1";
+const NAME_STORAGE_KEY = "biodata-public-draft-name-v1";
+
+interface SubmitterName {
+  firstName: string;
+  lastName: string;
+}
+
+const EMPTY_NAME: SubmitterName = { firstName: "", lastName: "" };
 
 function loadDraft(): BiodataSection {
   if (typeof window === "undefined") return EMPTY_BIODATA;
@@ -58,6 +66,21 @@ function loadDraft(): BiodataSection {
   }
 }
 
+function loadNameDraft(): SubmitterName {
+  if (typeof window === "undefined") return EMPTY_NAME;
+  try {
+    const raw = localStorage.getItem(NAME_STORAGE_KEY);
+    if (!raw) return EMPTY_NAME;
+    const parsed = JSON.parse(raw);
+    return {
+      firstName: typeof parsed.firstName === "string" ? parsed.firstName : "",
+      lastName: typeof parsed.lastName === "string" ? parsed.lastName : "",
+    };
+  } catch {
+    return EMPTY_NAME;
+  }
+}
+
 function saveDraft(b: BiodataSection) {
   if (typeof window === "undefined") return;
   try {
@@ -67,17 +90,32 @@ function saveDraft(b: BiodataSection) {
   }
 }
 
-function clearDraft() {
+function saveNameDraft(n: SubmitterName) {
   if (typeof window === "undefined") return;
   try {
-    localStorage.removeItem(STORAGE_KEY);
+    localStorage.setItem(NAME_STORAGE_KEY, JSON.stringify(n));
   } catch {
     // Ignore
   }
 }
 
-function hasRequiredForSubmit(b: BiodataSection): { ok: boolean; missing: string[] } {
+function clearDraft() {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(NAME_STORAGE_KEY);
+  } catch {
+    // Ignore
+  }
+}
+
+function hasRequiredForSubmit(
+  b: BiodataSection,
+  n: SubmitterName
+): { ok: boolean; missing: string[] } {
   const missing: string[] = [];
+  if (!n.firstName.trim()) missing.push("First name");
+  if (!n.lastName.trim()) missing.push("Last name");
   if (!b.personal.gender) missing.push("Gender");
   if (!b.personal.dateOfBirth) missing.push("Date of birth");
   if (!b.family.waliName) missing.push("Wali's name");
@@ -90,6 +128,8 @@ export default function PublicBiodataForm() {
   const [activeTab, setActiveTab] = useState<TabId>("personal");
   const [biodata, setBiodata] = useState<BiodataSection>(EMPTY_BIODATA);
   const biodataRef = useRef<BiodataSection>(EMPTY_BIODATA);
+  const [submitterName, setSubmitterName] = useState<SubmitterName>(EMPTY_NAME);
+  const submitterNameRef = useRef<SubmitterName>(EMPTY_NAME);
   const [hydrated, setHydrated] = useState(false);
 
   // Per-section "saved" UI state — fake-async feel, just confirms local persist
@@ -109,6 +149,9 @@ export default function PublicBiodataForm() {
     const draft = loadDraft();
     setBiodata(draft);
     biodataRef.current = draft;
+    const nameDraft = loadNameDraft();
+    setSubmitterName(nameDraft);
+    submitterNameRef.current = nameDraft;
     setHydrated(true);
   }, []);
 
@@ -118,6 +161,12 @@ export default function PublicBiodataForm() {
     biodataRef.current = biodata;
     saveDraft(biodata);
   }, [biodata, hydrated]);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    submitterNameRef.current = submitterName;
+    saveNameDraft(submitterName);
+  }, [submitterName, hydrated]);
 
   const updatePersonal = useCallback(
     (key: keyof BiodataSection["personal"], val: string) => {
@@ -188,12 +237,16 @@ export default function PublicBiodataForm() {
   }
 
   async function submit() {
-    const check = hasRequiredForSubmit(biodataRef.current);
+    const check = hasRequiredForSubmit(biodataRef.current, submitterNameRef.current);
     if (!check.ok) {
       setSubmitError(`Please fill in: ${check.missing.join(", ")}.`);
-      // Jump to whichever tab the missing field lives on
+      // Jump to whichever tab the missing field lives on (name lives above
+      // the tabs — no jump needed; user sees the error at the top).
       const m = check.missing[0];
-      if (m === "Gender" || m === "Date of birth") setActiveTab("personal");
+      if (m === "First name" || m === "Last name") {
+        // Name fields are above the tabs — scroll to top so they're visible.
+        if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+      } else if (m === "Gender" || m === "Date of birth") setActiveTab("personal");
       else setActiveTab("family");
       return;
     }
@@ -205,6 +258,8 @@ export default function PublicBiodataForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           biodata: biodataRef.current,
+          submitterFirstName: submitterNameRef.current.firstName,
+          submitterLastName: submitterNameRef.current.lastName,
           website: honeypot, // honeypot — empty for humans
         }),
       });
@@ -235,7 +290,7 @@ export default function PublicBiodataForm() {
     );
   }
 
-  const submitCheck = hasRequiredForSubmit(biodata);
+  const submitCheck = hasRequiredForSubmit(biodata, submitterName);
 
   return (
     <div>
@@ -249,6 +304,52 @@ export default function PublicBiodataForm() {
           this page and pick up where you left off.
         </p>
       </header>
+
+      {/* Submitter's name — required, lives outside the tabs since it's
+          identity info rather than biodata. Shown above so users fill it
+          first. */}
+      <div className="mt-6 rounded-2xl border border-[var(--color-dark-12)] bg-[var(--color-dark-04,rgba(30,58,95,0.04))] p-4 sm:mt-8 sm:p-6">
+        <p className="text-[13px] font-semibold uppercase tracking-wide text-[var(--color-dark-56)]">
+          Your name
+        </p>
+        <p className="mt-1 text-[12px] text-[var(--color-dark-56)] sm:text-[13px]">
+          Required — so we know who we&apos;re matching.
+        </p>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 sm:gap-4">
+          <div>
+            <label htmlFor="submitter-first-name" className="block text-[12px] font-semibold tracking-wide text-[var(--color-dark-56)] sm:text-[13px]">
+              First Name *
+            </label>
+            <input
+              id="submitter-first-name"
+              type="text"
+              value={submitterName.firstName}
+              onChange={(e) =>
+                setSubmitterName((n) => ({ ...n, firstName: e.target.value }))
+              }
+              placeholder="e.g. Aisha"
+              maxLength={80}
+              className="mt-1.5 w-full rounded-lg border border-[var(--color-dark-14)] bg-[var(--background)] px-3 py-2 text-[14px] text-[var(--foreground)] outline-none transition-colors focus:border-[var(--foreground)] focus:ring-1 focus:ring-[var(--foreground)] placeholder:text-[var(--color-dark-28)] sm:mt-2 sm:px-3.5 sm:py-2.5 sm:text-[15px]"
+            />
+          </div>
+          <div>
+            <label htmlFor="submitter-last-name" className="block text-[12px] font-semibold tracking-wide text-[var(--color-dark-56)] sm:text-[13px]">
+              Last Name *
+            </label>
+            <input
+              id="submitter-last-name"
+              type="text"
+              value={submitterName.lastName}
+              onChange={(e) =>
+                setSubmitterName((n) => ({ ...n, lastName: e.target.value }))
+              }
+              placeholder="e.g. Rahman"
+              maxLength={80}
+              className="mt-1.5 w-full rounded-lg border border-[var(--color-dark-14)] bg-[var(--background)] px-3 py-2 text-[14px] text-[var(--foreground)] outline-none transition-colors focus:border-[var(--foreground)] focus:ring-1 focus:ring-[var(--foreground)] placeholder:text-[var(--color-dark-28)] sm:mt-2 sm:px-3.5 sm:py-2.5 sm:text-[15px]"
+            />
+          </div>
+        </div>
+      </div>
 
       <div className="mt-6 sm:mt-10" />
 

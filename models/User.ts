@@ -196,6 +196,12 @@ export interface IUser extends Document {
   invitesRemaining: number;
   isPremium: boolean;
 
+  // Shadow user — created from an approved BiodataSubmission for someone
+  // who hasn't signed up. firebaseUid is "shadow:<submissionId>" so it stays
+  // unique. Filtered out of public profile queries until claimed.
+  isShadow: boolean;
+  sourceSubmissionId?: string;
+
   createdAt: Date;
   updatedAt: Date;
 }
@@ -226,6 +232,9 @@ const UserSchema = new Schema<IUser>(
     isAdmin: { type: Boolean, default: false },
     invitesRemaining: { type: Number, default: 3 },
     isPremium: { type: Boolean, default: false },
+
+    isShadow: { type: Boolean, default: false, index: true },
+    sourceSubmissionId: { type: String },
   },
   { timestamps: true }
 );
