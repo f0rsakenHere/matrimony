@@ -8,6 +8,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { getProfileCompletion } from "@/lib/profile-completion";
 import { BrandLogo } from "@/components/ui/brand-logo";
+
+// Close menus on user interaction (event handlers below) rather than via a
+// pathname useEffect — React 19's set-state-in-effect lint discourages it.
 import {
   Home,
   ChevronUp,
@@ -44,10 +47,6 @@ export default function DashboardSidebar() {
         document.removeEventListener("mousedown", handleClickOutside);
     }
   }, [menuOpen]);
-
-  useEffect(() => {
-    setMenuOpen(false);
-  }, [pathname]);
 
   return (
     <aside
@@ -111,6 +110,7 @@ export default function DashboardSidebar() {
               <div className="p-1.5">
                 <Link
                   href="/dashboard/admin"
+                  onClick={() => setMenuOpen(false)}
                   className={cn(
                     "flex items-center gap-3 rounded-lg px-3 py-2.5 text-[14px] font-medium transition-colors",
                     pathname.startsWith("/dashboard/admin")

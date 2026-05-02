@@ -3,13 +3,23 @@ import { getAdminAuth } from "@/lib/firebase-admin";
 import connectDB from "@/lib/mongodb";
 import User from "@/models/User";
 
+export interface AuthResult {
+  uid: string;
+  email: string | null;
+  emailVerified: boolean;
+  /** Firebase sign-in provider, e.g. "password", "google.com". */
+  provider: string | null;
+}
+
 /**
  * Verify the Firebase ID token from the Authorization header.
- * Returns the decoded uid on success, or null if the token is missing/invalid.
+ * Returns the decoded identity on success, or null if the token is
+ * missing/invalid. Trust uid/email/provider from this result, NOT from
+ * client-supplied request bodies.
  */
 export async function verifyAuth(
   request: Request
-): Promise<{ uid: string } | null> {
+): Promise<AuthResult | null> {
   const authHeader = request.headers.get("Authorization");
   if (!authHeader?.startsWith("Bearer ")) {
     return null;
@@ -18,18 +28,25 @@ export async function verifyAuth(
   const idToken = authHeader.slice(7);
   try {
     const decoded = await getAdminAuth().verifyIdToken(idToken);
-    return { uid: decoded.uid };
+    return {
+      uid: decoded.uid,
+      email: decoded.email ?? null,
+      emailVerified: Boolean(decoded.email_verified),
+      provider:
+        (decoded.firebase as { sign_in_provider?: string } | undefined)
+          ?.sign_in_provider ?? null,
+    };
   } catch {
     return null;
   }
 }
 
 /**
- * Require authentication. Returns the uid or a 401 response.
+ * Require authentication. Returns the auth result or a 401 response.
  */
 export async function requireAuth(
   request: Request
-): Promise<{ uid: string } | NextResponse> {
+): Promise<AuthResult | NextResponse> {
   const result = await verifyAuth(request);
   if (!result) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

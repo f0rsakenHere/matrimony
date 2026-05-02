@@ -7,8 +7,6 @@ import {
   ShieldCheck,
   UserCheck,
   Heart,
-  UserPlus,
-  User,
   EyeOff,
   ImageOff,
   BadgeCheck,
@@ -163,21 +161,14 @@ export default function Home() {
                   goals.
                 </p>
 
-                <div className="mt-6 flex flex-col gap-3 sm:mt-7 sm:flex-row sm:gap-4">
+                <div className="mt-6 sm:mt-7">
                   <Link
-                    href="/register"
+                    href="/start"
                     className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--foreground)] px-5 py-3 text-[14px] font-semibold shadow-[0_4px_14px_rgb(75_45_127_/_0.3)] transition-all hover:shadow-[0_6px_20px_rgb(75_45_127_/_0.4)] sm:w-auto sm:min-w-[200px] sm:gap-2.5 sm:px-8 sm:py-3.5 sm:text-[15px]"
                     style={{ color: "#fff" }}
                   >
-                    <UserPlus className="size-4 sm:size-5" />
-                    Register for Free
-                  </Link>
-                  <Link
-                    href="/login"
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-[var(--foreground)]/25 px-5 py-3 text-[14px] font-semibold text-[var(--foreground)] transition-colors hover:bg-[var(--foreground)]/5 sm:w-auto sm:min-w-[200px] sm:gap-2.5 sm:px-8 sm:py-3.5 sm:text-[15px]"
-                  >
-                    <User className="size-4 sm:size-5" />
-                    Submit Your Profile
+                    <FileText className="size-4 sm:size-5" />
+                    Submit Your Biodata
                   </Link>
                 </div>
 
@@ -438,14 +429,14 @@ export default function Home() {
               <div className="px-4 pb-5 sm:px-8 lg:shrink-0 lg:px-0 lg:pb-0">
                 <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
                   <Link
-                    href="/register"
+                    href="/start"
                     className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-[var(--button-gold-border)] bg-[linear-gradient(180deg,var(--button-gold-light)_0%,var(--button-gold-mid)_56%,var(--button-gold-dark)_100%)] px-6 text-[14px] font-semibold text-[var(--button-gold-text)] shadow-[inset_0_1px_0_rgb(255_249_233_/_0.78),0_10px_20px_rgb(72_26_34_/_0.16)] transition-[filter] hover:[filter:brightness(1.03)] sm:h-13 sm:px-8 sm:text-[15px] lg:min-w-[240px]"
                   >
-                    <UserPlus className="size-4 sm:size-5" />
-                    Register Now
+                    <FileText className="size-4 sm:size-5" />
+                    Submit Your Biodata
                   </Link>
                   <Link
-                    href="https://wa.me/17042791249"
+                    href="https://wa.me/15149655265"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-white/30 bg-white/10 px-6 text-[14px] font-semibold backdrop-blur-[2px] transition-colors hover:bg-white/20 sm:h-13 sm:px-8 sm:text-[15px] lg:min-w-[240px]"

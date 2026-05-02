@@ -13,6 +13,7 @@ export const BIODATA_FIELDS: Record<string, string[]> = {
   personal: [
     "dateOfBirth", "gender", "maritalStatus", "height", "weight",
     "complexion", "bloodGroup", "nationality", "city", "country",
+    "bangladeshDistrict",
   ],
   education: [
     "educationLevel", "institution", "fieldOfStudy",

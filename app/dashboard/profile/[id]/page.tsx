@@ -5,23 +5,20 @@ import Link from "next/link";
 import {
   ArrowLeft,
   User as UserIcon,
-  Phone,
   GraduationCap,
   Users,
   Moon,
   Heart,
-  Lock,
-  Send,
-  CheckCircle2,
-  XCircle,
-  Clock,
-  Loader2,
-  Crown,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { calculateAge, formatDate } from "@/lib/date-utils";
 import { cn } from "@/lib/utils";
-import { goldButtonClass } from "@/components/ui/button-styles";
+
+// Invitation/Wali-unlock UI is intentionally hidden — matchmaking is being
+// done manually right now. Wali fields are still stripped server-side in
+// /api/profiles/[id] until an accepted Invitation exists, which currently
+// never happens. The Invitation model + API endpoints remain wired up for
+// when we re-enable the in-app invite flow.
 
 interface FullMatchProfile {
   _id: string;
@@ -39,6 +36,7 @@ interface FullMatchProfile {
       nationality: string;
       city: string;
       country: string;
+      bangladeshDistrict: string;
     };
     education: {
       educationLevel: string;
@@ -86,19 +84,10 @@ export default function ProfileViewPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const { user, profile: myProfile, refreshProfile, getAuthHeaders } = useAuth();
+  const { user, getAuthHeaders } = useAuth();
   const [profile, setProfile] = useState<FullMatchProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("details");
-
-  // Invitation state
-  const [inviteStatus, setInviteStatus] = useState<string | null>(null);
-  const [inviteDirection, setInviteDirection] = useState<string | null>(null);
-  const [invitationId, setInvitationId] = useState<string | null>(null);
-  const [waliUnlocked, setWaliUnlocked] = useState(false);
-  const [sendingInvite, setSendingInvite] = useState(false);
-  const [respondingInvite, setRespondingInvite] = useState(false);
-  const [inviteError, setInviteError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -109,22 +98,6 @@ export default function ProfileViewPage({
         if (res.ok) {
           const data = await res.json();
           setProfile(data.profile);
-
-          // Fetch invitation status
-          const profileUser = data.profile as { firebaseUid?: string };
-          if (profileUser?.firebaseUid) {
-            const statusRes = await fetch(
-              `/api/invitations/status?profileUid=${profileUser.firebaseUid}`,
-              { headers: authHeaders }
-            );
-            if (statusRes.ok) {
-              const s = await statusRes.json();
-              setInviteStatus(s.status);
-              setInviteDirection(s.direction);
-              setInvitationId(s.invitationId);
-              setWaliUnlocked(s.waliUnlocked);
-            }
-          }
         }
       } catch (err) {
         console.error("Failed to fetch profile detail:", err);
@@ -161,8 +134,6 @@ export default function ProfileViewPage({
   const { personal, education, religious, family, lifestyle, aboutMe } =
     profile.biodata;
   const age = calculateAge(personal.dateOfBirth);
-  const hasWali = family?.waliName || family?.waliPhone;
-  const invitesLeft = myProfile?.invitesRemaining ?? 0;
 
   const TABS = [
     { id: "details", label: "Profile", icon: UserIcon },
@@ -171,57 +142,6 @@ export default function ProfileViewPage({
     { id: "religious", label: "Religious", icon: Moon },
     { id: "lifestyle", label: "Lifestyle", icon: Heart },
   ];
-
-  async function sendInvite() {
-    if (!user) return;
-    setSendingInvite(true);
-    setInviteError(null);
-    try {
-      const authHeaders = await getAuthHeaders();
-      const res = await fetch("/api/invitations", {
-        method: "POST",
-        headers: { ...authHeaders, "Content-Type": "application/json" },
-        body: JSON.stringify({ receiverProfileId: id }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setInviteError(data.error);
-        return;
-      }
-      setInviteStatus("pending");
-      setInviteDirection("sent");
-      refreshProfile(); // update invitesRemaining
-    } catch {
-      setInviteError("Failed to send. Please try again.");
-    } finally {
-      setSendingInvite(false);
-    }
-  }
-
-  async function respondToInvite(action: "accept" | "decline") {
-    if (!user || !invitationId) return;
-    setRespondingInvite(true);
-    try {
-      const authHeaders = await getAuthHeaders();
-      const res = await fetch("/api/invitations", {
-        method: "PATCH",
-        headers: { ...authHeaders, "Content-Type": "application/json" },
-        body: JSON.stringify({ invitationId, action }),
-      });
-      if (res.ok) {
-        if (action === "accept") {
-          setInviteStatus("accepted");
-          setWaliUnlocked(true);
-        } else {
-          setInviteStatus("declined");
-        }
-      }
-    } catch {
-      // ignore
-    } finally {
-      setRespondingInvite(false);
-    }
-  }
 
   return (
     <div>
@@ -325,6 +245,10 @@ export default function ProfileViewPage({
                       .filter(Boolean)
                       .join(", ")}
                   />
+                  <DetailRow
+                    label="Origin (Bangladesh)"
+                    value={personal.bangladeshDistrict}
+                  />
                 </div>
               </section>
             </div>
@@ -427,307 +351,6 @@ export default function ProfileViewPage({
   );
 }
 
-function InvitationCard({
-  hasWali,
-  family,
-  inviteStatus,
-  inviteDirection,
-  waliUnlocked,
-  invitesLeft,
-  sendingInvite,
-  respondingInvite,
-  inviteError,
-  onSendInvite,
-  onRespond,
-  profileName,
-}: {
-  hasWali: boolean;
-  family: FullMatchProfile["biodata"]["family"];
-  inviteStatus: string | null;
-  inviteDirection: string | null;
-  waliUnlocked: boolean;
-  invitesLeft: number;
-  sendingInvite: boolean;
-  respondingInvite: boolean;
-  inviteError: string | null;
-  onSendInvite: () => void;
-  onRespond: (action: "accept" | "decline") => void;
-  profileName: string;
-}) {
-  // ─── State: Wali unlocked (both accepted) ───
-  if (waliUnlocked && hasWali) {
-    return (
-      <div
-        className="rounded-2xl border-2 p-6"
-        style={{ borderColor: "var(--button-gold-mid)" }}
-      >
-        <div className="mb-5 flex items-center gap-3">
-          <div
-            className="flex size-10 items-center justify-center rounded-full"
-            style={{
-              background: "linear-gradient(180deg, var(--button-gold-light), var(--button-gold-dark))",
-              color: "var(--button-gold-text)",
-            }}
-          >
-            <Phone className="size-5" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="text-[18px] font-bold text-[var(--foreground)]">
-                Wali (Guardian) Contact
-              </h3>
-              <span className="rounded-full bg-green-50 px-2.5 py-0.5 text-[12px] font-semibold text-green-700">
-                Unlocked
-              </span>
-            </div>
-            <p className="text-[13px] text-[var(--color-dark-56)]">
-              Contact the family through the Wali
-            </p>
-          </div>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="rounded-xl bg-[var(--color-dark-08)] p-4">
-            <p className="text-[12px] font-semibold uppercase tracking-wider text-[var(--color-dark-56)]">
-              Name & Relationship
-            </p>
-            <p className="mt-1.5 text-[16px] font-medium text-[var(--foreground)]">
-              {family.waliName || "—"}
-              {family.waliRelationship && (
-                <span className="ml-2 text-[14px] font-normal text-[var(--color-dark-56)]">
-                  ({family.waliRelationship})
-                </span>
-              )}
-            </p>
-          </div>
-          <div className="rounded-xl bg-[var(--color-dark-08)] p-4">
-            <p className="text-[12px] font-semibold uppercase tracking-wider text-[var(--color-dark-56)]">
-              Phone Number
-            </p>
-            <a
-              href={`tel:${family.waliPhone}`}
-              className="mt-1.5 block text-[16px] font-medium text-[var(--foreground)] underline underline-offset-2 hover:opacity-80"
-            >
-              {family.waliPhone || "—"}
-            </a>
-          </div>
-          {family.waliEmail && (
-            <div className="rounded-xl bg-[var(--color-dark-08)] p-4 sm:col-span-2">
-              <p className="text-[12px] font-semibold uppercase tracking-wider text-[var(--color-dark-56)]">
-                Email
-              </p>
-              <a
-                href={`mailto:${family.waliEmail}`}
-                className="mt-1.5 block text-[16px] font-medium text-[var(--foreground)] underline underline-offset-2 hover:opacity-80"
-              >
-                {family.waliEmail}
-              </a>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  // ─── State: Invitation pending (I sent it) ───
-  if (inviteStatus === "pending" && inviteDirection === "sent") {
-    return (
-      <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6">
-        <div className="flex items-center gap-3">
-          <div className="flex size-10 items-center justify-center rounded-full bg-amber-100">
-            <Clock className="size-5 text-amber-700" />
-          </div>
-          <div>
-            <h3 className="text-[16px] font-semibold text-[var(--foreground)]">
-              Invitation Sent
-            </h3>
-            <p className="text-[14px] text-[var(--color-dark-56)]">
-              Waiting for {profileName}&apos;s family to respond. Wali contact will
-              be unlocked if accepted.
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // ─── State: Invitation pending (I received it) ───
-  if (inviteStatus === "pending" && inviteDirection === "received") {
-    return (
-      <div
-        className="relative overflow-hidden rounded-2xl border-2 p-6"
-        style={{ borderColor: "var(--button-gold-mid)" }}
-      >
-        <div
-          className="absolute inset-x-0 top-0 h-1"
-          style={{
-            background: "linear-gradient(90deg, var(--button-gold-light), var(--button-gold-mid), var(--button-gold-dark), var(--button-gold-mid), var(--button-gold-light))",
-          }}
-        />
-        <div className="flex items-center gap-3">
-          <div
-            className="flex size-10 items-center justify-center rounded-full"
-            style={{
-              background: "linear-gradient(180deg, var(--button-gold-light), var(--button-gold-dark))",
-              color: "var(--button-gold-text)",
-            }}
-          >
-            <Send className="size-5" />
-          </div>
-          <div>
-            <h3 className="text-[16px] font-semibold text-[var(--foreground)]">
-              {profileName}&apos;s family is interested
-            </h3>
-            <p className="text-[14px] text-[var(--color-dark-56)]">
-              Accept to unlock each other&apos;s Wali contact details
-            </p>
-          </div>
-        </div>
-        <div className="mt-5 flex gap-3">
-          <button
-            onClick={() => onRespond("accept")}
-            disabled={respondingInvite}
-            className={cn(
-              goldButtonClass,
-              "inline-flex h-11 items-center gap-2 rounded-full px-6 text-[14px] font-semibold disabled:opacity-50"
-            )}
-          >
-            {respondingInvite ? <Loader2 className="size-4 animate-spin" /> : <CheckCircle2 className="size-4" />}
-            Accept Invitation
-          </button>
-          <button
-            onClick={() => onRespond("decline")}
-            disabled={respondingInvite}
-            className="inline-flex h-11 items-center gap-2 rounded-full border border-[var(--color-dark-18)] px-6 text-[14px] font-semibold text-[var(--foreground)] transition-colors hover:bg-[var(--color-dark-08)] disabled:opacity-50"
-          >
-            <XCircle className="size-4" />
-            Decline
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // ─── State: Declined ───
-  if (inviteStatus === "declined") {
-    return (
-      <div className="rounded-2xl border border-[var(--color-dark-12)] bg-[var(--color-dark-04,rgba(30,58,95,0.04))] p-6">
-        <div className="flex items-center gap-3">
-          <div className="flex size-10 items-center justify-center rounded-full bg-gray-100">
-            <XCircle className="size-5 text-gray-500" />
-          </div>
-          <div>
-            <h3 className="text-[16px] font-semibold text-[var(--foreground)]">
-              Invitation Declined
-            </h3>
-            <p className="text-[14px] text-[var(--color-dark-56)]">
-              {inviteDirection === "sent"
-                ? "This invitation was not accepted."
-                : "You declined this invitation."}
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // ─── State: No invitation yet — show Send Invitation CTA ───
-  return (
-    <div
-      className="relative overflow-hidden rounded-2xl border-2 p-6"
-      style={{ borderColor: "var(--button-gold-mid)" }}
-    >
-      <div
-        className="absolute inset-x-0 top-0 h-1"
-        style={{
-          background: "linear-gradient(90deg, var(--button-gold-light), var(--button-gold-mid), var(--button-gold-dark), var(--button-gold-mid), var(--button-gold-light))",
-        }}
-      />
-
-      <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-4">
-          <div
-            className="flex size-12 shrink-0 items-center justify-center rounded-full"
-            style={{
-              background: "linear-gradient(180deg, var(--button-gold-light), var(--button-gold-dark))",
-              color: "var(--button-gold-text)",
-            }}
-          >
-            <Lock className="size-5" />
-          </div>
-          <div>
-            <h3 className="text-[18px] font-bold text-[var(--foreground)]">
-              Interested in this profile?
-            </h3>
-            <p className="mt-0.5 text-[14px] text-[var(--color-dark-56)]">
-              Send an invitation. If accepted, both families&apos; Wali contacts will be unlocked.
-            </p>
-          </div>
-        </div>
-
-        <div className="flex flex-col items-start gap-2 sm:items-end">
-          {invitesLeft > 0 ? (
-            <button
-              onClick={onSendInvite}
-              disabled={sendingInvite}
-              className={cn(
-                goldButtonClass,
-                "inline-flex h-11 shrink-0 items-center gap-2 rounded-full px-6 text-[14px] font-semibold disabled:opacity-50"
-              )}
-            >
-              {sendingInvite ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : (
-                <Send className="size-4" />
-              )}
-              Send Invitation
-            </button>
-          ) : (
-            <Link
-              href="/dashboard/payment"
-              className={cn(
-                goldButtonClass,
-                "inline-flex h-11 shrink-0 items-center gap-2 rounded-full px-6 text-[14px] font-semibold"
-              )}
-            >
-              <Crown className="size-4" />
-              Get More Invites
-            </Link>
-          )}
-          <p className="text-[12px] text-[var(--color-dark-56)]">
-            {invitesLeft > 0
-              ? `${invitesLeft} invitation${invitesLeft !== 1 ? "s" : ""} remaining`
-              : "No invitations remaining"}
-          </p>
-        </div>
-      </div>
-
-      {inviteError && (
-        <p className="mt-3 text-[13px] font-medium text-red-600">{inviteError}</p>
-      )}
-
-      {/* Blurred preview */}
-      {hasWali && (
-        <div className="mt-5 select-none" aria-hidden>
-          <div className="grid gap-4 sm:grid-cols-2" style={{ filter: "blur(6px)" }}>
-            <div className="rounded-xl bg-[var(--color-dark-08)] p-3">
-              <p className="text-[12px] text-[var(--color-dark-56)]">Name & Relationship</p>
-              <p className="mt-1 text-[15px] font-medium text-[var(--foreground)]">
-                ██████ ████████ · {family.waliRelationship || "Father"}
-              </p>
-            </div>
-            <div className="rounded-xl bg-[var(--color-dark-08)] p-3">
-              <p className="text-[12px] text-[var(--color-dark-56)]">Phone Number</p>
-              <p className="mt-1 text-[15px] font-medium text-[var(--foreground)]">
-                +█ (███) ███-████
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (

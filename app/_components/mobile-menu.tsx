@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { createPortal } from "react-dom";
-import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { MobileAuthButtons } from "./auth-buttons";
@@ -18,12 +17,6 @@ export function MobileMenu() {
   const [open, setOpen] = useState(false);
   const [dropdownTop, setDropdownTop] = useState(0);
   const buttonRef = useRef<HTMLButtonElement>(null);
-  const pathname = usePathname();
-
-  // Close when navigating
-  useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
 
   function handleToggle() {
     if (!open && buttonRef.current) {

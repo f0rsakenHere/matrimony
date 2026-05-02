@@ -20,6 +20,7 @@ export async function GET(request: Request) {
     const sect = searchParams.get("sect");
     const country = searchParams.get("country")?.trim();
     const city = searchParams.get("city")?.trim();
+    const bangladeshDistrict = searchParams.get("bangladeshDistrict")?.trim();
     const ageMin = searchParams.get("ageMin");
     const ageMax = searchParams.get("ageMax");
     const onboardingComplete = searchParams.get("onboardingComplete");
@@ -67,6 +68,9 @@ export async function GET(request: Request) {
     }
     if (city) {
       filter["biodata.personal.city"] = { $regex: escapeRegex(city), $options: "i" };
+    }
+    if (bangladeshDistrict) {
+      filter["biodata.personal.bangladeshDistrict"] = bangladeshDistrict;
     }
 
     // Age range

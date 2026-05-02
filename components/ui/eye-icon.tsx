@@ -54,13 +54,13 @@ const EyeIcon = forwardRef<EyeIconHandle, EyeIconProps>(
     });
 
     const handleEnter = useCallback(
-      (e?: React.MouseEvent<HTMLDivElement>) => {
+      (e: React.MouseEvent<HTMLDivElement>) => {
         if (!isAnimated || reduced) return;
         if (!isControlled.current) {
           eyeControls.start("blink");
           pupilControls.start("scan");
         } else {
-          onMouseEnter?.(e as any);
+          (onMouseEnter as React.MouseEventHandler<HTMLDivElement> | undefined)?.(e);
         }
       },
       [eyeControls, pupilControls, onMouseEnter, reduced, isAnimated],
@@ -72,7 +72,7 @@ const EyeIcon = forwardRef<EyeIconHandle, EyeIconProps>(
           eyeControls.start("open");
           pupilControls.start("center");
         } else {
-          onMouseLeave?.(e as any);
+          (onMouseLeave as React.MouseEventHandler<HTMLDivElement> | undefined)?.(e);
         }
       },
       [eyeControls, pupilControls, onMouseLeave],

@@ -16,16 +16,40 @@ export async function POST(request: Request) {
 
     const authResult = await requireAuth(request);
     if (authResult instanceof NextResponse) return authResult;
-    const uid = authResult.uid;
+    const { uid, email, provider: firebaseProvider } = authResult;
 
-    const { email, photoURL, provider } = await request.json();
-
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if (!email) {
       return NextResponse.json(
-        { error: "Missing or invalid email" },
+        { error: "Token has no email claim" },
         { status: 400 }
       );
     }
+
+    // Map Firebase provider strings to our enum. Anything else is rejected
+    // so the schema can't drift.
+    const provider =
+      firebaseProvider === "google.com"
+        ? "google"
+        : firebaseProvider === "password"
+          ? "email"
+          : null;
+    if (!provider) {
+      return NextResponse.json(
+        { error: "Unsupported sign-in provider" },
+        { status: 400 }
+      );
+    }
+
+    // photoURL is the only client-trusted field. Cap length and require https.
+    const { photoURL: rawPhotoURL } = (await request
+      .json()
+      .catch(() => ({}))) as { photoURL?: unknown };
+    const photoURL =
+      typeof rawPhotoURL === "string" &&
+      rawPhotoURL.length <= 2048 &&
+      /^https:\/\//.test(rawPhotoURL)
+        ? rawPhotoURL
+        : undefined;
 
     await connectDB();
 
@@ -35,8 +59,8 @@ export async function POST(request: Request) {
         $setOnInsert: {
           firebaseUid: uid,
           email,
-          provider: provider || "email",
-          photoURL: photoURL || undefined,
+          provider,
+          photoURL,
           onboardingStep: 0,
           onboardingComplete: false,
           biodata: {},

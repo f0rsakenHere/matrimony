@@ -10,6 +10,9 @@ export interface INotification extends Document {
   actorUid?: string;
   actorName?: string;
   actorProfileId?: string;
+  // YYYY-MM-DD bucket — used with a unique index to dedupe profile_view
+  // notifications race-safely (one per viewer per day per recipient).
+  dayBucket?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -28,6 +31,7 @@ const NotificationSchema = new Schema<INotification>(
     actorUid: { type: String },
     actorName: { type: String },
     actorProfileId: { type: String },
+    dayBucket: { type: String },
   },
   { timestamps: true }
 );
@@ -35,6 +39,12 @@ const NotificationSchema = new Schema<INotification>(
 // Compound index for efficient queries
 NotificationSchema.index({ recipientUid: 1, createdAt: -1 });
 NotificationSchema.index({ recipientUid: 1, read: 1 });
+// Race-safe dedupe key for profile_view spam. Sparse so older docs without
+// dayBucket don't conflict.
+NotificationSchema.index(
+  { recipientUid: 1, type: 1, actorUid: 1, dayBucket: 1 },
+  { unique: true, sparse: true }
+);
 
 export default mongoose.models.Notification ||
   mongoose.model<INotification>("Notification", NotificationSchema);

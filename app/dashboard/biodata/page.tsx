@@ -19,11 +19,11 @@ export default function BiodataPage() {
           </p>
         </div>
         {/* Completion badge */}
-        <div className="flex shrink-0 items-center gap-2 rounded-full border border-[var(--color-dark-18)] px-3 py-1.5 sm:flex-col sm:px-4 sm:py-2">
-          <span className="text-[16px] font-bold text-[var(--foreground)] sm:text-[20px]">
+        <div className="flex shrink-0 items-baseline gap-1.5 rounded-full border border-[var(--color-dark-18)] px-3.5 py-1.5 sm:px-4 sm:py-2">
+          <span className="text-[15px] font-bold text-[var(--foreground)] sm:text-[16px]">
             {completion}%
           </span>
-          <p className="text-[11px] font-medium text-[var(--color-dark-56)]">
+          <p className="text-[11px] font-medium text-[var(--color-dark-56)] sm:text-[12px]">
             Complete
           </p>
         </div>

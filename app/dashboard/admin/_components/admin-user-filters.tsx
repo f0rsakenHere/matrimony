@@ -13,6 +13,7 @@ import {
   EDUCATION_LEVEL_OPTIONS,
   SECT_OPTIONS,
   COUNTRY_OPTIONS,
+  BANGLADESH_DISTRICT_OPTIONS,
 } from "@/lib/constants/biodata-options";
 
 /* ─── Types ─── */
@@ -25,6 +26,7 @@ export interface Filters {
   beard: string;
   country: string;
   city: string;
+  bangladeshDistrict: string;
   ageMin: string;
   ageMax: string;
   onboardingComplete: string;
@@ -40,6 +42,7 @@ export const EMPTY_FILTERS: Filters = {
   beard: "",
   country: "",
   city: "",
+  bangladeshDistrict: "",
   ageMin: "",
   ageMax: "",
   onboardingComplete: "",
@@ -162,6 +165,7 @@ export function AdminUserFilters({
             <FilterSelect label="Onboarding" value={filters.onboardingComplete} onChange={(v) => setFilters((f) => ({ ...f, onboardingComplete: v }))} options={["true", "false"]} labels={["Complete", "Incomplete"]} />
             <FilterSelect label="Provider" value={filters.provider} onChange={(v) => setFilters((f) => ({ ...f, provider: v }))} options={["email", "google"]} labels={["Email", "Google"]} />
             <FilterSelect label="Has Wali" value={filters.hasWali} onChange={(v) => setFilters((f) => ({ ...f, hasWali: v }))} options={["true", "false"]} labels={["Yes", "No"]} />
+            <FilterSelect label="BD District of Origin" value={filters.bangladeshDistrict} onChange={(v) => setFilters((f) => ({ ...f, bangladeshDistrict: v }))} options={BANGLADESH_DISTRICT_OPTIONS} />
           </div>
 
           {activeFilterCount > 0 && (

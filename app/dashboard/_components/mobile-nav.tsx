@@ -32,10 +32,8 @@ export default function MobileNav() {
   const photoURL = profile?.photoURL || user?.photoURL;
   const completion = profile ? getProfileCompletion(profile) : 0;
 
-  // Close on navigation
-  useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
+  // Drawer closes via onClick on each Link below — React 19 dislikes
+  // setState-in-effect, so we close synchronously with the navigation event.
 
   // Prevent body scroll when open
   useEffect(() => {
@@ -124,6 +122,7 @@ export default function MobileNav() {
               <Link
                 key={href}
                 href={href}
+                onClick={() => setOpen(false)}
                 className={cn(
                   "flex items-center gap-3 rounded-xl px-4 py-3 text-[14px] font-medium transition-all",
                   isActive ? "shadow-sm" : "hover:bg-[rgba(240,244,248,0.1)]"
@@ -146,6 +145,7 @@ export default function MobileNav() {
           <div className="border-t border-[rgba(240,244,248,0.1)] p-3">
             <Link
               href="/dashboard/admin"
+              onClick={() => setOpen(false)}
               className={cn(
                 "flex items-center gap-3 rounded-xl px-4 py-3 text-[14px] font-medium",
                 pathname.startsWith("/dashboard/admin")

@@ -32,6 +32,7 @@ export interface IBiodataPersonal {
   nationality: string;
   city: string;
   country: string;
+  bangladeshDistrict: string;
 }
 
 const BiodataPersonalSchema = new Schema<IBiodataPersonal>(
@@ -46,6 +47,7 @@ const BiodataPersonalSchema = new Schema<IBiodataPersonal>(
     nationality: { type: String, default: "" },
     city: { type: String, default: "" },
     country: { type: String, default: "" },
+    bangladeshDistrict: { type: String, default: "" },
   },
   { _id: false }
 );

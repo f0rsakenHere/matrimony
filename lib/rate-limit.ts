@@ -63,3 +63,6 @@ export const authLimiter = createRateLimiter(10, 60_000, "auth");
 
 /** Invitations: 5 per hour per user */
 export const inviteLimiter = createRateLimiter(5, 3_600_000, "invite");
+
+/** Public biodata submissions: 3 per IP per 24 hours */
+export const submissionLimiter = createRateLimiter(3, 24 * 3_600_000, "submission");

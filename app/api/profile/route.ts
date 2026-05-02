@@ -19,9 +19,14 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ user });
   } catch (error) {
-    console.error("Profile fetch error:", error);
+    const msg = error instanceof Error ? error.message : String(error);
+    const stack = error instanceof Error ? error.stack : undefined;
+    console.error("[/api/profile] error:", msg, stack);
     return NextResponse.json(
-      { error: "Internal server error" },
+      {
+        error: "Internal server error",
+        ...(process.env.NODE_ENV !== "production" ? { detail: msg } : {}),
+      },
       { status: 500 }
     );
   }

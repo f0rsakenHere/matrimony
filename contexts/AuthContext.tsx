@@ -89,34 +89,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const headers = await getAuthHeadersForUser(firebaseUser);
       const res = await fetch("/api/profile", { headers });
-      if (res.ok) {
-        const data = await res.json();
-        const u = data.user;
-        if (u) {
-          setProfile({
-            email: u.email ?? "",
-            profileName: u.profileName ?? "",
-            firstName: u.firstName ?? "",
-            lastName: u.lastName ?? "",
-            photoURL: u.photoURL,
-            isAdmin: u.isAdmin ?? false,
-            isPremium: u.isPremium ?? false,
-            invitesRemaining: u.invitesRemaining ?? 3,
-            biodata: u.biodata
-              ? {
-                  personal: { ...EMPTY_BIODATA.personal, ...u.biodata.personal },
-                  education: { ...EMPTY_BIODATA.education, ...u.biodata.education },
-                  family: { ...EMPTY_BIODATA.family, ...u.biodata.family },
-                  religious: { ...EMPTY_BIODATA.religious, ...u.biodata.religious },
-                  lifestyle: { ...EMPTY_BIODATA.lifestyle, ...u.biodata.lifestyle },
-                  aboutMe: u.biodata.aboutMe ?? "",
-                }
-              : EMPTY_BIODATA,
-          });
-        }
+      if (!res.ok) {
+        const body = await res.text().catch(() => "");
+        console.error(`[AuthContext] /api/profile failed: ${res.status}`, body);
+        return;
       }
-    } catch {
-      // Profile not found — leave as null
+      const data = await res.json();
+      const u = data.user;
+      if (u) {
+        setProfile({
+          email: u.email ?? "",
+          profileName: u.profileName ?? "",
+          firstName: u.firstName ?? "",
+          lastName: u.lastName ?? "",
+          photoURL: u.photoURL,
+          isAdmin: u.isAdmin ?? false,
+          isPremium: u.isPremium ?? false,
+          invitesRemaining: u.invitesRemaining ?? 3,
+          biodata: u.biodata
+            ? {
+                personal: { ...EMPTY_BIODATA.personal, ...u.biodata.personal },
+                education: { ...EMPTY_BIODATA.education, ...u.biodata.education },
+                family: { ...EMPTY_BIODATA.family, ...u.biodata.family },
+                religious: { ...EMPTY_BIODATA.religious, ...u.biodata.religious },
+                lifestyle: { ...EMPTY_BIODATA.lifestyle, ...u.biodata.lifestyle },
+                aboutMe: u.biodata.aboutMe ?? "",
+              }
+            : EMPTY_BIODATA,
+        });
+      }
+    } catch (err) {
+      console.error("[AuthContext] fetchProfile error:", err);
     }
   }
 
@@ -161,6 +164,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function signInWithEmail(email: string, password: string) {
     const result = await signInWithEmailAndPassword(auth, email, password);
     const syncResult = await syncUserToMongo(result.user, "email");
+    // onAuthStateChanged may have already fired and fetched a 404 (if the
+    // Mongo record didn't exist yet) — re-fetch after sync so profile is set.
+    await fetchProfile(result.user);
     return syncResult;
   }
 

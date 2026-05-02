@@ -10,6 +10,7 @@ export interface BiodataSection {
     nationality: string;
     city: string;
     country: string;
+    bangladeshDistrict: string;
   };
   education: {
     educationLevel: string;
@@ -51,7 +52,7 @@ export interface BiodataSection {
 }
 
 export const EMPTY_BIODATA: BiodataSection = {
-  personal: { dateOfBirth: "", gender: "", maritalStatus: "", height: "", weight: "", complexion: "", bloodGroup: "", nationality: "", city: "", country: "" },
+  personal: { dateOfBirth: "", gender: "", maritalStatus: "", height: "", weight: "", complexion: "", bloodGroup: "", nationality: "", city: "", country: "", bangladeshDistrict: "" },
   education: { educationLevel: "", institution: "", fieldOfStudy: "", occupation: "", employer: "", income: "" },
   family: { fatherName: "", fatherOccupation: "", motherName: "", motherOccupation: "", siblings: "", familyType: "", familyStatus: "", waliName: "", waliRelationship: "", waliPhone: "", waliEmail: "" },
   religious: { religiousHistory: "", sect: "", prayerRoutine: "", modesty: "", beard: "", quranReading: "", islamicEducation: "" },

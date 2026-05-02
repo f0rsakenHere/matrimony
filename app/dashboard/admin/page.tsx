@@ -11,7 +11,9 @@ import {
   Heart,
   ChevronLeft,
   ChevronRight,
+  Inbox,
 } from "lucide-react";
+import Link from "next/link";
 
 import { StatCard } from "./_components/admin-stats";
 import { AdminUserFilters, EMPTY_FILTERS } from "./_components/admin-user-filters";
@@ -233,10 +235,21 @@ export default function AdminPage() {
 
   return (
     <div className="px-4 py-6 sm:px-6 sm:py-10">
-      <h2 className="text-[var(--foreground)]">Admin Dashboard</h2>
-      <p className="mt-1 text-[14px] text-[var(--color-dark-56)]">
-        Manage users and matchmaking
-      </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 className="text-[var(--foreground)]">Admin Dashboard</h2>
+          <p className="mt-1 text-[14px] text-[var(--color-dark-56)]">
+            Manage users and matchmaking
+          </p>
+        </div>
+        <Link
+          href="/dashboard/admin/submissions"
+          className="inline-flex items-center gap-2 rounded-full border border-[var(--color-dark-18)] px-4 py-2 text-[13px] font-semibold text-[var(--foreground)] transition-colors hover:bg-[var(--color-dark-08)]"
+        >
+          <Inbox className="size-4" />
+          Public Submissions
+        </Link>
+      </div>
 
       {/* Tabs */}
       <div className="mt-6 flex gap-2">
