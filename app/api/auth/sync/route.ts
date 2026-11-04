@@ -93,7 +93,7 @@ export async function POST(request: Request) {
             type: "welcome",
             title: "Assalamu Alaikum!",
             message:
-              "Welcome to BdCan Nikah. Complete your biodata so families can find the right match for you, In Sha Allah.",
+              "Welcome to BanglaNikahCanada. Complete your biodata so families can find the right match for you, In Sha Allah.",
           },
           {
             recipientUid: uid,

@@ -1,7 +1,7 @@
 import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const FROM = process.env.EMAIL_FROM ?? "NikahCanda <onboarding@resend.dev>";
+const FROM = process.env.EMAIL_FROM ?? "BanglaNikahCanada <onboarding@resend.dev>";
 const ADMIN_EMAILS = (process.env.ADMIN_EMAIL ?? "").split(",").map((e) => e.trim()).filter(Boolean);
 
 // ─── Core sender ─────────────────────────────────────────────────────────────
@@ -31,7 +31,7 @@ function layout(content: string) {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NikahCanda</title>
+  <title>BanglaNikahCanada</title>
 </head>
 <body style="margin:0;padding:0;background-color:#f6f6f0;font-family:'Segoe UI',Arial,sans-serif;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f6f6f0;padding:40px 0;">
@@ -41,7 +41,7 @@ function layout(content: string) {
           <!-- Header -->
           <tr>
             <td style="background-color:#1c413a;padding:32px 40px;text-align:center;">
-              <h1 style="margin:0;color:#efefe3;font-size:26px;font-weight:700;letter-spacing:0.5px;">NikahCanda</h1>
+              <h1 style="margin:0;color:#efefe3;font-size:26px;font-weight:700;letter-spacing:0.5px;">BanglaNikahCanada</h1>
               <p style="margin:6px 0 0;color:#b8d4c8;font-size:13px;">Connecting Muslim Families with Trust</p>
             </td>
           </tr>
@@ -54,8 +54,8 @@ function layout(content: string) {
           <!-- Footer -->
           <tr>
             <td style="background-color:#f0f0e8;padding:20px 40px;text-align:center;border-top:1px solid #e0e0d8;">
-              <p style="margin:0;color:#888;font-size:12px;">© 2025 NikahCanda · All rights reserved</p>
-              <p style="margin:4px 0 0;color:#aaa;font-size:11px;">This email was sent because you have an account with NikahCanda.</p>
+              <p style="margin:0;color:#888;font-size:12px;">© 2025 BanglaNikahCanada · All rights reserved</p>
+              <p style="margin:4px 0 0;color:#aaa;font-size:11px;">This email was sent because you have an account with BanglaNikahCanada.</p>
             </td>
           </tr>
         </table>
@@ -75,7 +75,7 @@ function button(text: string, href: string) {
 export async function sendWelcomeEmail(to: string, firstName: string) {
   const content = `
     <h2 style="margin:0 0 8px;color:#1c413a;font-size:22px;font-weight:700;">Assalamu Alaikum, ${firstName || "there"}!</h2>
-    <p style="margin:0 0 16px;color:#444;font-size:15px;line-height:1.7;">Welcome to <strong>NikahCanda</strong> — we're glad you're here. Our platform is built to help Muslim families find the right match with dignity, trust, and care, In Sha Allah.</p>
+    <p style="margin:0 0 16px;color:#444;font-size:15px;line-height:1.7;">Welcome to <strong>BanglaNikahCanada</strong> — we're glad you're here. Our platform is built to help Muslim families find the right match with dignity, trust, and care, In Sha Allah.</p>
     <p style="margin:0 0 16px;color:#444;font-size:15px;line-height:1.7;">To get the most out of your account, complete your <strong>biodata profile</strong>. A complete profile helps families find you and shows that you're serious about this journey.</p>
     <div style="background-color:#f0f7f4;border-left:4px solid #1c413a;padding:16px 20px;border-radius:4px;margin:24px 0;">
       <p style="margin:0;color:#1c413a;font-size:14px;font-weight:600;">What to complete:</p>
@@ -90,7 +90,7 @@ export async function sendWelcomeEmail(to: string, firstName: string) {
     ${button("Complete My Biodata", "https://matrimony-drab.vercel.app/dashboard/biodata")}
     <p style="margin:24px 0 0;color:#888;font-size:13px;">May Allah make it easy for you. Ameen.</p>
   `;
-  return sendEmail({ to, subject: "Assalamu Alaikum — Welcome to NikahCanda", html: layout(content) });
+  return sendEmail({ to, subject: "Assalamu Alaikum — Welcome to BanglaNikahCanada", html: layout(content) });
 }
 
 // ─── Email: Biodata reminder (sent after onboarding completes) ────────────────
@@ -104,7 +104,7 @@ export async function sendBiodataReminderEmail(to: string, firstName: string) {
       <p style="margin:0;color:#555;font-size:14px;line-height:1.8;">Fill in your <strong>personal details</strong>, <strong>family background</strong>, <strong>religious practice</strong>, and a short <strong>about me</strong> — and you'll be ready for families to find you, In Sha Allah.</p>
     </div>
     ${button("Fill My Biodata Now", "https://matrimony-drab.vercel.app/dashboard/biodata")}
-    <p style="margin:24px 0 0;color:#888;font-size:13px;">JazakAllahu Khayran for being part of NikahCanda.</p>
+    <p style="margin:24px 0 0;color:#888;font-size:13px;">JazakAllahu Khayran for being part of BanglaNikahCanada.</p>
   `;
   return sendEmail({ to, subject: "Complete your biodata — families are waiting", html: layout(content) });
 }

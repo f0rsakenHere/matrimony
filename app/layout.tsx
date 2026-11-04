@@ -15,7 +15,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
-  title: "BDCanNikah",
+  title: "BanglaNikahCanada",
   description: "A Graceful Path to the Right Marriage",
 };
 

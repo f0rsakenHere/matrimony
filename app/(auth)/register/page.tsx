@@ -63,7 +63,7 @@ export default function RegisterPage() {
         <div className="text-center">
           <h2>Create Account</h2>
           <p className="mt-4 text-[var(--color-dark-72)]">
-            Join BDCanNikah today
+            Join BanglaNikahCanada today
           </p>
         </div>
 

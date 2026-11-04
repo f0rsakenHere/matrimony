@@ -118,7 +118,7 @@ export default function Home() {
             {/* Image */}
             <div className="relative min-h-[280px] sm:min-h-[360px] lg:absolute lg:inset-0">
               <Image
-                src="/nika-hero.png"
+                src="/nika-hero.webp"
                 alt="Muslim couple"
                 fill
                 loading="eager"
@@ -236,8 +236,8 @@ export default function Home() {
               {/* Center — We Understand card */}
               <div className="relative flex flex-col items-center justify-center overflow-hidden rounded-2xl px-5 py-8 text-center sm:px-7 sm:py-12" style={{ backgroundColor: "var(--foreground)", color: "#fff" }}>
                 {/* Corner mandala patterns — top-left & top-right only */}
-                <Image src="/4x/asset1.png" alt="" width={140} height={140} className="pointer-events-none absolute -top-6 -left-6 size-32 opacity-[0.3]" style={{ filter: "sepia(1) saturate(2) brightness(1.5) hue-rotate(10deg)" }} aria-hidden="true" />
-                <Image src="/4x/asset1.png" alt="" width={140} height={140} className="pointer-events-none absolute -top-6 -right-6 size-32 rotate-90 opacity-[0.3]" style={{ filter: "sepia(1) saturate(2) brightness(1.5) hue-rotate(10deg)" }} aria-hidden="true" />
+                <Image src="/4x/asset1.webp" alt="" width={140} height={140} className="pointer-events-none absolute -top-6 -left-6 size-32 opacity-[0.3]" style={{ filter: "sepia(1) saturate(2) brightness(1.5) hue-rotate(10deg)" }} aria-hidden="true" />
+                <Image src="/4x/asset1.webp" alt="" width={140} height={140} className="pointer-events-none absolute -top-6 -right-6 size-32 rotate-90 opacity-[0.3]" style={{ filter: "sepia(1) saturate(2) brightness(1.5) hue-rotate(10deg)" }} aria-hidden="true" />
                 <h3 className="relative z-10" style={{ color: "#fff" }}>
                   We Understand.
                   <span className="mt-1 block text-[0.85em] leading-tight">
@@ -301,7 +301,7 @@ export default function Home() {
           <div className="mx-auto max-w-[1520px] px-4 sm:px-6 md:px-8 lg:px-10">
             <div className="text-center">
               <h2 className="text-[var(--foreground)]">
-                Why Choose BDCanNikah?
+                Why Choose BanglaNikahCanada?
               </h2>
             </div>
 
@@ -374,7 +374,7 @@ export default function Home() {
                 {/* Trust building image */}
                 <div className="hidden shrink-0 lg:block">
                   <Image
-                    src="/4x/trust-building.png"
+                    src="/4x/trust-building.webp"
                     alt=""
                     width={160}
                     height={160}
@@ -419,7 +419,7 @@ export default function Home() {
               {/* Find partner image */}
               <div className="hidden shrink-0 lg:block">
                 <Image
-                  src="/4x/find-partner.png"
+                  src="/4x/find-partner.webp"
                   alt=""
                   width={160}
                   height={160}

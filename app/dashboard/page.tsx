@@ -25,7 +25,7 @@ export default function DashboardPage() {
         Assalamu Alaikum, {displayName}
       </h2>
       <p className="mt-2 text-[14px] text-[var(--color-dark-56)]">
-        Welcome to BdCan Nikah — your trusted Islamic marriage biodata platform.
+        Welcome to BanglaNikahCanada — your trusted Islamic marriage biodata platform.
       </p>
 
       {/* Biodata completion card */}

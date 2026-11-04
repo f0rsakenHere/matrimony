@@ -143,7 +143,7 @@ export default function SiteFooter() {
       {/* Bottom bar */}
       <div className="border-t border-white/10">
         <div className="mx-auto flex max-w-[1520px] flex-col items-center gap-2 px-5 py-4 text-[12px] opacity-60 sm:flex-row sm:justify-between sm:px-6 sm:py-5 sm:text-[13px] md:px-8 lg:px-10">
-          <p>&copy; 2026 BDCanNikah. All rights reserved.</p>
+          <p>&copy; 2026 BanglaNikahCanada. All rights reserved.</p>
           <p className="text-[12px]">Privacy first &middot; Family aware &middot; Marriage minded</p>
         </div>
       </div>

@@ -156,7 +156,7 @@ export default function PilgrimsBookingSection() {
             </p>
 
             <p className="mt-8 border-t border-[var(--color-light-18)] pt-6 text-sm font-semibold tracking-[0.14em] text-[var(--color-light)] uppercase">
-              With care · BDCanNikah team
+              With care · BanglaNikahCanada team
             </p>
           </aside>
         </div>
