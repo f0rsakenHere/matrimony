@@ -48,7 +48,7 @@ export default function MobileNav() {
         className="fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between border-b border-[var(--color-dark-08)] px-4 md:hidden"
         style={{ backgroundColor: "var(--foreground)" }}
       >
-        <BrandLogo className="h-6 w-auto" tone="light" />
+        <BrandLogo className="w-[150px]" tone="light" />
         <button
           onClick={() => setOpen(!open)}
           className="rounded-lg p-2"

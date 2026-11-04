@@ -238,24 +238,37 @@ export default function Home() {
                 {/* Corner mandala patterns — top-left & top-right only */}
                 <Image src="/4x/asset1.png" alt="" width={140} height={140} className="pointer-events-none absolute -top-6 -left-6 size-32 opacity-[0.3]" style={{ filter: "sepia(1) saturate(2) brightness(1.5) hue-rotate(10deg)" }} aria-hidden="true" />
                 <Image src="/4x/asset1.png" alt="" width={140} height={140} className="pointer-events-none absolute -top-6 -right-6 size-32 rotate-90 opacity-[0.3]" style={{ filter: "sepia(1) saturate(2) brightness(1.5) hue-rotate(10deg)" }} aria-hidden="true" />
-                {/* Mosque icon */}
-                <Image
-                  src="/4x/crescent.png"
-                  alt=""
-                  width={80}
-                  height={80}
-                  className="relative z-10 size-20 brightness-0 invert"
-                  aria-hidden="true"
-                />
-                <h3 className="mt-5" style={{ color: "#fff" }}>
-                  We Understand.<br />We&apos;re Here to Help.
+                <h3 className="relative z-10" style={{ color: "#fff" }}>
+                  We Understand.
+                  <span className="mt-1 block text-[0.85em] leading-tight">
+                    We Are Here to Find You the Right Spouse.
+                  </span>
                 </h3>
-                <p className="mt-4 text-[14px] leading-relaxed opacity-85">
-                  BDCanNikah is built exclusively for Bangladeshi Muslims in
-                  Canada &amp; North America who are looking for a serious and
-                  halal marriage.
+                <p className="relative z-10 mt-4 text-[14px] leading-relaxed opacity-85">
+                  Tell us about yourself and what you&apos;re looking for. Our
+                  dedicated team will personally review your biodata and
+                  handpick potential matches based on your requirements.
                 </p>
-                
+
+                <span className="relative z-10 mt-6 block h-px w-full bg-white/40" aria-hidden="true" />
+
+                <ul className="relative z-10 mt-6 grid w-full grid-cols-3 divide-x divide-white/30">
+                  {[
+                    { icon: Users, label: "Personal Assistance" },
+                    { icon: Lock, label: "Private Profiles" },
+                    { icon: Heart, label: "Halal Introductions" },
+                  ].map(({ icon: Icon, label }) => (
+                    <li key={label} className="flex flex-col items-center gap-2 px-2">
+                      <Icon className="size-7" strokeWidth={1.75} aria-hidden="true" />
+                      {/* Always two lines: first word, then the rest */}
+                      <span className="text-[13px] font-semibold leading-tight sm:text-[14px]">
+                        {label.split(" ")[0]}
+                        <br />
+                        {label.split(" ").slice(1).join(" ")}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
               </div>
 
               {/* Right — Solutions */}

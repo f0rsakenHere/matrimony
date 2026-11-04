@@ -34,9 +34,8 @@ export default function SiteFooter() {
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_0.8fr_1fr] lg:gap-10">
           {/* Brand column */}
           <div className="sm:col-span-2 lg:col-span-1">
-            <Link href="/" className="inline-flex" aria-label="BDCanNikah home">
+            <Link href="/" className="inline-flex" aria-label="BanglaNikahCanada home">
               <BrandLogo
-                src="/bdcannikah-footer-logo.png"
                 tone="light"
                 className="w-[180px] sm:w-[200px] md:w-[220px]"
               />

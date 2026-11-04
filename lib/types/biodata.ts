@@ -11,6 +11,11 @@ export interface BiodataSection {
     city: string;
     country: string;
     bangladeshDistrict: string;
+    province: string;
+    ethnicity: string;
+    otherEthnicity: string;
+    healthIssues: string;
+    citizenshipStatus: string;
   };
   education: {
     educationLevel: string;
@@ -32,6 +37,7 @@ export interface BiodataSection {
     waliRelationship: string;
     waliPhone: string;
     waliEmail: string;
+    waliContactMethod: string;
   };
   religious: {
     religiousHistory: string;
@@ -41,6 +47,7 @@ export interface BiodataSection {
     beard: string;
     quranReading: string;
     islamicEducation: string;
+    hijab: string;
   };
   lifestyle: {
     diet: string;
@@ -49,13 +56,16 @@ export interface BiodataSection {
     languages: string;
   };
   aboutMe: string;
+  // Public form: "What are you looking for in your future husband/wife?"
+  lookingFor?: string;
 }
 
 export const EMPTY_BIODATA: BiodataSection = {
-  personal: { dateOfBirth: "", gender: "", maritalStatus: "", height: "", weight: "", complexion: "", bloodGroup: "", nationality: "", city: "", country: "", bangladeshDistrict: "" },
+  personal: { dateOfBirth: "", gender: "", maritalStatus: "", height: "", weight: "", complexion: "", bloodGroup: "", nationality: "", city: "", country: "", bangladeshDistrict: "", province: "", ethnicity: "", otherEthnicity: "", healthIssues: "", citizenshipStatus: "" },
   education: { educationLevel: "", institution: "", fieldOfStudy: "", occupation: "", employer: "", income: "" },
-  family: { fatherName: "", fatherOccupation: "", motherName: "", motherOccupation: "", siblings: "", familyType: "", familyStatus: "", waliName: "", waliRelationship: "", waliPhone: "", waliEmail: "" },
-  religious: { religiousHistory: "", sect: "", prayerRoutine: "", modesty: "", beard: "", quranReading: "", islamicEducation: "" },
+  family: { fatherName: "", fatherOccupation: "", motherName: "", motherOccupation: "", siblings: "", familyType: "", familyStatus: "", waliName: "", waliRelationship: "", waliPhone: "", waliEmail: "", waliContactMethod: "" },
+  religious: { religiousHistory: "", sect: "", prayerRoutine: "", modesty: "", beard: "", quranReading: "", islamicEducation: "", hijab: "" },
   lifestyle: { diet: "", smoking: "", hobbies: "", languages: "" },
   aboutMe: "",
+  lookingFor: "",
 };

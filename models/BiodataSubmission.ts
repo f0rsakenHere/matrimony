@@ -25,6 +25,11 @@ const BiodataPersonalSchema = new Schema<IBiodataPersonal>(
     city: { type: String, default: "" },
     country: { type: String, default: "" },
     bangladeshDistrict: { type: String, default: "" },
+    province: { type: String, default: "" },
+    ethnicity: { type: String, default: "" },
+    otherEthnicity: { type: String, default: "" },
+    healthIssues: { type: String, default: "" },
+    citizenshipStatus: { type: String, default: "" },
   },
   { _id: false }
 );
@@ -54,6 +59,7 @@ const BiodataFamilySchema = new Schema<IBiodataFamily>(
     waliRelationship: { type: String, default: "" },
     waliPhone: { type: String, default: "" },
     waliEmail: { type: String, default: "" },
+    waliContactMethod: { type: String, default: "" },
   },
   { _id: false }
 );
@@ -64,6 +70,7 @@ const BiodataReligiousSchema = new Schema<IBiodataReligious>(
     sect: { type: String, default: "" },
     prayerRoutine: { type: String, default: "" },
     modesty: { type: String, default: "" },
+    hijab: { type: String, default: "" },
     beard: { type: String, default: "" },
     quranReading: { type: String, default: "" },
     islamicEducation: { type: String, default: "" },
@@ -89,6 +96,7 @@ const BiodataSubSchema = new Schema<IBiodata>(
     religious: { type: BiodataReligiousSchema, default: () => ({}) },
     lifestyle: { type: BiodataLifestyleSchema, default: () => ({}) },
     aboutMe: { type: String, default: "" },
+    lookingFor: { type: String, default: "" },
   },
   { _id: false }
 );
@@ -113,8 +121,13 @@ export interface IBiodataSubmission extends Document {
   ipHash: string;
   userAgent?: string;
 
-  // Reserved for future "ask for email" / "claim profile" feature.
+  // Submitter's contact details (public form). Email also enables the
+  // future "claim profile on signup" flow.
   email?: string;
+  phone?: string;
+  howHeard?: string;
+  faithDeclarationAccepted?: boolean;
+  faithDeclarationAcceptedAt?: Date;
   claimedByUid?: string;
 
   // _id of the shadow User created when this submission is approved. Used to
@@ -146,6 +159,10 @@ const BiodataSubmissionSchema = new Schema<IBiodataSubmission>(
     userAgent: { type: String, default: "" },
 
     email: { type: String },
+    phone: { type: String, default: "" },
+    howHeard: { type: String, default: "" },
+    faithDeclarationAccepted: { type: Boolean, default: false },
+    faithDeclarationAcceptedAt: { type: Date },
     claimedByUid: { type: String },
     shadowUserId: { type: String },
   },

@@ -13,7 +13,8 @@ export const BIODATA_FIELDS: Record<string, string[]> = {
   personal: [
     "dateOfBirth", "gender", "maritalStatus", "height", "weight",
     "complexion", "bloodGroup", "nationality", "city", "country",
-    "bangladeshDistrict",
+    "bangladeshDistrict", "province", "ethnicity", "otherEthnicity",
+    "healthIssues", "citizenshipStatus",
   ],
   education: [
     "educationLevel", "institution", "fieldOfStudy",
@@ -23,10 +24,11 @@ export const BIODATA_FIELDS: Record<string, string[]> = {
     "fatherName", "fatherOccupation", "motherName", "motherOccupation",
     "siblings", "familyType", "familyStatus",
     "waliName", "waliRelationship", "waliPhone", "waliEmail",
+    "waliContactMethod",
   ],
   religious: [
     "religiousHistory", "sect", "prayerRoutine", "modesty",
-    "beard", "quranReading", "islamicEducation",
+    "beard", "quranReading", "islamicEducation", "hijab",
   ],
   lifestyle: ["diet", "smoking", "hobbies", "languages"],
 };

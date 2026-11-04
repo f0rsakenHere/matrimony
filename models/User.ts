@@ -33,6 +33,11 @@ export interface IBiodataPersonal {
   city: string;
   country: string;
   bangladeshDistrict: string;
+  province: string;
+  ethnicity: string;
+  otherEthnicity: string;
+  healthIssues: string;
+  citizenshipStatus: string;
 }
 
 const BiodataPersonalSchema = new Schema<IBiodataPersonal>(
@@ -48,6 +53,11 @@ const BiodataPersonalSchema = new Schema<IBiodataPersonal>(
     city: { type: String, default: "" },
     country: { type: String, default: "" },
     bangladeshDistrict: { type: String, default: "" },
+    province: { type: String, default: "" },
+    ethnicity: { type: String, default: "" },
+    otherEthnicity: { type: String, default: "" },
+    healthIssues: { type: String, default: "" },
+    citizenshipStatus: { type: String, default: "" },
   },
   { _id: false }
 );
@@ -85,6 +95,7 @@ export interface IBiodataFamily {
   waliRelationship: string;
   waliPhone: string;
   waliEmail: string;
+  waliContactMethod: string;
 }
 
 const BiodataFamilySchema = new Schema<IBiodataFamily>(
@@ -100,6 +111,7 @@ const BiodataFamilySchema = new Schema<IBiodataFamily>(
     waliRelationship: { type: String, default: "" },
     waliPhone: { type: String, default: "" },
     waliEmail: { type: String, default: "" },
+    waliContactMethod: { type: String, default: "" },
   },
   { _id: false }
 );
@@ -109,6 +121,7 @@ export interface IBiodataReligious {
   sect: string;
   prayerRoutine: string;
   modesty: string;
+  hijab: string;
   beard: string;
   quranReading: string;
   islamicEducation: string;
@@ -120,6 +133,7 @@ const BiodataReligiousSchema = new Schema<IBiodataReligious>(
     sect: { type: String, default: "" },
     prayerRoutine: { type: String, default: "" },
     modesty: { type: String, default: "" },
+    hijab: { type: String, default: "" },
     beard: { type: String, default: "" },
     quranReading: { type: String, default: "" },
     islamicEducation: { type: String, default: "" },
@@ -151,6 +165,7 @@ export interface IBiodata {
   religious: IBiodataReligious;
   lifestyle: IBiodataLifestyle;
   aboutMe: string;
+  lookingFor?: string;
 }
 
 const BiodataSchema = new Schema<IBiodata>(
@@ -161,6 +176,7 @@ const BiodataSchema = new Schema<IBiodata>(
     religious: { type: BiodataReligiousSchema, default: () => ({}) },
     lifestyle: { type: BiodataLifestyleSchema, default: () => ({}) },
     aboutMe: { type: String, default: "" },
+    lookingFor: { type: String, default: "" },
   },
   { _id: false }
 );

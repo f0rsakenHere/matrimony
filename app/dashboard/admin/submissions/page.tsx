@@ -45,6 +45,10 @@ type Submission = {
   moderatedAt?: string;
   submitterFirstName?: string;
   submitterLastName?: string;
+  email?: string;
+  phone?: string;
+  howHeard?: string;
+  faithDeclarationAccepted?: boolean;
   shadowUserId?: string;
   createdAt: string;
   updatedAt: string;
@@ -351,7 +355,7 @@ function SubmissionCard({
           <div className="flex flex-wrap items-center gap-2">
             <UserIcon className="size-4 text-[var(--color-dark-56)]" />
             <span className="text-[15px] font-semibold text-[var(--foreground)]">
-              {b.personal.gender || "—"}
+              {b.personal.gender === "Female" ? "Sister" : b.personal.gender === "Male" ? "Brother" : b.personal.gender || "—"}
               {age !== null && `, ${age}`}
               {b.personal.maritalStatus && ` · ${b.personal.maritalStatus}`}
             </span>
@@ -360,7 +364,7 @@ function SubmissionCard({
             {(b.personal.city || b.personal.country) && (
               <span className="inline-flex items-center gap-1">
                 <MapPin className="size-3.5" />
-                {[b.personal.city, b.personal.country].filter(Boolean).join(", ")}
+                {[b.personal.city, b.personal.province, b.personal.country].filter(Boolean).join(", ")}
               </span>
             )}
             <span>Submitted {submittedAt}</span>
@@ -416,13 +420,37 @@ function SubmissionCard({
         </div>
       </div>
 
-      {/* Wali contact — always visible since this is the primary contact */}
+      {/* Submitter contact */}
+      {(submission.email || submission.phone) && (
+        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-xl border border-[var(--color-dark-08)] p-3 text-[13px]">
+          <span className="font-semibold text-[var(--foreground)]">Contact:</span>
+          {submission.phone && (
+            <span className="inline-flex items-center gap-1 text-[var(--foreground)]">
+              <Phone className="size-3.5" />
+              <a href={`tel:${submission.phone}`} className="hover:underline">
+                {submission.phone}
+              </a>
+            </span>
+          )}
+          {submission.email && (
+            <span className="inline-flex items-center gap-1 text-[var(--color-dark-56)]">
+              <Mail className="size-3.5" />
+              <a href={`mailto:${submission.email}`} className="hover:underline">
+                {submission.email}
+              </a>
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* Wali contact */}
       <div className="mt-3 grid gap-2 rounded-xl border border-[var(--color-dark-08)] bg-[var(--color-dark-04,rgba(30,58,95,0.04))] p-3 text-[13px] sm:grid-cols-2">
         <div>
           <span className="font-semibold text-[var(--foreground)]">Wali: </span>
           <span className="text-[var(--color-dark-56)]">
-            {b.family.waliName || "—"}
+            {b.family.waliName || "Not provided"}
             {b.family.waliRelationship && ` (${b.family.waliRelationship})`}
+            {b.family.waliContactMethod && ` · prefers ${b.family.waliContactMethod}`}
           </span>
         </div>
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
@@ -454,7 +482,7 @@ function SubmissionCard({
         {expanded ? "Hide details" : "View full biodata"}
       </button>
 
-      {expanded && <ExpandedDetails biodata={b} />}
+      {expanded && <ExpandedDetails submission={submission} />}
     </div>
   );
 }
@@ -488,13 +516,20 @@ function ActionButton({
   );
 }
 
-function ExpandedDetails({ biodata: b }: { biodata: BiodataSection }) {
+function ExpandedDetails({ submission }: { submission: Submission }) {
+  const b = submission.biodata;
   return (
     <div className="mt-4 grid gap-4 border-t border-[var(--color-dark-08)] pt-4 text-[13px] sm:grid-cols-2">
       <DetailGroup
         title="Personal"
         rows={[
           ["Date of birth", b.personal.dateOfBirth],
+          ["Ethnicity", b.personal.ethnicity],
+          ["Other ethnicity", b.personal.otherEthnicity],
+          ["Languages", b.lifestyle.languages],
+          ["Citizenship", b.personal.citizenshipStatus],
+          ["Health issues", b.personal.healthIssues],
+          ["Hijab", b.religious.hijab],
           ["Height", b.personal.height],
           ["Weight", b.personal.weight],
           ["Complexion", b.personal.complexion],
@@ -549,12 +584,29 @@ function ExpandedDetails({ biodata: b }: { biodata: BiodataSection }) {
       />
       {b.aboutMe && (
         <div className="sm:col-span-2">
-          <h4 className="text-[13px] font-semibold text-[var(--foreground)]">About Me</h4>
+          <h4 className="text-[13px] font-semibold text-[var(--foreground)]">What they do in life</h4>
           <p className="mt-1 whitespace-pre-wrap text-[13px] text-[var(--color-dark-56)]">
             {b.aboutMe}
           </p>
         </div>
       )}
+      {b.lookingFor && (
+        <div className="sm:col-span-2">
+          <h4 className="text-[13px] font-semibold text-[var(--foreground)]">
+            Looking for in a {b.personal.gender === "Female" ? "husband" : b.personal.gender === "Male" ? "wife" : "spouse"}
+          </h4>
+          <p className="mt-1 whitespace-pre-wrap text-[13px] text-[var(--color-dark-56)]">
+            {b.lookingFor}
+          </p>
+        </div>
+      )}
+      <DetailGroup
+        title="Submission"
+        rows={[
+          ["Heard about us via", submission.howHeard ?? ""],
+          ["Faith declaration", submission.faithDeclarationAccepted ? "Accepted" : ""],
+        ]}
+      />
     </div>
   );
 }

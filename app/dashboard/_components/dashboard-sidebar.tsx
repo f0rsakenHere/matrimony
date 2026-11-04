@@ -55,7 +55,7 @@ export default function DashboardSidebar() {
     >
       {/* Logo */}
       <div className="px-5 pt-7 pb-2">
-        <BrandLogo className="h-8 w-auto" tone="light" />
+        <BrandLogo className="w-[210px]" tone="light" />
       </div>
 
       {/* Section label */}

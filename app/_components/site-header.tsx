@@ -29,10 +29,10 @@ export default function SiteHeader() {
         <div className="mx-auto flex h-[64px] max-w-[1520px] items-center justify-between gap-3 px-4 sm:h-[88px] sm:gap-6 sm:px-6 md:px-8 lg:h-[104px] lg:px-10">
           <Link
             href="/"
-            aria-label="BDCanNikah home"
+            aria-label="BanglaNikahCanada home"
             className="shrink-0"
           >
-            <SiteBrandLogo className="w-[130px] sm:w-[180px] md:w-[220px] lg:w-[240px]" />
+            <SiteBrandLogo className="w-[170px] sm:w-[220px] md:w-[250px] lg:w-[280px]" />
           </Link>
 
           <nav

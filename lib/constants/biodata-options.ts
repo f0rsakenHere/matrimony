@@ -90,3 +90,95 @@ export const BANGLADESH_DISTRICT_OPTIONS = [
   "Rangamati", "Rangpur", "Satkhira", "Shariatpur", "Sherpur", "Sirajganj",
   "Sunamganj", "Sylhet", "Tangail", "Thakurgaon", "Other",
 ];
+
+/* ─── Public biodata form (/start) ─── */
+// Mirrors the NikahCanada registration questionnaire the client asked for.
+// Kept separate from the dashboard option lists above so the member editor
+// and existing data are unaffected.
+
+export const ETHNICITY_OPTIONS = [
+  "Bangladesh", "Afghanistan", "Albania", "Algeria", "Andorra", "Angola",
+  "Antigua and Barbuda", "Argentina", "Armenia", "Australia", "Austria",
+  "Azerbaijan", "Bahamas", "Bahrain", "Barbados", "Belarus", "Belgium",
+  "Belize", "Benin", "Bhutan", "Bolivia", "Bosnia and Herzegovina",
+  "Botswana", "Brazil", "Brunei", "Bulgaria", "Burkina Faso", "Burundi",
+  "Côte d'Ivoire", "Cabo Verde", "Cambodia", "Cameroon", "Canada",
+  "Central African Republic", "Chad", "Chile", "China", "Colombia",
+  "Comoros", "Congo (Congo-Brazzaville)", "Costa Rica", "Croatia", "Cuba",
+  "Cyprus", "Czechia (Czech Republic)", "Democratic Republic of the Congo",
+  "Denmark", "Djibouti", "Dominica", "Dominican Republic", "Ecuador",
+  "Egypt", "El Salvador", "Equatorial Guinea", "Eritrea", "Estonia",
+  "Eswatini (fmr. \"Swaziland\")", "Ethiopia", "Fiji", "Finland", "France",
+  "Gabon", "Gambia", "Georgia", "Germany", "Ghana", "Greece", "Grenada",
+  "Guatemala", "Guinea", "Guinea-Bissau", "Guyana", "Haiti", "Holy See",
+  "Honduras", "Hungary", "Iceland", "India", "Indonesia", "Iran", "Iraq",
+  "Ireland", "Israel", "Italy", "Jamaica", "Japan", "Jordan", "Kazakhstan",
+  "Kenya", "Kiribati", "Kuwait", "Kyrgyzstan", "Laos", "Latvia", "Lebanon",
+  "Lesotho", "Liberia", "Libya", "Liechtenstein", "Lithuania", "Luxembourg",
+  "Madagascar", "Malawi", "Malaysia", "Maldives", "Mali", "Malta",
+  "Marshall Islands", "Mauritania", "Mauritius", "Mexico", "Micronesia",
+  "Moldova", "Monaco", "Mongolia", "Montenegro", "Morocco", "Mozambique",
+  "Myanmar (formerly Burma)", "Namibia", "Nauru", "Nepal", "Netherlands",
+  "New Zealand", "Nicaragua", "Niger", "Nigeria", "North Korea",
+  "North Macedonia", "Norway", "Oman", "Pakistan", "Palau",
+  "Palestine State", "Panama", "Papua New Guinea", "Paraguay", "Peru",
+  "Philippines", "Poland", "Portugal", "Qatar", "Romania", "Russia",
+  "Rwanda", "Saint Kitts and Nevis", "Saint Lucia",
+  "Saint Vincent and the Grenadines", "Samoa", "San Marino",
+  "Sao Tome and Principe", "Saudi Arabia", "Senegal", "Serbia", "Seychelles",
+  "Sierra Leone", "Singapore", "Slovakia", "Slovenia", "Solomon Islands",
+  "Somalia", "South Africa", "South Korea", "South Sudan", "Spain",
+  "Sri Lanka", "Sudan", "Suriname", "Sweden", "Switzerland", "Syria",
+  "Tajikistan", "Tanzania", "Thailand", "Timor-Leste", "Togo", "Tonga",
+  "Trinidad and Tobago", "Tunisia", "Turkey", "Turkmenistan", "Tuvalu",
+  "Uganda", "Ukraine", "United Arab Emirates", "United Kingdom",
+  "United States of America", "Uruguay", "Uzbekistan", "Vanuatu",
+  "Venezuela", "Vietnam", "Yemen", "Zambia", "Zimbabwe",
+];
+
+// Height 3'5" – 7'5", same string format as HEIGHT_OPTIONS.
+export const PUBLIC_HEIGHT_OPTIONS = Array.from({ length: 49 }, (_, i) => {
+  const totalInches = 41 + i;
+  return `${Math.floor(totalInches / 12)}'${totalInches % 12}"`;
+});
+
+export const WEIGHT_KG_OPTIONS = Array.from({ length: 101 }, (_, i) => String(30 + i));
+
+export const CITIZENSHIP_STATUS_OPTIONS = [
+  "Citizen",
+  "Permanent Resident",
+  "On A Work Visa",
+  "On A Study Visa",
+  "On A Visitor Visa",
+  "Refugee",
+  "Other",
+];
+
+export const PUBLIC_MARITAL_STATUS_OPTIONS = [
+  "Never Married",
+  "Widowed Without Kid(s)",
+  "Widowed With Kid(s)",
+  "Divorced Without Kid(s)",
+  "Divorced With Kid(s)",
+];
+
+export const HIJAB_OPTIONS = ["Yes", "No", "Sometimes", "Not Always, But I Try My Best"];
+
+export const PUBLIC_WALI_RELATIONSHIP_OPTIONS = [
+  "Father",
+  "Grandfather",
+  "Brother",
+  "Maternal Uncle",
+  "Paternal Uncle",
+  "Imam Of The Local Masjid",
+];
+
+export const WALI_CONTACT_METHOD_OPTIONS = ["Email", "WhatsApp", "SMS"];
+
+export const HOW_HEARD_OPTIONS = [
+  "Personal Referral",
+  "Masjid / Community",
+  "Poster",
+  "Social Media",
+  "Other",
+];

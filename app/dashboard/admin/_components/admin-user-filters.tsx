@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import {
   GENDER_OPTIONS,
   MARITAL_STATUS_OPTIONS,
+  PUBLIC_MARITAL_STATUS_OPTIONS,
   EDUCATION_LEVEL_OPTIONS,
   SECT_OPTIONS,
   COUNTRY_OPTIONS,
@@ -158,7 +159,7 @@ export function AdminUserFilters({
         <div className="mt-3 rounded-2xl border border-[var(--color-dark-12)] bg-[var(--color-dark-04,rgba(30,58,95,0.04))] px-4 py-4 sm:px-5">
           <div className="grid gap-x-3 gap-y-2.5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
             {!isHidden("gender") && <FilterSelect label="Gender" value={filters.gender} onChange={(v) => setFilters((f) => ({ ...f, gender: v }))} options={GENDER_OPTIONS} />}
-            {!isHidden("maritalStatus") && <FilterSelect label="Marital Status" value={filters.maritalStatus} onChange={(v) => setFilters((f) => ({ ...f, maritalStatus: v }))} options={MARITAL_STATUS_OPTIONS} />}
+            {!isHidden("maritalStatus") && <FilterSelect label="Marital Status" value={filters.maritalStatus} onChange={(v) => setFilters((f) => ({ ...f, maritalStatus: v }))} options={[...MARITAL_STATUS_OPTIONS, ...PUBLIC_MARITAL_STATUS_OPTIONS]} />}
             {!isHidden("educationLevel") && <FilterSelect label="Education" value={filters.educationLevel} onChange={(v) => setFilters((f) => ({ ...f, educationLevel: v }))} options={EDUCATION_LEVEL_OPTIONS} />}
             {!isHidden("sect") && <FilterSelect label="Sect" value={filters.sect} onChange={(v) => setFilters((f) => ({ ...f, sect: v }))} options={SECT_OPTIONS} />}
             {!isHidden("beard") && <FilterSelect label="Beard" value={filters.beard} onChange={(v) => setFilters((f) => ({ ...f, beard: v }))} options={["Yes", "No"]} />}
