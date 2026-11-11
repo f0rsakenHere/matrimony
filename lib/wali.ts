@@ -3,7 +3,7 @@
  * API routes so the browser and the server always agree.
  *
  * - Sisters MUST include a wali: full name, relationship and email.
- * - Brothers may skip the wali, but if they start one it must be complete.
+ * - Brothers have no wali at all: their wali fields are always cleared.
  * - Matches are sent to the wali by email only, so email is the required
  *   contact; phone is optional.
  */
@@ -26,12 +26,14 @@ export function hasAnyWali(f: Partial<WaliFields>): boolean {
 
 /** Whether a wali is mandatory / was started for this person. */
 export function waliRequired(gender: string | undefined, f: Partial<WaliFields>): boolean {
+  if (gender === "Male") return false;
   return gender === "Female" || hasAnyWali(f);
 }
 
 /** Field-keyed error messages; empty object means the wali section is valid. */
 export function waliErrors(gender: string | undefined, f: Partial<WaliFields>): WaliErrors {
   const e: WaliErrors = {};
+  if (gender === "Male") return e; // brothers don't have a wali
   const name = (f.waliName ?? "").trim();
   const rel = (f.waliRelationship ?? "").trim();
   const email = (f.waliEmail ?? "").trim();
@@ -57,4 +59,14 @@ export function waliErrorSentence(gender: string | undefined, f: Partial<WaliFie
   const lead = gender === "Female" ? "Sisters must include a wali. Please provide" : "Please provide";
   const list = parts.length > 1 ? `${parts.slice(0, -1).join(", ")} and ${parts[parts.length - 1]}` : parts[0];
   return `${lead} ${list}.`;
+}
+
+/** Brothers don't have a wali: blank every wali field (mutates and returns f). */
+export function clearWali<T extends Partial<WaliFields> & { waliContactMethod?: string }>(f: T): T {
+  f.waliName = "";
+  f.waliRelationship = "";
+  f.waliEmail = "";
+  f.waliPhone = "";
+  f.waliContactMethod = "";
+  return f;
 }

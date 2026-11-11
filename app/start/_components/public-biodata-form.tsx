@@ -131,7 +131,7 @@ function isCompleteDob(v: string): boolean {
 
 /* ─── Steps & per-step validation (mirrors /api/biodata/submit) ─── */
 
-const STEPS = [
+const ALL_STEPS = [
   { id: "you", label: "Your Details" },
   { id: "profile", label: "Profile" },
   { id: "education", label: "Education" },
@@ -140,7 +140,12 @@ const STEPS = [
   { id: "declaration", label: "Submit" },
 ] as const;
 
-type StepId = (typeof STEPS)[number]["id"];
+type StepId = (typeof ALL_STEPS)[number]["id"];
+
+/** Brothers don't have a wali step. */
+function stepsFor(gender: string) {
+  return gender === "Male" ? ALL_STEPS.filter((s) => s.id !== "wali") : [...ALL_STEPS];
+}
 type Errors = Record<string, string>;
 
 function stepErrors(step: StepId, d: Draft): Errors {
@@ -189,8 +194,9 @@ function stepErrors(step: StepId, d: Draft): Errors {
 
 /** Index of the first step that still has errors (or the last step). */
 function firstIncompleteStep(d: Draft): number {
-  const i = STEPS.findIndex((s) => Object.keys(stepErrors(s.id, d)).length > 0);
-  return i === -1 ? STEPS.length - 1 : i;
+  const steps = stepsFor(d.biodata.personal.gender);
+  const i = steps.findIndex((s) => Object.keys(stepErrors(s.id, d)).length > 0);
+  return i === -1 ? steps.length - 1 : i;
 }
 
 /* ─── Small local inputs ─── */
@@ -361,7 +367,8 @@ export default function PublicBiodataForm() {
   const s = draft.submitter;
   const gender = b.personal.gender;
   const isSister = gender === "Female";
-  const step = STEPS[stepIndex];
+  const STEPS = stepsFor(gender);
+  const step = STEPS[Math.min(stepIndex, STEPS.length - 1)];
   const liveErrors = stepErrors(step.id, draft);
   const errors: Errors = attempted.has(step.id) ? liveErrors : {};
   // Users may jump back to any step, or forward up to the first incomplete one.
@@ -542,16 +549,16 @@ export default function PublicBiodataForm() {
   const stepTitle: Record<StepId, { title: string; description?: string }> = {
     you: {
       title: `${Who}'s Details`,
-      description: `If you are the wali, you may register on behalf of the ${who} under your guardianship.`,
+      description: isSister
+        ? `If you are the wali, you may register on behalf of the ${who} under your guardianship.`
+        : undefined,
     },
     profile: { title: "Profile Information" },
     education: { title: "Education & Career", description: "Optional — your qualifications and professional background." },
     about: { title: "About You", description: "Pictures will be requested at a later stage." },
     wali: {
       title: `${Who}'s Wali`,
-      description: isSister
-        ? "A wali is required for sisters. Please provide your wali's details. Potential matches will be sent to your wali by email."
-        : "Although optional, we highly recommend you include a wali. If you do, their name, relationship and email are required.",
+      description: "A wali is required for sisters. Please provide your wali's details. Potential matches will be sent to your wali by email.",
     },
     declaration: { title: "Declaration" },
   };

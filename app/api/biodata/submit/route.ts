@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { biodataSubmissions } from "@/lib/db/schema";
 import { clientIp } from "@/lib/auth";
 import { sendSubmissionEmail, sendSubmissionReceivedEmail, sendWaliNotificationEmail } from "@/lib/email";
-import { waliErrorSentence, waliRequired } from "@/lib/wali";
+import { clearWali, waliErrorSentence, waliRequired } from "@/lib/wali";
 import { submissionLimiter } from "@/lib/rate-limit";
 import { EMPTY_BIODATA, type BiodataSection } from "@/lib/types/biodata";
 import {
@@ -144,9 +144,10 @@ export async function POST(request: Request) {
     if (!biodata.lookingFor) errors.push("Please describe what you are looking for.");
     if (!faithDeclarationAccepted) errors.push("The declaration of Islamic faith must be accepted.");
 
-    // Wali: mandatory for sisters; optional for brothers but must be complete
-    // if started (name, relationship, email). Matches go to the wali by email
-    // only, so the contact method is set here, never taken from the client.
+    // Wali: mandatory for sisters (name, relationship, email); brothers have
+    // no wali, so anything sent for them is discarded. Matches go to the wali
+    // by email only, so the contact method is set here, never from the client.
+    if (!isSister) clearWali(f);
     const waliProblem = waliErrorSentence(p.gender, f);
     if (waliProblem) errors.push(waliProblem);
     f.waliEmail = f.waliEmail.toLowerCase();

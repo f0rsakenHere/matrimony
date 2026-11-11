@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { members, type Member } from "@/lib/db/schema";
 import { sendAdminBiodataEmail, sendWaliNotificationEmail } from "@/lib/email";
 import { waliEmailLimiter } from "@/lib/rate-limit";
-import { waliErrorSentence, waliRequired } from "@/lib/wali";
+import { clearWali, waliErrorSentence, waliRequired } from "@/lib/wali";
 import { getProfileCompletion } from "@/lib/profile-completion";
 import { requireAuth } from "@/lib/auth";
 import { sanitizeBiodataSection } from "@/lib/sanitize";
@@ -56,6 +56,7 @@ export async function PUT(request: Request) {
     if (section === "family") {
       const fam = value as Record<string, string>;
       const gender = beforeBio.personal.gender;
+      if (gender === "Male") clearWali(fam); // brothers have no wali
       const problem = waliErrorSentence(gender, fam);
       if (problem) {
         return NextResponse.json({ error: problem }, { status: 400 });

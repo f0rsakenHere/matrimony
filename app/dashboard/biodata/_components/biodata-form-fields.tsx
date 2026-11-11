@@ -557,51 +557,55 @@ export function TabFamily({
         />
       </div>
 
-      <div className="mt-10 rounded-2xl border border-[var(--color-dark-12)] bg-[var(--background)] p-6">
-        <h3 className="text-[var(--foreground)]">
-          Wali&apos;s Contact Information
-        </h3>
-        <p className="mt-1 text-[14px] text-[var(--color-dark-56)]">
-          {isSister
-            ? "Required. Your wali (male guardian) will be the point of contact for prospective families. Potential matches are sent to your wali by email."
-            : "Optional, but highly recommended. Potential matches are sent to your wali by email."}
-        </p>
+      {/* Brothers have no wali */}
+      {gender !== "Male" && (
+        <div className="mt-10 rounded-2xl border border-[var(--color-dark-12)] bg-[var(--background)] p-6">
+          <h3 className="text-[var(--foreground)]">
+            Wali&apos;s Contact Information
+          </h3>
+          <p className="mt-1 text-[14px] text-[var(--color-dark-56)]">
+            {isSister
+              ? "Required. Your wali (male guardian) will be the point of contact for prospective families. Potential matches are sent to your wali by email."
+              : "Optional, but highly recommended. Potential matches are sent to your wali by email."}
+          </p>
 
-        <div className="mt-6 grid gap-6 sm:grid-cols-2">
-          <FieldInput
-            label={isSister ? "Wali's Full Name *" : "Wali's Full Name"}
-            value={data.waliName}
-            onChange={(v) => onChange("waliName", v)}
-            placeholder="e.g. Abdul Rahman"
-          />
-          <FieldSelect
-            label={isSister ? "Relationship to You *" : "Relationship to You"}
-            value={data.waliRelationship}
-            onChange={(v) => onChange("waliRelationship", v)}
-            options={WALI_RELATIONSHIP_OPTIONS}
-            placeholder="Select relationship..."
-          />
-          <FieldInput
-            label="Wali's Phone Number (optional)"
-            value={data.waliPhone}
-            onChange={(v) => onChange("waliPhone", v)}
-            placeholder="e.g. +1 (416) 555-0123"
-          />
-          <FieldInput
-            label={isSister ? "Wali's Email * (matches are sent here)" : "Wali's Email (matches are sent here)"}
-            value={data.waliEmail}
-            onChange={(v) => onChange("waliEmail", v)}
-            placeholder="e.g. wali@email.com"
-          />
+          <div className="mt-6 grid gap-6 sm:grid-cols-2">
+            <FieldInput
+              label={isSister ? "Wali's Full Name *" : "Wali's Full Name"}
+              value={data.waliName}
+              onChange={(v) => onChange("waliName", v)}
+              placeholder="e.g. Abdul Rahman"
+            />
+            <FieldSelect
+              label={isSister ? "Relationship to You *" : "Relationship to You"}
+              value={data.waliRelationship}
+              onChange={(v) => onChange("waliRelationship", v)}
+              options={WALI_RELATIONSHIP_OPTIONS}
+              placeholder="Select relationship..."
+            />
+            <FieldInput
+              label="Wali's Phone Number (optional)"
+              value={data.waliPhone}
+              onChange={(v) => onChange("waliPhone", v)}
+              placeholder="e.g. +1 (416) 555-0123"
+            />
+            <FieldInput
+              label={isSister ? "Wali's Email * (matches are sent here)" : "Wali's Email (matches are sent here)"}
+              value={data.waliEmail}
+              onChange={(v) => onChange("waliEmail", v)}
+              placeholder="e.g. wali@email.com"
+            />
+          </div>
+
+          {waliMissing && (
+            <p className="mt-4 flex items-center gap-1.5 text-[13px] font-medium text-red-600">
+              <AlertCircle className="size-3.5" />
+              {waliMsg}
+            </p>
+          )}
         </div>
 
-        {waliMissing && (
-          <p className="mt-4 flex items-center gap-1.5 text-[13px] font-medium text-red-600">
-            <AlertCircle className="size-3.5" />
-            {waliMsg}
-          </p>
-        )}
-      </div>
+      )}
 
       <SaveButton
         onSave={onSave}
