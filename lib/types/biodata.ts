@@ -69,3 +69,17 @@ export const EMPTY_BIODATA: BiodataSection = {
   aboutMe: "",
   lookingFor: "",
 };
+
+/** Fill any missing sections/fields with empty defaults. */
+export function normalizeBiodata(b: Partial<BiodataSection> | null | undefined): BiodataSection {
+  const src = b ?? {};
+  return {
+    personal: { ...EMPTY_BIODATA.personal, ...src.personal },
+    education: { ...EMPTY_BIODATA.education, ...src.education },
+    family: { ...EMPTY_BIODATA.family, ...src.family },
+    religious: { ...EMPTY_BIODATA.religious, ...src.religious },
+    lifestyle: { ...EMPTY_BIODATA.lifestyle, ...src.lifestyle },
+    aboutMe: src.aboutMe ?? "",
+    lookingFor: src.lookingFor ?? "",
+  };
+}

@@ -11,7 +11,7 @@ import { calculateAge, formatDate } from "@/lib/date-utils";
 
 export interface AdminUser {
   _id: string;
-  firebaseUid: string;
+  uid: string;
   email: string;
   provider: string;
   profileName: string;

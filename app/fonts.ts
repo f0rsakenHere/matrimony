@@ -36,6 +36,7 @@ export const headingSerif = Libre_Baskerville({
   variable: "--font-heading",
   subsets: ["latin"],
   weight: ["400", "700"],
+  style: ["normal", "italic"],
   display: "swap",
 });
 

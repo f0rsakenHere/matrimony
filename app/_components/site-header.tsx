@@ -8,7 +8,7 @@ const navigationLinks = [
   { href: "/", label: "Home" },
   { href: "/#about", label: "About Us" },
   { href: "/#how-it-works", label: "How It Works" },
-  { href: "/#contact", label: "Contact" },
+  { href: "/contact", label: "Contact" },
 ];
 
 export default function SiteHeader() {
@@ -19,7 +19,7 @@ export default function SiteHeader() {
     >
       <div className="bg-[var(--surface-inverse)] text-[var(--color-light)]">
         <div className="mx-auto flex max-w-[1520px] items-center justify-center px-5 py-2 sm:px-6 sm:py-2.5 md:px-8 lg:px-10">
-          <p className="text-center text-[10px] leading-snug tracking-[0.08em] uppercase text-[var(--color-light-90)] sm:text-[12px] sm:tracking-[0.14em]">
+          <p className="text-center text-[12px] font-semibold leading-snug text-[var(--color-light)] sm:text-[15px]">
             Private introductions for Bangladeshi Canadian Muslim families
           </p>
         </div>
@@ -32,7 +32,7 @@ export default function SiteHeader() {
             aria-label="BanglaNikahCanada home"
             className="shrink-0"
           >
-            <SiteBrandLogo className="w-[170px] sm:w-[220px] md:w-[250px] lg:w-[280px]" />
+            <SiteBrandLogo className="w-[230px] sm:w-[260px] md:w-[280px] lg:w-[300px]" />
           </Link>
 
           <nav

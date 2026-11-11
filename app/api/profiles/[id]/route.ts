@@ -1,25 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import mongoose from "mongoose";
-import connectDB from "@/lib/mongodb";
-import User from "@/models/User";
-import Notification from "@/models/Notification";
-import Invitation from "@/models/Invitation";
+import { and, eq, or } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { invitations, members, notifications } from "@/lib/db/schema";
 import { requireAuth } from "@/lib/auth";
+import { isUuid } from "@/lib/db/helpers";
+import { getMemberByUid } from "@/lib/server/members";
 
-// Whitelisted fields returned to authenticated viewers. Sensitive fields
-// (email, isAdmin, invitesRemaining, partnerPreferences, onboardingStep,
-// firstName/lastName, raw firebaseUid) are intentionally omitted.
-const PUBLIC_PROFILE_FIELDS =
-  "_id profileName photoURL biodata createdAt firebaseUid isShadow";
-
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-
-    if (!mongoose.isValidObjectId(id)) {
+    if (!isUuid(id)) {
       return NextResponse.json({ error: "Invalid profile id" }, { status: 400 });
     }
 
@@ -27,94 +17,92 @@ export async function GET(
     if (authResult instanceof NextResponse) return authResult;
     const viewerUid = authResult.uid;
 
-    await connectDB();
+    // Whitelisted fields only. Email, names, admin flags, preferences etc.
+    // are never returned to other members.
+    const [profile] = await db
+      .select({
+        id: members.id,
+        uid: members.uid,
+        profileName: members.profileName,
+        photoURL: members.photoURL,
+        biodata: members.biodata,
+        createdAt: members.createdAt,
+        isShadow: members.isShadow,
+      })
+      .from(members)
+      .where(eq(members.id, id))
+      .limit(1);
 
-    const user = await User.findById(id).select(PUBLIC_PROFILE_FIELDS).lean();
-
-    if (!user) {
+    if (!profile) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const profileUser = user as { firebaseUid?: string; _id?: string; isShadow?: boolean };
+    const viewer = await getMemberByUid(viewerUid);
 
-    // Shadow profiles (auto-created from anonymous submissions) are only
-    // viewable by admins until the actual person signs up and claims them.
-    if (profileUser.isShadow) {
-      const viewer = await User.findOne({ firebaseUid: viewerUid })
-        .select("isAdmin")
-        .lean();
-      const isAdmin = (viewer as { isAdmin?: boolean } | null)?.isAdmin === true;
-      if (!isAdmin) {
-        return NextResponse.json({ error: "User not found" }, { status: 404 });
-      }
+    // Shadow profiles are admin-only.
+    if (profile.isShadow && !viewer?.isAdmin) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Track profile view — create a notification for the profile owner
-    if (profileUser.firebaseUid && viewerUid !== profileUser.firebaseUid) {
-      const viewer = await User.findOne({ firebaseUid: viewerUid })
-        .select("profileName firstName _id")
-        .lean();
+    const isSelf = viewerUid === profile.uid;
 
-      if (viewer) {
-        const viewerData = viewer as { profileName?: string; firstName?: string; _id?: string };
-        const viewerName = viewerData.profileName || viewerData.firstName || "Someone";
-
-        // Race-safe upsert: only one notification per viewer per day.
-        const dayBucket = new Date().toISOString().slice(0, 10);
-        await Notification.updateOne(
-          {
-            recipientUid: profileUser.firebaseUid,
-            type: "profile_view",
-            actorUid: viewerUid,
-            dayBucket,
-          },
-          {
-            $setOnInsert: {
-              recipientUid: profileUser.firebaseUid,
-              type: "profile_view",
-              title: "Profile Viewed",
-              message: `${viewerName} viewed your profile`,
-              actorUid: viewerUid,
-              actorName: viewerName,
-              actorProfileId: String(viewerData._id),
-              dayBucket,
-            },
-          },
-          { upsert: true }
-        );
-      }
+    // Track the view: one notification per viewer per day (race-safe via
+    // the unique dedupe index).
+    if (!isSelf && !profile.isShadow && viewer) {
+      const viewerName = viewer.profileName || viewer.firstName || "Someone";
+      await db
+        .insert(notifications)
+        .values({
+          recipientUid: profile.uid,
+          type: "profile_view",
+          title: "Profile Viewed",
+          message: `${viewerName} viewed your profile`,
+          actorUid: viewerUid,
+          actorName: viewerName,
+          actorProfileId: viewer.id,
+          dayBucket: new Date().toISOString().slice(0, 10),
+        })
+        .onConflictDoNothing();
     }
+
+    const biodata = JSON.parse(JSON.stringify(profile.biodata ?? {}));
 
     // Strip wali contact details unless an accepted invitation exists.
-    // Also drop firebaseUid before returning — it's only needed internally.
-    const profileData = JSON.parse(JSON.stringify(user)) as {
-      firebaseUid?: string;
-      biodata?: { family?: Record<string, string> };
-    };
-
-    if (profileUser.firebaseUid && viewerUid !== profileUser.firebaseUid) {
-      const acceptedInvite = await Invitation.findOne({
-        $or: [
-          { senderUid: viewerUid, receiverUid: profileUser.firebaseUid, status: "accepted" },
-          { senderUid: profileUser.firebaseUid, receiverUid: viewerUid, status: "accepted" },
-        ],
-      });
-      if (!acceptedInvite && profileData.biodata?.family) {
-        profileData.biodata.family.waliName = "";
-        profileData.biodata.family.waliPhone = "";
-        profileData.biodata.family.waliEmail = "";
-        profileData.biodata.family.waliRelationship = "";
+    // Admins always see them (they run the manual matchmaking).
+    if (!isSelf && !viewer?.isAdmin) {
+      const [accepted] = await db
+        .select({ id: invitations.id })
+        .from(invitations)
+        .where(
+          and(
+            eq(invitations.status, "accepted"),
+            or(
+              and(eq(invitations.senderUid, viewerUid), eq(invitations.receiverUid, profile.uid)),
+              and(eq(invitations.senderUid, profile.uid), eq(invitations.receiverUid, viewerUid))
+            )
+          )
+        )
+        .limit(1);
+      if (!accepted && biodata.family) {
+        biodata.family.waliName = "";
+        biodata.family.waliPhone = "";
+        biodata.family.waliEmail = "";
+        biodata.family.waliRelationship = "";
       }
     }
 
-    delete profileData.firebaseUid;
-
-    return NextResponse.json({ profile: profileData });
+    return NextResponse.json({
+      profile: {
+        _id: profile.id,
+        profileName: profile.profileName,
+        photoURL: profile.photoURL,
+        biodata,
+        createdAt: profile.createdAt,
+        isShadow: profile.isShadow,
+      },
+    });
   } catch (error) {
     console.error("Error fetching single profile:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

@@ -1,8 +1,9 @@
 /**
- * Escape special regex characters in a string for safe use in MongoDB $regex.
+ * Escape LIKE/ILIKE wildcards (% and _) and the escape char itself so user
+ * input is matched literally.
  */
-export function escapeRegex(str: string): string {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+export function escapeLike(str: string): string {
+  return str.replace(/[\\%_]/g, "\\$&");
 }
 
 /**

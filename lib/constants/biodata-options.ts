@@ -173,7 +173,8 @@ export const PUBLIC_WALI_RELATIONSHIP_OPTIONS = [
   "Imam Of The Local Masjid",
 ];
 
-export const WALI_CONTACT_METHOD_OPTIONS = ["Email", "WhatsApp", "SMS"];
+// Matches are only ever sent to a wali by email.
+export const WALI_CONTACT_METHOD_OPTIONS = ["Email"];
 
 export const HOW_HEARD_OPTIONS = [
   "Personal Referral",

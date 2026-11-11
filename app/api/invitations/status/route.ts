@@ -1,51 +1,41 @@
 import { NextResponse } from "next/server";
-import connectDB from "@/lib/mongodb";
-import Invitation from "@/models/Invitation";
+import { and, eq, inArray } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { invitations } from "@/lib/db/schema";
 import { requireAuth } from "@/lib/auth";
 
-// GET — check invitation status between current user and a profile
+// GET — invitation status between the signed-in user and a profile
 export async function GET(request: Request) {
   try {
     const authResult = await requireAuth(request);
     if (authResult instanceof NextResponse) return authResult;
     const uid = authResult.uid;
 
-    const { searchParams } = new URL(request.url);
-    const profileUid = searchParams.get("profileUid");
-
+    const profileUid = new URL(request.url).searchParams.get("profileUid");
     if (!profileUid) {
       return NextResponse.json({ error: "Missing params" }, { status: 400 });
     }
 
-    await connectDB();
-
-    // Check both directions
-    const [sentInvite, receivedInvite] = await Promise.all([
-      Invitation.findOne({
-        senderUid: uid,
-        receiverUid: profileUid,
-        status: { $in: ["pending", "accepted"] },
-      }).lean(),
-      Invitation.findOne({
-        senderUid: profileUid,
-        receiverUid: uid,
-        status: { $in: ["pending", "accepted"] },
-      }).lean(),
+    const active = inArray(invitations.status, ["pending", "accepted"]);
+    const [[sentInvite], [receivedInvite]] = await Promise.all([
+      db
+        .select()
+        .from(invitations)
+        .where(and(eq(invitations.senderUid, uid), eq(invitations.receiverUid, profileUid), active))
+        .limit(1),
+      db
+        .select()
+        .from(invitations)
+        .where(and(eq(invitations.senderUid, profileUid), eq(invitations.receiverUid, uid), active))
+        .limit(1),
     ]);
 
-    const invite = sentInvite || receivedInvite;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const inviteData = invite as any;
-
-    const waliUnlocked =
-      (sentInvite && inviteData?.status === "accepted") ||
-      (receivedInvite && inviteData?.status === "accepted");
-
+    const invite = sentInvite ?? receivedInvite;
     return NextResponse.json({
-      status: inviteData?.status ?? null,
+      status: invite?.status ?? null,
       direction: sentInvite ? "sent" : receivedInvite ? "received" : null,
-      invitationId: inviteData?._id ? String(inviteData._id) : null,
-      waliUnlocked: !!waliUnlocked,
+      invitationId: invite?.id ?? null,
+      waliUnlocked: invite?.status === "accepted",
     });
   } catch (error) {
     console.error("Invitation status error:", error);

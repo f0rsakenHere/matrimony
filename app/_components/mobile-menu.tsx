@@ -10,7 +10,7 @@ const navigationLinks = [
   { href: "/", label: "Home" },
   { href: "/#about", label: "About Us" },
   { href: "/#how-it-works", label: "How It Works" },
-  { href: "/#contact", label: "Contact" },
+  { href: "/contact", label: "Contact" },
 ];
 
 export function MobileMenu() {

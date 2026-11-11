@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
-import connectDB from "@/lib/mongodb";
-import BiodataSubmission from "@/models/BiodataSubmission";
+import { and, count, desc, eq, type SQL } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { biodataSubmissions, type ModerationStatus } from "@/lib/db/schema";
 import { requireAdmin } from "@/lib/auth";
-import { escapeRegex } from "@/lib/sanitize";
+import { biodataFilters, withId } from "@/lib/db/helpers";
+
+const STATUSES: ModerationStatus[] = ["pending", "approved", "rejected", "spam"];
 
 export async function GET(request: Request) {
   try {
@@ -10,130 +13,43 @@ export async function GET(request: Request) {
     if (authResult instanceof NextResponse) return authResult;
 
     const { searchParams } = new URL(request.url);
-    const status = searchParams.get("status");
-    const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10));
-    const limit = Math.min(
-      100,
-      Math.max(1, parseInt(searchParams.get("limit") ?? "20", 10))
-    );
+    const status = searchParams.get("status") as ModerationStatus | null;
+    const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") ?? "20", 10) || 20));
 
-    // Demographic filters — the same shape as /api/admin/users so the shared
-    // AdminUserFilters component can drive both pages.
-    const gender = searchParams.get("gender");
-    const maritalStatus = searchParams.get("maritalStatus");
-    const educationLevel = searchParams.get("educationLevel");
-    const sect = searchParams.get("sect");
-    const beard = searchParams.get("beard");
-    const country = searchParams.get("country")?.trim();
-    const city = searchParams.get("city")?.trim();
-    const bangladeshDistrict = searchParams.get("bangladeshDistrict")?.trim();
-    const ageMin = searchParams.get("ageMin");
-    const ageMax = searchParams.get("ageMax");
-    const hasWali = searchParams.get("hasWali");
+    // Same demographic filters as /api/admin/users so the shared
+    // AdminUserFilters component drives both pages.
+    const conds: SQL[] = biodataFilters(biodataSubmissions.biodata, searchParams);
+    if (status && STATUSES.includes(status)) conds.push(eq(biodataSubmissions.moderationStatus, status));
+    const where = conds.length ? and(...conds) : undefined;
 
-    await connectDB();
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const filter: Record<string, any> = {};
-    if (status && ["pending", "approved", "rejected", "spam"].includes(status)) {
-      filter.moderationStatus = status;
-    }
-
-    if (gender) filter["biodata.personal.gender"] = gender;
-    if (maritalStatus) filter["biodata.personal.maritalStatus"] = maritalStatus;
-    if (educationLevel) filter["biodata.education.educationLevel"] = educationLevel;
-    if (sect) filter["biodata.religious.sect"] = sect;
-    if (beard) filter["biodata.religious.beard"] = beard;
-    if (country) {
-      filter["biodata.personal.country"] = {
-        $regex: `^${escapeRegex(country)}$`,
-        $options: "i",
-      };
-    }
-    if (city) {
-      filter["biodata.personal.city"] = {
-        $regex: escapeRegex(city),
-        $options: "i",
-      };
-    }
-    if (bangladeshDistrict) {
-      filter["biodata.personal.bangladeshDistrict"] = bangladeshDistrict;
-    }
-
-    if (hasWali === "true") {
-      filter["biodata.family.waliName"] = { $ne: "" };
-      filter["biodata.family.waliPhone"] = { $ne: "" };
-    } else if (hasWali === "false") {
-      filter.$or = [
-        { "biodata.family.waliName": "" },
-        { "biodata.family.waliName": { $exists: false } },
-        { "biodata.family.waliPhone": "" },
-        { "biodata.family.waliPhone": { $exists: false } },
-      ];
-    }
-
-    if (ageMin || ageMax) {
-      const today = new Date();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const dobFilter: Record<string, any> = {};
-      if (ageMax) {
-        const minDate = new Date(
-          today.getFullYear() - parseInt(ageMax, 10) - 1,
-          today.getMonth(),
-          today.getDate() + 1
-        );
-        dobFilter.$gte = minDate.toISOString().split("T")[0];
-      }
-      if (ageMin) {
-        const maxDate = new Date(
-          today.getFullYear() - parseInt(ageMin, 10),
-          today.getMonth(),
-          today.getDate()
-        );
-        dobFilter.$lte = maxDate.toISOString().split("T")[0];
-      }
-      if (Object.keys(dobFilter).length > 0) {
-        filter["biodata.personal.dateOfBirth"] = dobFilter;
-      }
-    }
-
-    const skip = (page - 1) * limit;
-
-    const [submissions, total, counts] = await Promise.all([
-      BiodataSubmission.find(filter)
-        .sort({ createdAt: -1 })
-        .skip(skip)
+    const [rows, [{ total }], grouped] = await Promise.all([
+      db
+        .select()
+        .from(biodataSubmissions)
+        .where(where)
+        .orderBy(desc(biodataSubmissions.createdAt))
         .limit(limit)
-        .lean(),
-      BiodataSubmission.countDocuments(filter),
-      BiodataSubmission.aggregate([
-        { $group: { _id: "$moderationStatus", count: { $sum: 1 } } },
-      ]),
+        .offset((page - 1) * limit),
+      db.select({ total: count() }).from(biodataSubmissions).where(where),
+      db
+        .select({ status: biodataSubmissions.moderationStatus, n: count() })
+        .from(biodataSubmissions)
+        .groupBy(biodataSubmissions.moderationStatus),
     ]);
 
-    const statusCounts: Record<string, number> = {
-      pending: 0,
-      approved: 0,
-      rejected: 0,
-      spam: 0,
-    };
-    for (const c of counts) {
-      if (c._id in statusCounts) statusCounts[c._id] = c.count;
-    }
+    const statusCounts: Record<ModerationStatus, number> = { pending: 0, approved: 0, rejected: 0, spam: 0 };
+    for (const g of grouped) if (g.status in statusCounts) statusCounts[g.status] = g.n;
 
     return NextResponse.json({
-      submissions,
+      submissions: rows.map(withId),
       total,
       page,
       totalPages: Math.max(1, Math.ceil(total / limit)),
       statusCounts,
     });
   } catch (error) {
-    const msg = error instanceof Error ? error.message : String(error);
-    console.error("[/api/admin/submissions] GET error:", msg);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    console.error("[/api/admin/submissions] GET error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
-import connectDB from "@/lib/mongodb";
-import User from "@/models/User";
+import { and, asc, count, desc, eq, or, type SQL } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { members, user as authUser } from "@/lib/db/schema";
 import { requireAdmin } from "@/lib/auth";
-import { escapeRegex } from "@/lib/sanitize";
+import { bio, biodataFilters, containsCI, isUuid, withId } from "@/lib/db/helpers";
+import { memberJson } from "@/lib/server/members";
 
 export async function GET(request: Request) {
   try {
@@ -10,122 +12,50 @@ export async function GET(request: Request) {
     if (authResult instanceof NextResponse) return authResult;
 
     const { searchParams } = new URL(request.url);
-    await connectDB();
-
-    // Filters
     const search = searchParams.get("q")?.trim();
-    const gender = searchParams.get("gender");
-    const maritalStatus = searchParams.get("maritalStatus");
-    const educationLevel = searchParams.get("educationLevel");
-    const sect = searchParams.get("sect");
-    const country = searchParams.get("country")?.trim();
-    const city = searchParams.get("city")?.trim();
-    const bangladeshDistrict = searchParams.get("bangladeshDistrict")?.trim();
-    const ageMin = searchParams.get("ageMin");
-    const ageMax = searchParams.get("ageMax");
     const onboardingComplete = searchParams.get("onboardingComplete");
     const provider = searchParams.get("provider");
-    const hasWali = searchParams.get("hasWali");
-    const beard = searchParams.get("beard");
     const sortBy = searchParams.get("sortBy") || "createdAt";
-    const sortOrder = searchParams.get("sortOrder") === "asc" ? 1 : -1;
-    const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
-    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") || "20", 10)));
+    const sortDir = searchParams.get("sortOrder") === "asc" ? asc : desc;
+    const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") || "20", 10) || 20));
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const filter: Record<string, any> = {};
+    const conds: SQL[] = biodataFilters(members.biodata, searchParams);
+    if (provider) conds.push(eq(members.provider, provider));
+    if (onboardingComplete === "true") conds.push(eq(members.onboardingComplete, true));
+    if (onboardingComplete === "false") conds.push(eq(members.onboardingComplete, false));
 
-    if (gender) filter["biodata.personal.gender"] = gender;
-    if (maritalStatus) filter["biodata.personal.maritalStatus"] = maritalStatus;
-    if (educationLevel) filter["biodata.education.educationLevel"] = educationLevel;
-    if (sect) filter["biodata.religious.sect"] = sect;
-    if (beard) filter["biodata.religious.beard"] = beard;
-    if (provider) filter.provider = provider;
-
-    if (onboardingComplete === "true") filter.onboardingComplete = true;
-    if (onboardingComplete === "false") filter.onboardingComplete = false;
-
-    if (hasWali === "true") {
-      filter["biodata.family.waliName"] = { $ne: "" };
-      filter["biodata.family.waliPhone"] = { $ne: "" };
-    }
-
-    // Collect $or conditions to avoid overwriting
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const orConditions: Record<string, any>[][] = [];
-
-    if (hasWali === "false") {
-      orConditions.push([
-        { "biodata.family.waliName": "" },
-        { "biodata.family.waliName": { $exists: false } },
-        { "biodata.family.waliPhone": "" },
-        { "biodata.family.waliPhone": { $exists: false } },
-      ]);
-    }
-
-    if (country) {
-      filter["biodata.personal.country"] = { $regex: `^${escapeRegex(country)}$`, $options: "i" };
-    }
-    if (city) {
-      filter["biodata.personal.city"] = { $regex: escapeRegex(city), $options: "i" };
-    }
-    if (bangladeshDistrict) {
-      filter["biodata.personal.bangladeshDistrict"] = bangladeshDistrict;
-    }
-
-    // Age range
-    if (ageMin || ageMax) {
-      const today = new Date();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const dobFilter: Record<string, any> = {};
-      if (ageMax) {
-        const minDate = new Date(today.getFullYear() - parseInt(ageMax, 10) - 1, today.getMonth(), today.getDate() + 1);
-        dobFilter.$gte = minDate.toISOString().split("T")[0];
-      }
-      if (ageMin) {
-        const maxDate = new Date(today.getFullYear() - parseInt(ageMin, 10), today.getMonth(), today.getDate());
-        dobFilter.$lte = maxDate.toISOString().split("T")[0];
-      }
-      if (Object.keys(dobFilter).length > 0) {
-        filter["biodata.personal.dateOfBirth"] = dobFilter;
-      }
-    }
-
-    // Text search
     if (search) {
-      const escaped = escapeRegex(search);
-      orConditions.push([
-        { profileName: { $regex: escaped, $options: "i" } },
-        { email: { $regex: escaped, $options: "i" } },
-        { firstName: { $regex: escaped, $options: "i" } },
-        { lastName: { $regex: escaped, $options: "i" } },
-        { "biodata.personal.city": { $regex: escaped, $options: "i" } },
-        { "biodata.personal.country": { $regex: escaped, $options: "i" } },
-        { "biodata.education.occupation": { $regex: escaped, $options: "i" } },
-      ]);
+      conds.push(
+        or(
+          containsCI(members.profileName, search),
+          containsCI(members.email, search),
+          containsCI(members.firstName, search),
+          containsCI(members.lastName, search),
+          containsCI(bio(members.biodata, "personal", "city"), search),
+          containsCI(bio(members.biodata, "personal", "country"), search),
+          containsCI(bio(members.biodata, "education", "occupation"), search)
+        )!
+      );
     }
 
-    // Combine multiple $or conditions with $and
-    if (orConditions.length === 1) {
-      filter.$or = orConditions[0];
-    } else if (orConditions.length > 1) {
-      filter.$and = orConditions.map((cond) => ({ $or: cond }));
-    }
+    const sortCol =
+      sortBy === "name" ? members.profileName : sortBy === "email" ? members.email : members.createdAt;
+    const where = conds.length ? and(...conds) : undefined;
 
-    const skip = (page - 1) * limit;
-    const sortField = sortBy === "name" ? "profileName" : sortBy === "email" ? "email" : "createdAt";
-
-    const [users, total] = await Promise.all([
-      User.find(filter)
-        .sort({ [sortField]: sortOrder })
-        .skip(skip)
+    const [rows, [{ total }]] = await Promise.all([
+      db
+        .select()
+        .from(members)
+        .where(where)
+        .orderBy(sortDir(sortCol))
         .limit(limit)
-        .lean(),
-      User.countDocuments(filter),
+        .offset((page - 1) * limit),
+      db.select({ total: count() }).from(members).where(where),
     ]);
 
     return NextResponse.json({
-      users,
+      users: rows.map(memberJson),
       total,
       page,
       totalPages: Math.ceil(total / limit),
@@ -136,20 +66,41 @@ export async function GET(request: Request) {
   }
 }
 
-// DELETE a user
+// DELETE a member (and their login, if they have one)
 export async function DELETE(request: Request) {
   try {
     const authResult = await requireAdmin(request);
     if (authResult instanceof NextResponse) return authResult;
 
-    const { userId } = await request.json();
+    const { userId } = await request.json().catch(() => ({}));
+    if (!isUuid(userId)) {
+      return NextResponse.json({ error: "Invalid user id" }, { status: 400 });
+    }
 
-    await connectDB();
-
-    const deleted = await User.findByIdAndDelete(userId);
-    if (!deleted) {
+    const [target] = await db.select().from(members).where(eq(members.id, userId)).limit(1);
+    if (!target) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
+    if (target.uid === authResult.uid) {
+      return NextResponse.json({ error: "You cannot delete your own account" }, { status: 400 });
+    }
+    if (target.isAdmin) {
+      const [{ admins }] = await db
+        .select({ admins: count() })
+        .from(members)
+        .where(eq(members.isAdmin, true));
+      if (admins <= 1) {
+        return NextResponse.json({ error: "Cannot delete the last admin" }, { status: 400 });
+      }
+    }
+
+    await db.transaction(async (tx) => {
+      await tx.delete(members).where(eq(members.id, userId));
+      if (!target.isShadow) {
+        // Cascades to sessions and accounts.
+        await tx.delete(authUser).where(eq(authUser.id, target.uid));
+      }
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -158,37 +109,40 @@ export async function DELETE(request: Request) {
   }
 }
 
-// PATCH — toggle admin, etc.
+// PATCH — toggle admin / onboarding flags
 export async function PATCH(request: Request) {
   try {
     const authResult = await requireAdmin(request);
     if (authResult instanceof NextResponse) return authResult;
 
-    const { userId, updates } = await request.json();
-
-    await connectDB();
-
-    // Only allow safe fields
-    const allowed: Record<string, boolean> = {
-      isAdmin: true,
-      onboardingComplete: true,
-    };
-    const safeUpdates: Record<string, unknown> = {};
-    for (const [key, val] of Object.entries(updates)) {
-      if (allowed[key]) safeUpdates[key] = val;
+    const { userId, updates } = await request.json().catch(() => ({}));
+    if (!isUuid(userId) || !updates || typeof updates !== "object") {
+      return NextResponse.json({ error: "Invalid request" }, { status: 400 });
     }
 
-    const user = await User.findByIdAndUpdate(
-      userId,
-      { $set: safeUpdates },
-      { new: true }
-    ).lean();
+    const safe: Partial<typeof members.$inferInsert> = {};
+    if (typeof updates.isAdmin === "boolean") safe.isAdmin = updates.isAdmin;
+    if (typeof updates.onboardingComplete === "boolean") safe.onboardingComplete = updates.onboardingComplete;
+    if (Object.keys(safe).length === 0) {
+      return NextResponse.json({ error: "No valid fields to update" }, { status: 400 });
+    }
 
-    if (!user) {
+    if (safe.isAdmin === false) {
+      const [target] = await db
+        .select({ uid: members.uid })
+        .from(members)
+        .where(eq(members.id, userId))
+        .limit(1);
+      if (target?.uid === authResult.uid) {
+        return NextResponse.json({ error: "You cannot remove your own admin access" }, { status: 400 });
+      }
+    }
+
+    const [updated] = await db.update(members).set(safe).where(eq(members.id, userId)).returning();
+    if (!updated) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
-
-    return NextResponse.json({ user });
+    return NextResponse.json({ user: withId(updated) });
   } catch (error) {
     console.error("Admin patch error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

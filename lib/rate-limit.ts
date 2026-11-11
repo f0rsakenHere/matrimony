@@ -66,3 +66,6 @@ export const inviteLimiter = createRateLimiter(5, 3_600_000, "invite");
 
 /** Public biodata submissions: 3 per IP per 24 hours */
 export const submissionLimiter = createRateLimiter(3, 24 * 3_600_000, "submission");
+
+/** Contact form: 5 messages per IP per hour */
+export const contactLimiter = createRateLimiter(5, 3_600_000, "contact");

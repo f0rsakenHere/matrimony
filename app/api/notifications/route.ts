@@ -1,9 +1,19 @@
 import { NextResponse } from "next/server";
-import connectDB from "@/lib/mongodb";
-import Notification from "@/models/Notification";
+import { and, count, desc, eq } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { notifications } from "@/lib/db/schema";
 import { requireAuth } from "@/lib/auth";
+import { isUuid, withId } from "@/lib/db/helpers";
 
-// GET — fetch notifications for a user
+async function unreadCountFor(uid: string): Promise<number> {
+  const [{ n }] = await db
+    .select({ n: count() })
+    .from(notifications)
+    .where(and(eq(notifications.recipientUid, uid), eq(notifications.read, false)));
+  return n;
+}
+
+// GET — fetch notifications for the signed-in user
 export async function GET(request: Request) {
   try {
     const authResult = await requireAuth(request);
@@ -12,29 +22,27 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
     const unreadOnly = searchParams.get("unreadOnly") === "true";
-    const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
-    const limit = Math.min(50, Math.max(1, parseInt(searchParams.get("limit") || "20", 10)));
+    const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10) || 1);
+    const limit = Math.min(50, Math.max(1, parseInt(searchParams.get("limit") || "20", 10) || 20));
 
-    await connectDB();
+    const where = unreadOnly
+      ? and(eq(notifications.recipientUid, uid), eq(notifications.read, false))
+      : eq(notifications.recipientUid, uid);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const filter: Record<string, any> = { recipientUid: uid };
-    if (unreadOnly) filter.read = false;
-
-    const skip = (page - 1) * limit;
-
-    const [notifications, total, unreadCount] = await Promise.all([
-      Notification.find(filter)
-        .sort({ createdAt: -1 })
-        .skip(skip)
+    const [rows, [{ total }], unreadCount] = await Promise.all([
+      db
+        .select()
+        .from(notifications)
+        .where(where)
+        .orderBy(desc(notifications.createdAt))
         .limit(limit)
-        .lean(),
-      Notification.countDocuments(filter),
-      Notification.countDocuments({ recipientUid: uid, read: false }),
+        .offset((page - 1) * limit),
+      db.select({ total: count() }).from(notifications).where(where),
+      unreadCountFor(uid),
     ]);
 
     return NextResponse.json({
-      notifications,
+      notifications: rows.map(withId),
       total,
       unreadCount,
       page,
@@ -53,28 +61,21 @@ export async function PATCH(request: Request) {
     if (authResult instanceof NextResponse) return authResult;
     const uid = authResult.uid;
 
-    const { notificationId, markAll } = await request.json();
-
-    await connectDB();
+    const { notificationId, markAll } = await request.json().catch(() => ({}));
 
     if (markAll) {
-      await Notification.updateMany(
-        { recipientUid: uid, read: false },
-        { $set: { read: true } }
-      );
-    } else if (notificationId) {
-      await Notification.findOneAndUpdate(
-        { _id: notificationId, recipientUid: uid },
-        { $set: { read: true } }
-      );
+      await db
+        .update(notifications)
+        .set({ read: true })
+        .where(and(eq(notifications.recipientUid, uid), eq(notifications.read, false)));
+    } else if (isUuid(notificationId)) {
+      await db
+        .update(notifications)
+        .set({ read: true })
+        .where(and(eq(notifications.id, notificationId), eq(notifications.recipientUid, uid)));
     }
 
-    const unreadCount = await Notification.countDocuments({
-      recipientUid: uid,
-      read: false,
-    });
-
-    return NextResponse.json({ success: true, unreadCount });
+    return NextResponse.json({ success: true, unreadCount: await unreadCountFor(uid) });
   } catch (error) {
     console.error("Notification update error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

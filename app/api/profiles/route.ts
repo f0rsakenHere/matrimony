@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
-import connectDB from "@/lib/mongodb";
-import User from "@/models/User";
+import { and, eq, ne } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { members } from "@/lib/db/schema";
 import { requireAuth } from "@/lib/auth";
+import { bio } from "@/lib/db/helpers";
+import { getMemberByUid } from "@/lib/server/members";
 
 export async function GET(request: Request) {
   try {
@@ -9,45 +12,50 @@ export async function GET(request: Request) {
     if (authResult instanceof NextResponse) return authResult;
     const uid = authResult.uid;
 
-    await connectDB();
-
-    // Get the current user's gender
-    const currentUser = await User.findOne({ firebaseUid: uid }).lean();
+    const currentUser = await getMemberByUid(uid);
     if (!currentUser) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const userGender =
-      (currentUser.biodata as { personal?: { gender?: string } })?.personal
-        ?.gender || "";
-
-    // If gender not set, return empty
+    const userGender = currentUser.biodata?.personal?.gender || "";
     if (!userGender) {
       return NextResponse.json({ profiles: [] });
     }
-
-    // Determine opposite gender
     const targetGender = userGender === "Male" ? "Female" : "Male";
 
-    // Fetch profiles of opposite gender, exclude current user.
-    // Hide shadow users (auto-created from anonymous submissions); they're
-    // not yet claimed by a real signed-up account.
-    const profiles = await User.find({
-      firebaseUid: { $ne: uid },
-      "biodata.personal.gender": targetGender,
-      isShadow: { $ne: true },
-    })
-      .select(
-        "profileName photoURL biodata.personal biodata.education biodata.religious biodata.lifestyle biodata.aboutMe"
-      )
-      .lean();
+    // Opposite gender, not self, never shadow profiles.
+    const rows = await db
+      .select({
+        id: members.id,
+        profileName: members.profileName,
+        photoURL: members.photoURL,
+        biodata: members.biodata,
+      })
+      .from(members)
+      .where(
+        and(
+          ne(members.uid, uid),
+          eq(bio(members.biodata, "personal", "gender"), targetGender),
+          eq(members.isShadow, false)
+        )
+      );
+
+    const profiles = rows.map((r) => ({
+      _id: r.id,
+      profileName: r.profileName,
+      photoURL: r.photoURL,
+      biodata: {
+        personal: r.biodata?.personal,
+        education: r.biodata?.education,
+        religious: r.biodata?.religious,
+        lifestyle: r.biodata?.lifestyle,
+        aboutMe: r.biodata?.aboutMe,
+      },
+    }));
 
     return NextResponse.json({ profiles });
   } catch (error) {
     console.error("Profiles fetch error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

@@ -1,10 +1,24 @@
 import { NextResponse } from "next/server";
-import connectDB from "@/lib/mongodb";
-import User from "@/models/User";
+import { eq, sql } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { members, type Member } from "@/lib/db/schema";
 import { sendAdminBiodataEmail } from "@/lib/email";
 import { getProfileCompletion } from "@/lib/profile-completion";
 import { requireAuth } from "@/lib/auth";
 import { sanitizeBiodataSection } from "@/lib/sanitize";
+import { getMemberByUid, memberJson } from "@/lib/server/members";
+import { normalizeBiodata } from "@/lib/types/biodata";
+
+const VALID_SECTIONS = ["personal", "education", "family", "religious", "lifestyle", "aboutMe"];
+
+function completion(m: Member) {
+  return getProfileCompletion({
+    profileName: m.profileName || "",
+    firstName: m.firstName || "",
+    lastName: m.lastName || "",
+    biodata: normalizeBiodata(m.biodata) as Parameters<typeof getProfileCompletion>[0]["biodata"],
+  });
+}
 
 export async function PUT(request: Request) {
   try {
@@ -12,74 +26,39 @@ export async function PUT(request: Request) {
     if (authResult instanceof NextResponse) return authResult;
     const uid = authResult.uid;
 
-    const { section, data } = await request.json();
-
-    if (!section) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      );
+    const { section, data } = await request.json().catch(() => ({}));
+    if (!section || !VALID_SECTIONS.includes(section)) {
+      return NextResponse.json({ error: "Invalid section" }, { status: 400 });
     }
 
-    const validSections = [
-      "personal",
-      "education",
-      "family",
-      "religious",
-      "lifestyle",
-      "aboutMe",
-    ];
-    if (!validSections.includes(section)) {
-      return NextResponse.json(
-        { error: "Invalid section" },
-        { status: 400 }
-      );
-    }
-
-    // Sanitize: strip unknown keys, enforce string types and length limits
-    const sanitized = section === "aboutMe"
-      ? (typeof data === "string" ? data.slice(0, 1000) : "")
-      : sanitizeBiodataSection(section, data);
-
-    if (sanitized === null) {
+    const value: unknown =
+      section === "aboutMe"
+        ? typeof data === "string"
+          ? data.slice(0, 1000)
+          : ""
+        : sanitizeBiodataSection(section, data);
+    if (value === null) {
       return NextResponse.json({ error: "Invalid data format" }, { status: 400 });
     }
 
-    const cleanData = section === "aboutMe" ? sanitized : sanitized;
-
-    await connectDB();
-
-    const updateKey =
-      section === "aboutMe" ? "biodata.aboutMe" : `biodata.${section}`;
-
-    // Snapshot completion before update
-    const userBefore = await User.findOne({ firebaseUid: uid });
-    const completionBefore = userBefore
-      ? getProfileCompletion({
-          profileName: userBefore.profileName || "",
-          firstName: userBefore.firstName || "",
-          lastName: userBefore.lastName || "",
-          biodata: userBefore.biodata as Parameters<typeof getProfileCompletion>[0]["biodata"],
-        })
-      : 0;
-
-    const user = await User.findOneAndUpdate(
-      { firebaseUid: uid },
-      { $set: { [updateKey]: cleanData } },
-      { new: true }
-    );
-
-    if (!user) {
+    const before = await getMemberByUid(uid);
+    if (!before) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
+    const completionBefore = completion(before);
+
+    // Atomic single-key update of the jsonb document.
+    const path = `{${section}}`;
+    const [user] = await db
+      .update(members)
+      .set({
+        biodata: sql`jsonb_set(coalesce(${members.biodata}, '{}'::jsonb), ${path}::text[], ${JSON.stringify(value)}::jsonb, true)`,
+      })
+      .where(eq(members.uid, uid))
+      .returning();
 
     // Notify admin once when profile crosses the 80% completion threshold
-    const completionAfter = getProfileCompletion({
-      profileName: user.profileName || "",
-      firstName: user.firstName || "",
-      lastName: user.lastName || "",
-      biodata: user.biodata as Parameters<typeof getProfileCompletion>[0]["biodata"],
-    });
+    const completionAfter = completion(user);
     if (completionBefore < 80 && completionAfter >= 80) {
       sendAdminBiodataEmail({
         email: user.email,
@@ -89,12 +68,9 @@ export async function PUT(request: Request) {
       }).catch((err) => console.error("Admin biodata email error:", err));
     }
 
-    return NextResponse.json({ user });
+    return NextResponse.json({ user: memberJson(user) });
   } catch (error) {
     console.error("Biodata update error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

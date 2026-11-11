@@ -183,7 +183,7 @@ export function FieldDateSelect({
       <label id={groupId} className="block text-[12px] font-semibold tracking-wide text-[var(--color-dark-56)] sm:text-[13px]">
         {label}
       </label>
-      <div className="mt-1.5 grid grid-cols-3 gap-1.5 sm:mt-2 sm:gap-2">
+      <div className="mt-1.5 grid grid-cols-[1.3fr_1fr_1fr] gap-1.5 sm:mt-2 sm:gap-2">
         <select
           aria-label="Month"
           value={month}

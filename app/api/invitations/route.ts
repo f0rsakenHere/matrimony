@@ -1,12 +1,15 @@
 import { NextResponse } from "next/server";
-import connectDB from "@/lib/mongodb";
-import User from "@/models/User";
-import Invitation from "@/models/Invitation";
-import Notification from "@/models/Notification";
+import { and, desc, eq, inArray, or, sql, type SQL } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { invitations, members, notifications, type InvitationStatus } from "@/lib/db/schema";
 import { requireAuth } from "@/lib/auth";
+import { isUuid, withId } from "@/lib/db/helpers";
 import { inviteLimiter } from "@/lib/rate-limit";
+import { getMemberById, getMemberByUid } from "@/lib/server/members";
 
-// GET — fetch invitations for a user (sent + received)
+const STATUSES: InvitationStatus[] = ["pending", "accepted", "declined"];
+
+// GET — invitations for the signed-in user (sent + received)
 export async function GET(request: Request) {
   try {
     const authResult = await requireAuth(request);
@@ -14,27 +17,25 @@ export async function GET(request: Request) {
     const uid = authResult.uid;
 
     const { searchParams } = new URL(request.url);
-    const type = searchParams.get("type"); // "sent" | "received"
-    const status = searchParams.get("status"); // "pending" | "accepted" | "declined"
+    const type = searchParams.get("type");
+    const status = searchParams.get("status") as InvitationStatus | null;
 
-    await connectDB();
+    const conds: SQL[] = [
+      type === "sent"
+        ? eq(invitations.senderUid, uid)
+        : type === "received"
+          ? eq(invitations.receiverUid, uid)
+          : or(eq(invitations.senderUid, uid), eq(invitations.receiverUid, uid))!,
+    ];
+    if (status && STATUSES.includes(status)) conds.push(eq(invitations.status, status));
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const filter: Record<string, any> = {};
-    if (type === "sent") {
-      filter.senderUid = uid;
-    } else if (type === "received") {
-      filter.receiverUid = uid;
-    } else {
-      filter.$or = [{ senderUid: uid }, { receiverUid: uid }];
-    }
-    if (status) filter.status = status;
+    const rows = await db
+      .select()
+      .from(invitations)
+      .where(and(...conds))
+      .orderBy(desc(invitations.createdAt));
 
-    const invitations = await Invitation.find(filter)
-      .sort({ createdAt: -1 })
-      .lean();
-
-    return NextResponse.json({ invitations });
+    return NextResponse.json({ invitations: rows.map(withId) });
   } catch (error) {
     console.error("Invitations fetch error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -53,100 +54,78 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Too many invitations. Please try again later." }, { status: 429 });
     }
 
-    const { receiverProfileId } = await request.json();
-
-    if (!receiverProfileId) {
+    const { receiverProfileId } = await request.json().catch(() => ({}));
+    if (!isUuid(receiverProfileId)) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 });
     }
 
-    await connectDB();
-
-    // Get sender
-    const sender = await User.findOne({ firebaseUid: senderUid }).lean();
+    const sender = await getMemberByUid(senderUid);
     if (!sender) {
       return NextResponse.json({ error: "Sender not found" }, { status: 404 });
     }
-    const senderData = sender as {
-      _id: string;
-      firebaseUid: string;
-      profileName?: string;
-      firstName?: string;
-      invitesRemaining?: number;
-      isPremium?: boolean;
-    };
-
-    // Check invite balance
-    const remaining = senderData.invitesRemaining ?? 3;
-    if (remaining <= 0 && !senderData.isPremium) {
-      return NextResponse.json(
-        { error: "No invitations remaining. Upgrade to get more." },
-        { status: 403 }
-      );
+    if (sender.invitesRemaining <= 0 && !sender.isPremium) {
+      return NextResponse.json({ error: "No invitations remaining. Upgrade to get more." }, { status: 403 });
     }
 
-    // Get receiver
-    const receiver = await User.findById(receiverProfileId).lean();
-    if (!receiver) {
+    const receiver = await getMemberById(receiverProfileId);
+    if (!receiver || receiver.isShadow) {
       return NextResponse.json({ error: "Profile not found" }, { status: 404 });
     }
-    const receiverData = receiver as {
-      _id: string;
-      firebaseUid: string;
-      profileName?: string;
-      firstName?: string;
-    };
-
-    // Can't invite yourself
-    if (senderData.firebaseUid === receiverData.firebaseUid) {
+    if (sender.uid === receiver.uid) {
       return NextResponse.json({ error: "Cannot invite yourself" }, { status: 400 });
     }
 
-    // Check for existing invitation between these two
-    const existing = await Invitation.findOne({
-      senderUid: senderUid,
-      receiverUid: receiverData.firebaseUid,
-      status: { $in: ["pending", "accepted"] },
-    });
+    const [existing] = await db
+      .select({ id: invitations.id })
+      .from(invitations)
+      .where(
+        and(
+          eq(invitations.senderUid, senderUid),
+          eq(invitations.receiverUid, receiver.uid),
+          inArray(invitations.status, ["pending", "accepted"])
+        )
+      )
+      .limit(1);
     if (existing) {
-      return NextResponse.json(
-        { error: "You have already sent an invitation to this person" },
-        { status: 409 }
-      );
+      return NextResponse.json({ error: "You have already sent an invitation to this person" }, { status: 409 });
     }
 
-    const senderName = senderData.profileName || senderData.firstName || "Someone";
-    const receiverName = receiverData.profileName || receiverData.firstName || "Someone";
+    const senderName = sender.profileName || sender.firstName || "Someone";
+    const receiverName = receiver.profileName || receiver.firstName || "Someone";
 
-    // Create invitation
-    const invitation = await Invitation.create({
-      senderUid: senderData.firebaseUid,
-      senderName,
-      senderProfileId: String(senderData._id),
-      receiverUid: receiverData.firebaseUid,
-      receiverName,
-      receiverProfileId: String(receiverData._id),
+    const invitation = await db.transaction(async (tx) => {
+      const [inv] = await tx
+        .insert(invitations)
+        .values({
+          senderUid: sender.uid,
+          senderName,
+          senderProfileId: sender.id,
+          receiverUid: receiver.uid,
+          receiverName,
+          receiverProfileId: receiver.id,
+        })
+        .returning();
+
+      if (!sender.isPremium) {
+        await tx
+          .update(members)
+          .set({ invitesRemaining: sql`${members.invitesRemaining} - 1` })
+          .where(eq(members.uid, senderUid));
+      }
+
+      await tx.insert(notifications).values({
+        recipientUid: receiver.uid,
+        type: "system",
+        title: "New Invitation",
+        message: `${senderName}'s family has expressed interest in your profile. Review and respond to this invitation.`,
+        actorUid: sender.uid,
+        actorName: senderName,
+        actorProfileId: sender.id,
+      });
+      return inv;
     });
 
-    // Deduct invite (skip for premium)
-    if (!senderData.isPremium) {
-      await User.updateOne(
-        { firebaseUid: senderUid },
-        { $inc: { invitesRemaining: -1 } }
-      );
-    }
-
-    // Notify receiver
-    await Notification.create({
-      recipientUid: receiverData.firebaseUid,
-      type: "system",
-      title: "New Invitation",
-      message: `${senderName}'s family has expressed interest in your profile. Review and respond to this invitation.`,
-      actorUid: senderData.firebaseUid,
-      actorName: senderName,
-      actorProfileId: String(senderData._id),
-    });
-
-    return NextResponse.json({ invitation });
+    return NextResponse.json({ invitation: withId(invitation) });
   } catch (error) {
     console.error("Send invitation error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -160,56 +139,50 @@ export async function PATCH(request: Request) {
     if (authResult instanceof NextResponse) return authResult;
     const uid = authResult.uid;
 
-    const { invitationId, action } = await request.json();
-
-    if (!invitationId || !["accept", "decline"].includes(action)) {
+    const { invitationId, action } = await request.json().catch(() => ({}));
+    if (!isUuid(invitationId) || !["accept", "decline"].includes(action)) {
       return NextResponse.json({ error: "Invalid request" }, { status: 400 });
     }
 
-    await connectDB();
-
-    const invitation = await Invitation.findById(invitationId);
+    const [invitation] = await db.select().from(invitations).where(eq(invitations.id, invitationId)).limit(1);
     if (!invitation) {
       return NextResponse.json({ error: "Invitation not found" }, { status: 404 });
     }
-
-    // Only the receiver can respond
     if (invitation.receiverUid !== uid) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
-    if (invitation.status !== "pending") {
-      return NextResponse.json(
-        { error: "This invitation has already been responded to" },
-        { status: 400 }
-      );
+    const newStatus: InvitationStatus = action === "accept" ? "accepted" : "declined";
+    // Conditional update so two concurrent responses can't both succeed.
+    const [updated] = await db
+      .update(invitations)
+      .set({ status: newStatus })
+      .where(and(eq(invitations.id, invitationId), eq(invitations.status, "pending")))
+      .returning();
+    if (!updated) {
+      return NextResponse.json({ error: "This invitation has already been responded to" }, { status: 400 });
     }
 
-    const newStatus = action === "accept" ? "accepted" : "declined";
-    invitation.status = newStatus;
-    await invitation.save();
+    await db.insert(notifications).values(
+      action === "accept"
+        ? {
+            recipientUid: invitation.senderUid,
+            type: "system",
+            title: "Invitation Accepted!",
+            message: `${invitation.receiverName}'s family has accepted your invitation. You can now view each other's Wali contact details.`,
+            actorUid: invitation.receiverUid,
+            actorName: invitation.receiverName,
+            actorProfileId: invitation.receiverProfileId,
+          }
+        : {
+            recipientUid: invitation.senderUid,
+            type: "system",
+            title: "Invitation Declined",
+            message: `Your invitation to ${invitation.receiverName} was not accepted at this time.`,
+          }
+    );
 
-    // Notify the sender
-    if (action === "accept") {
-      await Notification.create({
-        recipientUid: invitation.senderUid,
-        type: "system",
-        title: "Invitation Accepted!",
-        message: `${invitation.receiverName}'s family has accepted your invitation. You can now view each other's Wali contact details.`,
-        actorUid: invitation.receiverUid,
-        actorName: invitation.receiverName,
-        actorProfileId: invitation.receiverProfileId,
-      });
-    } else {
-      await Notification.create({
-        recipientUid: invitation.senderUid,
-        type: "system",
-        title: "Invitation Declined",
-        message: `Your invitation to ${invitation.receiverName} was not accepted at this time.`,
-      });
-    }
-
-    return NextResponse.json({ invitation });
+    return NextResponse.json({ invitation: withId(updated) });
   } catch (error) {
     console.error("Invitation response error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

@@ -6,7 +6,6 @@ import {
   Users,
   Lock,
   Heart,
-  Phone,
   Mail,
   MapPin,
   ArrowUpRight,
@@ -16,7 +15,7 @@ const exploreLinks = [
   { label: "About Us", href: "/#about" },
   { label: "How It Works", href: "/#how-it-works" },
   { label: "Register", href: "/register" },
-  { label: "Contact", href: "/#contact" },
+  { label: "Contact Us", href: "/contact" },
 ];
 
 const trustBadges = [
@@ -95,22 +94,12 @@ export default function SiteFooter() {
             <ul className="mt-5 space-y-4">
               <li>
                 <Link
-                  href="tel:+17042791249"
-                  className="flex items-center gap-3 text-[14px] opacity-85 transition-opacity hover:opacity-100"
-                  style={{ color: "#fff" }}
-                >
-                  <Phone className="size-4 shrink-0" strokeWidth={1.5} />
-                  +1 (704) 279-1249
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="mailto:hello@bdcannikah.ca"
+                  href="/contact"
                   className="flex items-center gap-3 text-[14px] opacity-85 transition-opacity hover:opacity-100"
                   style={{ color: "#fff" }}
                 >
                   <Mail className="size-4 shrink-0" strokeWidth={1.5} />
-                  hello@bdcannikah.ca
+                  Send us a message
                 </Link>
               </li>
               <li className="flex items-center gap-3 text-[14px] opacity-85">

@@ -269,3 +269,14 @@ button {
     }
   }
 }
+
+/* iOS Safari zooms the page when a focused field's text is under 16px.
+   Keep every form control at 16px on phones. Unlayered, so it overrides
+   Tailwind text-size utilities without !important. */
+@media (max-width: 639px) {
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}

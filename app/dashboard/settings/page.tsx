@@ -78,12 +78,6 @@ export default function SettingsPage() {
               </span>
             )}
           </div>
-          <p className="text-[14px] text-[var(--color-dark-56)]">
-            Photo is synced from your{" "}
-            {profile?.email?.includes("google") || user?.providerData?.[0]?.providerId === "google.com"
-              ? "Google account"
-              : "account"}
-          </p>
         </div>
       </div>
 

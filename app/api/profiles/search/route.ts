@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
-import connectDB from "@/lib/mongodb";
-import User from "@/models/User";
+import { and, count, desc, eq, inArray, ne, or, type SQL } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { members } from "@/lib/db/schema";
 import { requireAuth } from "@/lib/auth";
-import { escapeRegex } from "@/lib/sanitize";
+import { bio, biodataFilters, containsCI } from "@/lib/db/helpers";
 import { apiLimiter } from "@/lib/rate-limit";
+import { getMemberByUid } from "@/lib/server/members";
 
 export async function GET(request: Request) {
   try {
@@ -18,138 +20,84 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("q")?.trim();
-    const gender = searchParams.get("gender");
-    const maritalStatus = searchParams.get("maritalStatus");
-    const educationLevel = searchParams.get("educationLevel");
-    const sect = searchParams.get("sect");
-    const prayerRoutine = searchParams.get("prayerRoutine");
-    const country = searchParams.get("country")?.trim();
-    const city = searchParams.get("city")?.trim();
-    const complexion = searchParams.get("complexion");
-    const diet = searchParams.get("diet");
-    const smoking = searchParams.get("smoking");
-    const modesty = searchParams.get("modesty");
-    const beard = searchParams.get("beard");
-    const ageMin = searchParams.get("ageMin");
-    const ageMax = searchParams.get("ageMax");
-    const heightMin = searchParams.get("heightMin"); // e.g. "5'0\""
-    const heightMax = searchParams.get("heightMax");
-    const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
-    const limit = Math.min(50, Math.max(1, parseInt(searchParams.get("limit") || "12", 10)));
+    const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10) || 1);
+    const limit = Math.min(50, Math.max(1, parseInt(searchParams.get("limit") || "12", 10) || 12));
 
-    await connectDB();
+    // Exclude self and shadow profiles (they haven't consented to being
+    // browsed by registered users).
+    const conds: SQL[] = [ne(members.uid, uid), eq(members.isShadow, false)];
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const filter: Record<string, any> = {};
-
-    // Exclude current user and show only opposite gender
-    filter.firebaseUid = { $ne: uid };
-    // Hide shadow users (auto-created from anonymous submissions) from
-    // public-facing search — they haven't consented to being viewed by
-    // other registered users until they sign up and claim their record.
-    filter.isShadow = { $ne: true };
-    const currentUser = await User.findOne({ firebaseUid: uid })
-      .select("biodata.personal.gender")
-      .lean();
-    const userGender = (currentUser as { biodata?: { personal?: { gender?: string } } })
-      ?.biodata?.personal?.gender;
-    if (userGender) {
-      filter["biodata.personal.gender"] = userGender === "Male" ? "Female" : "Male";
-    } else {
-      filter["biodata.personal.gender"] = { $in: ["Male", "Female"] };
+    // Default to opposite gender; an explicit ?gender= overrides (handled
+    // by biodataFilters below).
+    const genderExpr = bio(members.biodata, "personal", "gender");
+    if (!searchParams.get("gender")) {
+      const me = await getMemberByUid(uid);
+      const myGender = me?.biodata?.personal?.gender;
+      conds.push(
+        myGender
+          ? eq(genderExpr, myGender === "Male" ? "Female" : "Male")
+          : inArray(genderExpr, ["Male", "Female"])
+      );
     }
 
-    // Override with explicit gender filter only if provided (admin use case)
-    if (gender) filter["biodata.personal.gender"] = gender;
-    if (maritalStatus) filter["biodata.personal.maritalStatus"] = maritalStatus;
-    if (complexion) filter["biodata.personal.complexion"] = complexion;
-    if (educationLevel) filter["biodata.education.educationLevel"] = educationLevel;
-    if (sect) filter["biodata.religious.sect"] = sect;
-    if (prayerRoutine) filter["biodata.religious.prayerRoutine"] = prayerRoutine;
-    if (modesty) filter["biodata.religious.modesty"] = modesty;
-    if (beard) filter["biodata.religious.beard"] = beard;
-    if (diet) filter["biodata.lifestyle.diet"] = diet;
-    if (smoking) filter["biodata.lifestyle.smoking"] = smoking;
+    conds.push(...biodataFilters(members.biodata, searchParams));
 
-    if (country) {
-      filter["biodata.personal.country"] = { $regex: `^${escapeRegex(country)}$`, $options: "i" };
-    }
-    if (city) {
-      filter["biodata.personal.city"] = { $regex: escapeRegex(city), $options: "i" };
-    }
-
-    // Age range → DOB boundaries (dateOfBirth stored as "YYYY-MM-DD" string)
-    if (ageMin || ageMax) {
-      const today = new Date();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const dobFilter: Record<string, any> = {};
-      if (ageMax) {
-        const minDate = new Date(today.getFullYear() - parseInt(ageMax, 10) - 1, today.getMonth(), today.getDate() + 1);
-        dobFilter.$gte = minDate.toISOString().split("T")[0];
-      }
-      if (ageMin) {
-        const maxDate = new Date(today.getFullYear() - parseInt(ageMin, 10), today.getMonth(), today.getDate());
-        dobFilter.$lte = maxDate.toISOString().split("T")[0];
-      }
-      if (Object.keys(dobFilter).length > 0) {
-        filter["biodata.personal.dateOfBirth"] = dobFilter;
-      }
-    }
-
-    // Height range — stored as strings like 5'4", compare by converting to total inches
-    // We handle this in-memory after fetch since MongoDB can't parse these strings easily
-    // For now, we skip height filtering at DB level (filtered client-side or we use $where)
-
-    // Text search
     if (search) {
-      const escaped = escapeRegex(search);
-      filter.$or = [
-        { profileName: { $regex: escaped, $options: "i" } },
-        { "biodata.personal.city": { $regex: escaped, $options: "i" } },
-        { "biodata.personal.country": { $regex: escaped, $options: "i" } },
-        { "biodata.education.occupation": { $regex: escaped, $options: "i" } },
-        { "biodata.education.institution": { $regex: escaped, $options: "i" } },
-        { "biodata.education.fieldOfStudy": { $regex: escaped, $options: "i" } },
-      ];
+      conds.push(
+        or(
+          containsCI(members.profileName, search),
+          containsCI(bio(members.biodata, "personal", "city"), search),
+          containsCI(bio(members.biodata, "personal", "country"), search),
+          containsCI(bio(members.biodata, "education", "occupation"), search),
+          containsCI(bio(members.biodata, "education", "institution"), search),
+          containsCI(bio(members.biodata, "education", "fieldOfStudy"), search)
+        )!
+      );
     }
 
-    const skip = (page - 1) * limit;
-
-    const [profiles, total] = await Promise.all([
-      User.find(filter)
-        .select(
-          "profileName photoURL biodata.personal biodata.education biodata.religious biodata.lifestyle biodata.family biodata.aboutMe"
-        )
-        .sort({ updatedAt: -1 })
-        .skip(skip)
+    const where = and(...conds);
+    const [rows, [{ total }]] = await Promise.all([
+      db
+        .select({
+          id: members.id,
+          profileName: members.profileName,
+          photoURL: members.photoURL,
+          biodata: members.biodata,
+        })
+        .from(members)
+        .where(where)
+        .orderBy(desc(members.updatedAt))
         .limit(limit)
-        .lean(),
-      User.countDocuments(filter),
+        .offset((page - 1) * limit),
+      db.select({ total: count() }).from(members).where(where),
     ]);
 
-    // Post-filter by height if needed
-    let filtered = profiles;
-    if (heightMin || heightMax) {
-      const parseHeight = (h: string): number => {
-        const m = h.match(/(\d+)'(\d+)"/);
-        return m ? parseInt(m[1], 10) * 12 + parseInt(m[2], 10) : 0;
+    // Wali contact details are never exposed in search results.
+    const profiles = rows.map((r) => {
+      const family = { ...(r.biodata?.family ?? {}) } as Record<string, string>;
+      for (const k of ["waliName", "waliPhone", "waliEmail", "waliRelationship", "waliContactMethod"]) {
+        if (k in family) family[k] = "";
+      }
+      return {
+        _id: r.id,
+        profileName: r.profileName,
+        photoURL: r.photoURL,
+        biodata: {
+          personal: r.biodata?.personal,
+          education: r.biodata?.education,
+          religious: r.biodata?.religious,
+          lifestyle: r.biodata?.lifestyle,
+          family,
+          aboutMe: r.biodata?.aboutMe,
+        },
       };
-      const minInches = heightMin ? parseHeight(heightMin) : 0;
-      const maxInches = heightMax ? parseHeight(heightMax) : 999;
-      filtered = profiles.filter((p) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const h = (p as any).biodata?.personal?.height;
-        if (!h) return true;
-        const inches = parseHeight(h);
-        return inches >= minInches && inches <= maxInches;
-      });
-    }
+    });
 
     return NextResponse.json({
-      profiles: filtered,
-      total: heightMin || heightMax ? filtered.length : total,
+      profiles,
+      total,
       page,
-      totalPages: Math.ceil((heightMin || heightMax ? filtered.length : total) / limit),
+      totalPages: Math.ceil(total / limit),
     });
   } catch (error) {
     console.error("Search error:", error);

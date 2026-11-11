@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server";
-import connectDB from "@/lib/mongodb";
-import User from "@/models/User";
-import ManualMatch from "@/models/ManualMatch";
+import { and, count, desc, eq, inArray, or } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { manualMatches, type MatchStatus } from "@/lib/db/schema";
 import { requireAdmin } from "@/lib/auth";
+import { isUuid, withId } from "@/lib/db/helpers";
+import { getMemberById } from "@/lib/server/members";
+
+const STATUSES: MatchStatus[] = ["matched", "contacted", "successful", "unsuccessful"];
 
 // GET — list manual matches
 export async function GET(request: Request) {
@@ -11,42 +15,36 @@ export async function GET(request: Request) {
     if (authResult instanceof NextResponse) return authResult;
 
     const { searchParams } = new URL(request.url);
-    const status = searchParams.get("status");
-    const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
-    const limit = Math.min(50, Math.max(1, parseInt(searchParams.get("limit") || "20", 10)));
+    const status = searchParams.get("status") as MatchStatus | null;
+    const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10) || 1);
+    const limit = Math.min(50, Math.max(1, parseInt(searchParams.get("limit") || "20", 10) || 20));
 
-    await connectDB();
+    const where = status && STATUSES.includes(status) ? eq(manualMatches.status, status) : undefined;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const filter: Record<string, any> = {};
-    if (status) filter.status = status;
-
-    const skip = (page - 1) * limit;
-    const [matches, total] = await Promise.all([
-      ManualMatch.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
-      ManualMatch.countDocuments(filter),
+    const [rows, [{ total }], grouped] = await Promise.all([
+      db
+        .select()
+        .from(manualMatches)
+        .where(where)
+        .orderBy(desc(manualMatches.createdAt))
+        .limit(limit)
+        .offset((page - 1) * limit),
+      db.select({ total: count() }).from(manualMatches).where(where),
+      db
+        .select({ status: manualMatches.status, n: count() })
+        .from(manualMatches)
+        .groupBy(manualMatches.status),
     ]);
 
-    // Count by status
-    const [matchedCount, contactedCount, successfulCount, unsuccessfulCount] =
-      await Promise.all([
-        ManualMatch.countDocuments({ status: "matched" }),
-        ManualMatch.countDocuments({ status: "contacted" }),
-        ManualMatch.countDocuments({ status: "successful" }),
-        ManualMatch.countDocuments({ status: "unsuccessful" }),
-      ]);
+    const stats: Record<MatchStatus, number> = { matched: 0, contacted: 0, successful: 0, unsuccessful: 0 };
+    for (const g of grouped) if (g.status in stats) stats[g.status] = g.n;
 
     return NextResponse.json({
-      matches,
+      matches: rows.map(withId),
       total,
       page,
       totalPages: Math.ceil(total / limit),
-      stats: {
-        matched: matchedCount,
-        contacted: contactedCount,
-        successful: successfulCount,
-        unsuccessful: unsuccessfulCount,
-      },
+      stats,
     });
   } catch (error) {
     console.error("Admin matches fetch error:", error);
@@ -59,56 +57,53 @@ export async function POST(request: Request) {
   try {
     const authResult = await requireAdmin(request);
     if (authResult instanceof NextResponse) return authResult;
-    const adminUid = authResult.uid;
 
-    const { user1Id, user2Id, notes } = await request.json();
-
-    if (!user1Id || !user2Id) {
+    const { user1Id, user2Id, notes } = await request.json().catch(() => ({}));
+    if (!isUuid(user1Id) || !isUuid(user2Id)) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 });
     }
-
     if (user1Id === user2Id) {
       return NextResponse.json({ error: "Cannot match a user with themselves" }, { status: 400 });
     }
 
-    await connectDB();
-
-    const [u1, u2] = await Promise.all([
-      User.findById(user1Id).lean(),
-      User.findById(user2Id).lean(),
-    ]);
-
+    const [u1, u2] = await Promise.all([getMemberById(user1Id), getMemberById(user2Id)]);
     if (!u1 || !u2) {
       return NextResponse.json({ error: "One or both users not found" }, { status: 404 });
     }
 
-    const u1Data = u1 as { _id: string; firebaseUid: string; profileName?: string; firstName?: string };
-    const u2Data = u2 as { _id: string; firebaseUid: string; profileName?: string; firstName?: string };
-
-    // Check for existing active match between these two
-    const existing = await ManualMatch.findOne({
-      $or: [
-        { user1Uid: u1Data.firebaseUid, user2Uid: u2Data.firebaseUid, status: { $in: ["matched", "contacted"] } },
-        { user1Uid: u2Data.firebaseUid, user2Uid: u1Data.firebaseUid, status: { $in: ["matched", "contacted"] } },
-      ],
-    });
-
+    const active = inArray(manualMatches.status, ["matched", "contacted"]);
+    const [existing] = await db
+      .select({ id: manualMatches.id })
+      .from(manualMatches)
+      .where(
+        and(
+          active,
+          or(
+            and(eq(manualMatches.user1Uid, u1.uid), eq(manualMatches.user2Uid, u2.uid)),
+            and(eq(manualMatches.user1Uid, u2.uid), eq(manualMatches.user2Uid, u1.uid))
+          )
+        )
+      )
+      .limit(1);
     if (existing) {
       return NextResponse.json({ error: "An active match already exists between these users" }, { status: 409 });
     }
 
-    const match = await ManualMatch.create({
-      user1Id: String(u1Data._id),
-      user1Uid: u1Data.firebaseUid,
-      user1Name: u1Data.profileName || u1Data.firstName || "Unknown",
-      user2Id: String(u2Data._id),
-      user2Uid: u2Data.firebaseUid,
-      user2Name: u2Data.profileName || u2Data.firstName || "Unknown",
-      notes: notes || "",
-      matchedBy: adminUid,
-    });
+    const [match] = await db
+      .insert(manualMatches)
+      .values({
+        user1Id: u1.id,
+        user1Uid: u1.uid,
+        user1Name: u1.profileName || u1.firstName || "Unknown",
+        user2Id: u2.id,
+        user2Uid: u2.uid,
+        user2Name: u2.profileName || u2.firstName || "Unknown",
+        notes: typeof notes === "string" ? notes.slice(0, 2000) : "",
+        matchedBy: authResult.uid,
+      })
+      .returning();
 
-    return NextResponse.json({ match });
+    return NextResponse.json({ match: withId(match) });
   } catch (error) {
     console.error("Admin create match error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -121,30 +116,23 @@ export async function PATCH(request: Request) {
     const authResult = await requireAdmin(request);
     if (authResult instanceof NextResponse) return authResult;
 
-    const { matchId, status, notes } = await request.json();
-
-    if (!matchId) {
+    const { matchId, status, notes } = await request.json().catch(() => ({}));
+    if (!isUuid(matchId)) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 });
     }
 
-    await connectDB();
+    const updates: Partial<typeof manualMatches.$inferInsert> = {};
+    if (status && STATUSES.includes(status)) updates.status = status;
+    if (typeof notes === "string") updates.notes = notes.slice(0, 2000);
+    if (Object.keys(updates).length === 0) {
+      return NextResponse.json({ error: "Nothing to update" }, { status: 400 });
+    }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const updates: Record<string, any> = {};
-    if (status) updates.status = status;
-    if (notes !== undefined) updates.notes = notes;
-
-    const match = await ManualMatch.findByIdAndUpdate(
-      matchId,
-      { $set: updates },
-      { new: true }
-    ).lean();
-
+    const [match] = await db.update(manualMatches).set(updates).where(eq(manualMatches.id, matchId)).returning();
     if (!match) {
       return NextResponse.json({ error: "Match not found" }, { status: 404 });
     }
-
-    return NextResponse.json({ match });
+    return NextResponse.json({ match: withId(match) });
   } catch (error) {
     console.error("Admin update match error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -157,15 +145,15 @@ export async function DELETE(request: Request) {
     const authResult = await requireAdmin(request);
     if (authResult instanceof NextResponse) return authResult;
 
-    const { matchId } = await request.json();
-
-    await connectDB();
-
-    const deleted = await ManualMatch.findByIdAndDelete(matchId);
-    if (!deleted) {
-      return NextResponse.json({ error: "Match not found" }, { status: 404 });
+    const { matchId } = await request.json().catch(() => ({}));
+    if (!isUuid(matchId)) {
+      return NextResponse.json({ error: "Invalid match id" }, { status: 400 });
     }
 
+    const deleted = await db.delete(manualMatches).where(eq(manualMatches.id, matchId)).returning({ id: manualMatches.id });
+    if (deleted.length === 0) {
+      return NextResponse.json({ error: "Match not found" }, { status: 404 });
+    }
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Admin delete match error:", error);

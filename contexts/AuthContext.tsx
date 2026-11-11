@@ -2,25 +2,26 @@
 
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
+  useMemo,
   useState,
   type ReactNode,
 } from "react";
-import {
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signInWithPopup,
-  signOut,
-  updateProfile,
-  type User,
-} from "firebase/auth";
-import { auth, googleProvider } from "@/lib/firebase";
+import { authClient } from "@/lib/auth-client";
 import { EMPTY_BIODATA } from "@/lib/types/biodata";
 import type { BiodataSection } from "@/lib/types/biodata";
 
 export type { BiodataSection };
+
+/** The signed-in login. Field names kept from the Firebase era. */
+export interface AppUser {
+  uid: string;
+  email: string;
+  displayName: string | null;
+  photoURL: string | null;
+}
 
 export interface ProfileData {
   email: string;
@@ -35,165 +36,130 @@ export interface ProfileData {
 }
 
 interface AuthContextType {
-  user: User | null;
+  user: AppUser | null;
   loading: boolean;
   profile: ProfileData | null;
   refreshProfile: () => Promise<void>;
+  /** Sessions are cookie-based now; kept so existing fetch calls still work. */
   getAuthHeaders: () => Promise<Record<string, string>>;
-  signUpWithEmail: (
-    email: string,
-    password: string,
-    name: string
-  ) => Promise<{ isNewUser: boolean }>;
-  signInWithEmail: (
-    email: string,
-    password: string
-  ) => Promise<{ isNewUser: boolean }>;
-  signInWithGoogle: () => Promise<{ isNewUser: boolean }>;
+  signUpWithEmail: (email: string, password: string, name: string) => Promise<{ isNewUser: boolean }>;
+  signInWithEmail: (email: string, password: string) => Promise<{ isNewUser: boolean }>;
   logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-async function getAuthHeadersForUser(
-  firebaseUser: User
-): Promise<Record<string, string>> {
-  const token = await firebaseUser.getIdToken();
-  return { Authorization: `Bearer ${token}` };
-}
-
-async function syncUserToMongo(
-  firebaseUser: User,
-  provider: "email" | "google"
-): Promise<{ isNewUser: boolean }> {
-  const headers = await getAuthHeadersForUser(firebaseUser);
-  const res = await fetch("/api/auth/sync", {
-    method: "POST",
-    headers: { ...headers, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      email: firebaseUser.email,
-      photoURL: firebaseUser.photoURL,
-      provider,
-    }),
-  });
-  const data = await res.json();
-  return { isNewUser: data.isNewUser ?? false };
+function toProfile(u: Record<string, unknown> & { biodata?: Partial<BiodataSection> }): ProfileData {
+  const b = u.biodata;
+  return {
+    email: (u.email as string) ?? "",
+    profileName: (u.profileName as string) ?? "",
+    firstName: (u.firstName as string) ?? "",
+    lastName: (u.lastName as string) ?? "",
+    photoURL: (u.photoURL as string | null) ?? undefined,
+    isAdmin: (u.isAdmin as boolean) ?? false,
+    isPremium: (u.isPremium as boolean) ?? false,
+    invitesRemaining: (u.invitesRemaining as number) ?? 3,
+    biodata: b
+      ? {
+          personal: { ...EMPTY_BIODATA.personal, ...b.personal },
+          education: { ...EMPTY_BIODATA.education, ...b.education },
+          family: { ...EMPTY_BIODATA.family, ...b.family },
+          religious: { ...EMPTY_BIODATA.religious, ...b.religious },
+          lifestyle: { ...EMPTY_BIODATA.lifestyle, ...b.lifestyle },
+          aboutMe: b.aboutMe ?? "",
+        }
+      : EMPTY_BIODATA,
+  };
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { data: session, isPending, refetch } = authClient.useSession();
   const [profile, setProfile] = useState<ProfileData | null>(null);
+  const [profileLoadedFor, setProfileLoadedFor] = useState<string | null>(null);
 
-  async function fetchProfile(firebaseUser: User) {
+  const sessionUser = session?.user;
+  const user = useMemo<AppUser | null>(
+    () =>
+      sessionUser
+        ? {
+            uid: sessionUser.id,
+            email: sessionUser.email,
+            displayName: sessionUser.name || null,
+            photoURL: sessionUser.image ?? null,
+          }
+        : null,
+    [sessionUser]
+  );
+  const uid = user?.uid ?? null;
+
+  const fetchProfile = useCallback(async (forUid: string) => {
     try {
-      const headers = await getAuthHeadersForUser(firebaseUser);
-      const res = await fetch("/api/profile", { headers });
+      const res = await fetch("/api/profile", { credentials: "same-origin" });
       if (!res.ok) {
-        const body = await res.text().catch(() => "");
-        console.error(`[AuthContext] /api/profile failed: ${res.status}`, body);
-        return;
-      }
-      const data = await res.json();
-      const u = data.user;
-      if (u) {
-        setProfile({
-          email: u.email ?? "",
-          profileName: u.profileName ?? "",
-          firstName: u.firstName ?? "",
-          lastName: u.lastName ?? "",
-          photoURL: u.photoURL,
-          isAdmin: u.isAdmin ?? false,
-          isPremium: u.isPremium ?? false,
-          invitesRemaining: u.invitesRemaining ?? 3,
-          biodata: u.biodata
-            ? {
-                personal: { ...EMPTY_BIODATA.personal, ...u.biodata.personal },
-                education: { ...EMPTY_BIODATA.education, ...u.biodata.education },
-                family: { ...EMPTY_BIODATA.family, ...u.biodata.family },
-                religious: { ...EMPTY_BIODATA.religious, ...u.biodata.religious },
-                lifestyle: { ...EMPTY_BIODATA.lifestyle, ...u.biodata.lifestyle },
-                aboutMe: u.biodata.aboutMe ?? "",
-              }
-            : EMPTY_BIODATA,
-        });
+        console.error(`[AuthContext] /api/profile failed: ${res.status}`);
+        setProfile(null);
+      } else {
+        const data = await res.json();
+        setProfile(data.user ? toProfile(data.user) : null);
       }
     } catch (err) {
       console.error("[AuthContext] fetchProfile error:", err);
+    } finally {
+      setProfileLoadedFor(forUid);
     }
-  }
-
-  async function getAuthHeaders(): Promise<Record<string, string>> {
-    if (!user) return {};
-    return getAuthHeadersForUser(user);
-  }
-
-  async function refreshProfile() {
-    if (user) {
-      await fetchProfile(user);
-    }
-  }
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      setUser(firebaseUser);
-      if (firebaseUser) {
-        await fetchProfile(firebaseUser);
-      } else {
-        setProfile(null);
-      }
-      setLoading(false);
-    });
-    return unsubscribe;
   }, []);
 
-  async function signUpWithEmail(
-    email: string,
-    password: string,
-    name: string
-  ) {
-    const result = await createUserWithEmailAndPassword(auth, email, password);
-    await updateProfile(result.user, { displayName: name });
-    const syncResult = await syncUserToMongo(result.user, "email");
-    // onAuthStateChanged races ahead and fetches profile before the user exists
-    // in MongoDB — re-fetch after sync so profile is never null for new users.
-    await fetchProfile(result.user);
-    return syncResult;
-  }
+  useEffect(() => {
+    if (uid) void fetchProfile(uid);
+  }, [uid, fetchProfile]);
 
-  async function signInWithEmail(email: string, password: string) {
-    const result = await signInWithEmailAndPassword(auth, email, password);
-    const syncResult = await syncUserToMongo(result.user, "email");
-    // onAuthStateChanged may have already fired and fetched a 404 (if the
-    // Mongo record didn't exist yet) — re-fetch after sync so profile is set.
-    await fetchProfile(result.user);
-    return syncResult;
-  }
+  const refreshProfile = useCallback(async () => {
+    if (uid) await fetchProfile(uid);
+  }, [uid, fetchProfile]);
 
-  async function signInWithGoogle() {
-    const result = await signInWithPopup(auth, googleProvider);
-    const syncResult = await syncUserToMongo(result.user, "google");
-    // Same race condition applies for first-time Google sign-in
-    await fetchProfile(result.user);
-    return syncResult;
-  }
+  const getAuthHeaders = useCallback(async (): Promise<Record<string, string>> => ({}), []);
 
-  async function logout() {
-    await signOut(auth);
+  const signUpWithEmail = useCallback(
+    async (email: string, password: string, name: string) => {
+      const { error } = await authClient.signUp.email({ email, password, name });
+      if (error) throw new Error(error.message || "Could not create account");
+      await refetch();
+      return { isNewUser: true };
+    },
+    [refetch]
+  );
+
+  const signInWithEmail = useCallback(
+    async (email: string, password: string) => {
+      const { error } = await authClient.signIn.email({ email, password });
+      if (error) throw new Error(error.message || "Invalid email or password");
+      await refetch();
+      return { isNewUser: false };
+    },
+    [refetch]
+  );
+
+  const logout = useCallback(async () => {
+    await authClient.signOut();
     setProfile(null);
-  }
+    setProfileLoadedFor(null);
+    await refetch();
+  }, [refetch]);
+
+  // Loading until the session is known and, if signed in, the profile fetched.
+  const loading = isPending || (uid !== null && profileLoadedFor !== uid);
 
   return (
     <AuthContext
       value={{
         user,
         loading,
-        profile,
+        profile: uid ? profile : null,
         refreshProfile,
         getAuthHeaders,
         signUpWithEmail,
         signInWithEmail,
-        signInWithGoogle,
         logout,
       }}
     >

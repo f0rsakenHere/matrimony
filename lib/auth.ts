@@ -1,52 +1,36 @@
 import { NextResponse } from "next/server";
-import { getAdminAuth } from "@/lib/firebase-admin";
-import connectDB from "@/lib/mongodb";
-import User from "@/models/User";
+import { eq } from "drizzle-orm";
+import { auth } from "@/lib/auth-server";
+import { db } from "@/lib/db";
+import { members } from "@/lib/db/schema";
 
 export interface AuthResult {
+  /** Better Auth user id. Matches members.uid. */
   uid: string;
   email: string | null;
   emailVerified: boolean;
-  /** Firebase sign-in provider, e.g. "password", "google.com". */
-  provider: string | null;
 }
 
 /**
- * Verify the Firebase ID token from the Authorization header.
- * Returns the decoded identity on success, or null if the token is
- * missing/invalid. Trust uid/email/provider from this result, NOT from
- * client-supplied request bodies.
+ * Resolve the signed-in user from the session cookie. Trust uid/email from
+ * this result, NOT from client-supplied request bodies.
  */
-export async function verifyAuth(
-  request: Request
-): Promise<AuthResult | null> {
-  const authHeader = request.headers.get("Authorization");
-  if (!authHeader?.startsWith("Bearer ")) {
-    return null;
-  }
-
-  const idToken = authHeader.slice(7);
+export async function verifyAuth(request: Request): Promise<AuthResult | null> {
   try {
-    const decoded = await getAdminAuth().verifyIdToken(idToken);
+    const result = await auth.api.getSession({ headers: request.headers });
+    if (!result) return null;
     return {
-      uid: decoded.uid,
-      email: decoded.email ?? null,
-      emailVerified: Boolean(decoded.email_verified),
-      provider:
-        (decoded.firebase as { sign_in_provider?: string } | undefined)
-          ?.sign_in_provider ?? null,
+      uid: result.user.id,
+      email: result.user.email ?? null,
+      emailVerified: Boolean(result.user.emailVerified),
     };
   } catch {
     return null;
   }
 }
 
-/**
- * Require authentication. Returns the auth result or a 401 response.
- */
-export async function requireAuth(
-  request: Request
-): Promise<AuthResult | NextResponse> {
+/** Require authentication. Returns the auth result or a 401 response. */
+export async function requireAuth(request: Request): Promise<AuthResult | NextResponse> {
   const result = await verifyAuth(request);
   if (!result) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -54,21 +38,27 @@ export async function requireAuth(
   return result;
 }
 
-/**
- * Require admin privileges. Returns the uid or a 401/403 response.
- */
-export async function requireAdmin(
-  request: Request
-): Promise<{ uid: string } | NextResponse> {
+/** Require admin privileges (members.is_admin). Returns 401/403 otherwise. */
+export async function requireAdmin(request: Request): Promise<AuthResult | NextResponse> {
   const authResult = await requireAuth(request);
   if (authResult instanceof NextResponse) return authResult;
 
-  await connectDB();
-  const user = await User.findOne({ firebaseUid: authResult.uid })
-    .select("isAdmin")
-    .lean();
-  if (!(user as { isAdmin?: boolean })?.isAdmin) {
+  const [m] = await db
+    .select({ isAdmin: members.isAdmin })
+    .from(members)
+    .where(eq(members.uid, authResult.uid))
+    .limit(1);
+  if (!m?.isAdmin) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
   return authResult;
+}
+
+/** Client IP for rate limiting. nginx sets X-Real-IP from the socket address. */
+export function clientIp(request: Request): string {
+  return (
+    request.headers.get("x-real-ip") ??
+    request.headers.get("x-forwarded-for")?.split(",").at(-1)?.trim() ??
+    "unknown"
+  );
 }

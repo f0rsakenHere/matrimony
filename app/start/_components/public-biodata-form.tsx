@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useId } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { EMPTY_BIODATA, type BiodataSection } from "@/lib/types/biodata";
 import { cn } from "@/lib/utils";
@@ -17,13 +18,12 @@ import {
   PUBLIC_MARITAL_STATUS_OPTIONS,
   HIJAB_OPTIONS,
   PUBLIC_WALI_RELATIONSHIP_OPTIONS,
-  WALI_CONTACT_METHOD_OPTIONS,
   HOW_HEARD_OPTIONS,
   EDUCATION_LEVEL_OPTIONS,
   INCOME_OPTIONS,
   BANGLADESH_DISTRICT_OPTIONS,
 } from "@/lib/constants/biodata-options";
-import { CheckCircle2, Loader2, AlertCircle, ArrowLeft } from "lucide-react";
+import { CheckCircle2, Loader2, AlertCircle, ArrowLeft, ArrowRight, Check } from "lucide-react";
 import { goldButtonClass } from "@/components/ui/button-styles";
 
 // Bumped from v1 when the questionnaire changed — old drafts don't match.
@@ -128,66 +128,142 @@ function isCompleteDob(v: string): boolean {
   return !!m && m[1] !== "0000" && m[2] !== "00" && m[3] !== "00";
 }
 
-/** Mirrors the server validation in /api/biodata/submit. */
-function missingFields(d: Draft): string[] {
+/* ─── Steps & per-step validation (mirrors /api/biodata/submit) ─── */
+
+const STEPS = [
+  { id: "you", label: "Your Details" },
+  { id: "profile", label: "Profile" },
+  { id: "education", label: "Education" },
+  { id: "about", label: "About You" },
+  { id: "wali", label: "Wali" },
+  { id: "declaration", label: "Submit" },
+] as const;
+
+type StepId = (typeof STEPS)[number]["id"];
+type Errors = Record<string, string>;
+
+function stepErrors(step: StepId, d: Draft): Errors {
   const { biodata: b, submitter: s } = d;
   const p = b.personal;
   const f = b.family;
-  const missing: string[] = [];
-  if (!s.firstName.trim()) missing.push("First name");
-  if (!s.lastName.trim()) missing.push("Last name");
-  if (!EMAIL_RE.test(s.email.trim())) missing.push("Email");
-  if (!s.phone.trim()) missing.push("Phone");
-  if (!p.city.trim()) missing.push("City");
-  if (!p.country.trim()) missing.push("Country");
-  if (!p.ethnicity) missing.push("Ethnicity");
-  if (!b.lifestyle.languages.trim()) missing.push("Languages");
-  if (!isCompleteDob(p.dateOfBirth)) missing.push("Date of birth");
-  if (!p.height) missing.push("Height");
-  if (!p.weight) missing.push("Weight");
-  if (!p.healthIssues.trim()) missing.push("Health issues");
-  if (!p.citizenshipStatus) missing.push("Citizenship status");
-  if (!p.maritalStatus) missing.push("Marital status");
-  if (p.gender === "Female" && !b.religious.hijab) missing.push("Hijab");
-  if (!b.aboutMe.trim()) missing.push("What you do in life");
-  if (!(b.lookingFor ?? "").trim()) missing.push("What you are looking for");
+  const e: Errors = {};
+  const req = (key: string, ok: boolean, msg = "This field is required.") => {
+    if (!ok) e[key] = msg;
+  };
 
-  const hasWali = [f.waliName, f.waliEmail, f.waliPhone, f.waliRelationship, f.waliContactMethod].some(
-    (v) => v.trim() !== ""
-  );
-  if (hasWali) {
-    if (!f.waliName.trim()) missing.push("Wali's full name");
-    if (!f.waliRelationship) missing.push("Wali's relationship");
-    if (!f.waliContactMethod) missing.push("How your wali receives matches");
-    if (f.waliContactMethod === "Email" && !EMAIL_RE.test(f.waliEmail.trim())) missing.push("Wali's email");
-    if ((f.waliContactMethod === "WhatsApp" || f.waliContactMethod === "SMS") && !f.waliPhone.trim()) {
-      missing.push("Wali's phone");
+  switch (step) {
+    case "you":
+      req("firstName", !!s.firstName.trim());
+      req("lastName", !!s.lastName.trim());
+      if (!s.email.trim()) e.email = "This field is required.";
+      else if (!EMAIL_RE.test(s.email.trim())) e.email = "Please enter a valid email address.";
+      req("phone", !!s.phone.trim());
+      break;
+    case "profile":
+      req("city", !!p.city.trim());
+      req("country", !!p.country.trim());
+      req("ethnicity", !!p.ethnicity, "Please select your ethnicity.");
+      req("languages", !!b.lifestyle.languages.trim());
+      req("dateOfBirth", isCompleteDob(p.dateOfBirth), "Please select month, day and year.");
+      req("height", !!p.height, "Please select your height.");
+      req("weight", !!p.weight, "Please select your weight.");
+      req("healthIssues", !!p.healthIssues.trim(), 'Please answer (write "None" if not applicable).');
+      req("citizenshipStatus", !!p.citizenshipStatus, "Please select your citizenship status.");
+      req("maritalStatus", !!p.maritalStatus, "Please select your marital status.");
+      if (p.gender === "Female") req("hijab", !!b.religious.hijab, "Please choose an answer.");
+      break;
+    case "about":
+      req("aboutMe", !!b.aboutMe.trim());
+      req("lookingFor", !!(b.lookingFor ?? "").trim());
+      break;
+    case "wali": {
+      // Contact method is always Email, so it doesn't count as the user adding a wali.
+      const hasWali = [f.waliName, f.waliEmail, f.waliPhone, f.waliRelationship].some((v) => v.trim() !== "");
+      if (f.waliEmail.trim() && !EMAIL_RE.test(f.waliEmail.trim())) {
+        e.waliEmail = "Please enter a valid email address.";
+      }
+      if (hasWali) {
+        req("waliName", !!f.waliName.trim(), "Required when including a wali.");
+        req("waliRelationship", !!f.waliRelationship, "Required when including a wali.");
+        if (!f.waliEmail.trim()) e.waliEmail = "Required — matches are sent to your wali by email.";
+      }
+      break;
     }
+    case "declaration":
+      req("faith", d.faithDeclarationAccepted, "You must accept the declaration to submit.");
+      break;
   }
-
-  if (!d.faithDeclarationAccepted) missing.push("Declaration of Islamic faith");
-  return missing;
+  return e;
 }
 
-/* ─── Small local inputs (the shared FieldInput has no type/required) ─── */
+/** Index of the first step that still has errors (or the last step). */
+function firstIncompleteStep(d: Draft): number {
+  const i = STEPS.findIndex((s) => Object.keys(stepErrors(s.id, d)).length > 0);
+  return i === -1 ? STEPS.length - 1 : i;
+}
 
-const inputClass =
-  "mt-1.5 w-full rounded-lg border border-[var(--color-dark-14)] bg-[var(--background)] px-3 py-2 text-[14px] text-[var(--foreground)] outline-none transition-colors focus:border-[var(--foreground)] focus:ring-1 focus:ring-[var(--foreground)] placeholder:text-[var(--color-dark-28)] sm:mt-2 sm:px-3.5 sm:py-2.5 sm:text-[15px]";
+/* ─── Small local inputs ─── */
+
+const inputBase =
+  "mt-1.5 w-full rounded-lg border bg-[var(--background)] px-3 py-2 text-[14px] text-[var(--foreground)] outline-none transition-colors focus:ring-1 placeholder:text-[var(--color-dark-28)] sm:mt-2 sm:px-3.5 sm:py-2.5 sm:text-[15px]";
+const inputOk = "border-[var(--color-dark-14)] focus:border-[var(--foreground)] focus:ring-[var(--foreground)]";
+const inputBad = "border-red-400 focus:border-red-500 focus:ring-red-500";
 const labelClass = "block text-[12px] font-semibold tracking-wide text-[var(--color-dark-56)] sm:text-[13px]";
 
+function ErrorText({ msg }: { msg?: string }) {
+  if (!msg) return null;
+  return (
+    <p role="alert" className="mt-1.5 flex items-start gap-1 text-[12px] font-medium text-red-600 sm:text-[13px]">
+      <AlertCircle className="mt-0.5 size-3.5 shrink-0" />
+      <span>{msg}</span>
+    </p>
+  );
+}
+
+/** Wrapper for shared selects/chips: anchors scroll-to-error and shows the message. */
+function FieldBox({
+  name,
+  error,
+  className,
+  children,
+}: {
+  name: string;
+  error?: string;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      id={`field-${name}`}
+      className={cn(
+        "scroll-mt-24",
+        error && "[&_select]:border-red-400 [&_[role=radiogroup]_button]:border-red-300",
+        className
+      )}
+    >
+      {children}
+      <ErrorText msg={error} />
+    </div>
+  );
+}
+
 function TextField({
+  name,
   label,
   value,
   onChange,
+  error,
   type = "text",
   placeholder,
   help,
   maxLength = 200,
   autoComplete,
 }: {
+  name: string;
   label: string;
   value: string;
   onChange: (v: string) => void;
+  error?: string;
   type?: "text" | "email" | "tel";
   placeholder?: string;
   help?: string;
@@ -196,7 +272,7 @@ function TextField({
 }) {
   const id = useId();
   return (
-    <div>
+    <div id={`field-${name}`} className="scroll-mt-24">
       <label htmlFor={id} className={labelClass}>
         {label}
       </label>
@@ -208,27 +284,33 @@ function TextField({
         placeholder={placeholder}
         maxLength={maxLength}
         autoComplete={autoComplete}
-        className={inputClass}
+        aria-invalid={!!error}
+        className={cn(inputBase, error ? inputBad : inputOk)}
       />
-      {help && <p className="mt-1 text-[12px] text-[var(--color-dark-56)]">{help}</p>}
+      <ErrorText msg={error} />
+      {help && !error && <p className="mt-1 text-[12px] text-[var(--color-dark-56)]">{help}</p>}
     </div>
   );
 }
 
 function TextAreaField({
+  name,
   label,
   value,
   onChange,
+  error,
   help,
 }: {
+  name: string;
   label: string;
   value: string;
   onChange: (v: string) => void;
+  error?: string;
   help?: string;
 }) {
   const id = useId();
   return (
-    <div>
+    <div id={`field-${name}`} className="scroll-mt-24">
       <label htmlFor={id} className={labelClass}>
         {label}
       </label>
@@ -239,31 +321,19 @@ function TextAreaField({
         onChange={(e) => onChange(e.target.value)}
         rows={6}
         maxLength={3000}
-        className={cn(inputClass, "resize-y leading-relaxed")}
+        aria-invalid={!!error}
+        className={cn(inputBase, error ? inputBad : inputOk, "resize-y leading-relaxed")}
       />
-      <p className="mt-1 text-right text-[11px] text-[var(--color-dark-28)]">{value.length}/3000</p>
+      <div className="flex items-start justify-between gap-3">
+        <ErrorText msg={error} />
+        <p className="ml-auto mt-1 shrink-0 text-[11px] text-[var(--color-dark-28)]">{value.length}/3000</p>
+      </div>
     </div>
   );
 }
 
-function Section({
-  title,
-  description,
-  children,
-}: {
-  title: string;
-  description?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="rounded-xl border border-[var(--color-dark-12)] bg-[var(--color-dark-04,rgba(30,58,95,0.04))] p-4 sm:rounded-2xl sm:p-6 md:p-8">
-      <h2 className="text-[18px] text-[var(--foreground)] sm:text-[22px]">{title}</h2>
-      {description && (
-        <p className="mt-1 text-[13px] text-[var(--color-dark-56)] sm:text-[14px]">{description}</p>
-      )}
-      <div className="mt-5 grid gap-4 sm:mt-6 sm:grid-cols-2 sm:gap-6">{children}</div>
-    </section>
-  );
+function Grid({ children }: { children: React.ReactNode }) {
+  return <div className="grid gap-4 sm:gap-5 md:grid-cols-2 md:gap-6">{children}</div>;
 }
 
 /* ─── Form ─── */
@@ -271,6 +341,10 @@ function Section({
 export default function PublicBiodataForm() {
   const [draft, setDraft] = useState<Draft>(EMPTY_DRAFT);
   const [hydrated, setHydrated] = useState(false);
+  const [stepIndex, setStepIndex] = useState(0);
+  // Steps where the user pressed Next/Submit — only these show errors, so a
+  // fresh step isn't covered in red before they've typed anything.
+  const [attempted, setAttempted] = useState<Set<StepId>>(new Set());
 
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -280,7 +354,11 @@ export default function PublicBiodataForm() {
   const [honeypot, setHoneypot] = useState("");
 
   useEffect(() => {
-    setDraft(loadDraft());
+    const d = loadDraft();
+    setDraft(d);
+    // Returning visitors resume at their first unfinished step.
+    const touched = d.submitter.firstName || d.submitter.email || d.biodata.personal.city;
+    setStepIndex(touched ? firstIncompleteStep(d) : 0);
     setHydrated(true);
   }, []);
 
@@ -292,6 +370,11 @@ export default function PublicBiodataForm() {
   const s = draft.submitter;
   const gender = b.personal.gender;
   const isSister = gender === "Female";
+  const step = STEPS[stepIndex];
+  const liveErrors = stepErrors(step.id, draft);
+  const errors: Errors = attempted.has(step.id) ? liveErrors : {};
+  // Users may jump back to any step, or forward up to the first incomplete one.
+  const maxReachable = firstIncompleteStep(draft);
 
   function setPersonal(key: keyof BiodataSection["personal"], val: string) {
     setDraft((d) => ({ ...d, biodata: { ...d.biodata, personal: { ...d.biodata.personal, [key]: val } } }));
@@ -315,16 +398,65 @@ export default function PublicBiodataForm() {
     setDraft((d) => ({ ...d, submitter: { ...d.submitter, [key]: val } }));
   }
 
-  function chooseGender(g: "Female" | "Male") {
-    setPersonal("gender", g);
-    if (typeof window !== "undefined") window.scrollTo({ top: 0 });
+  function scrollTop() {
+    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  const missing = missingFields(draft);
+  function focusFirstError(errs: Errors) {
+    const first = Object.keys(errs)[0];
+    if (!first) return;
+    // Wait a frame so the error styles render before scrolling.
+    requestAnimationFrame(() => {
+      const el = document.getElementById(`field-${first}`);
+      el?.scrollIntoView({ behavior: "smooth", block: "center" });
+      el?.querySelector<HTMLElement>("input, select, textarea, button")?.focus({ preventScroll: true });
+    });
+  }
+
+  /** Mark the current step attempted; returns true if it has no errors. */
+  function validateCurrent(): boolean {
+    setAttempted((a) => new Set(a).add(step.id));
+    if (Object.keys(liveErrors).length > 0) {
+      focusFirstError(liveErrors);
+      return false;
+    }
+    return true;
+  }
+
+  function goNext() {
+    if (!validateCurrent()) return;
+    setStepIndex((i) => Math.min(i + 1, STEPS.length - 1));
+    scrollTop();
+  }
+
+  function goBack() {
+    setStepIndex((i) => Math.max(i - 1, 0));
+    scrollTop();
+  }
+
+  function goTo(i: number) {
+    if (i === stepIndex) return;
+    if (i > stepIndex && !validateCurrent()) return;
+    if (i > maxReachable) return;
+    setStepIndex(i);
+    scrollTop();
+  }
+
+  function chooseGender(g: "Female" | "Male") {
+    setPersonal("gender", g);
+    setStepIndex(0);
+    scrollTop();
+  }
 
   async function submit() {
-    if (missing.length > 0) {
-      setSubmitError(`Please fill in: ${missing.join(", ")}.`);
+    if (!validateCurrent()) return;
+    // Safety net: if an earlier step became invalid, send the user there.
+    const bad = firstIncompleteStep(draft);
+    if (bad < STEPS.length - 1) {
+      const badStep = STEPS[bad];
+      setAttempted((a) => new Set(a).add(badStep.id));
+      setStepIndex(bad);
+      focusFirstError(stepErrors(badStep.id, draft));
       return;
     }
     setSubmitting(true);
@@ -351,7 +483,7 @@ export default function PublicBiodataForm() {
       }
       clearDraft();
       setSubmitted(true);
-      if (typeof window !== "undefined") window.scrollTo({ top: 0 });
+      scrollTop();
     } catch (err) {
       console.error("Submit failed:", err);
       setSubmitError("Network error. Please check your connection and try again.");
@@ -370,7 +502,7 @@ export default function PublicBiodataForm() {
     );
   }
 
-  /* Step 1 — sister or brother */
+  /* Step 0 — sister or brother */
   if (gender !== "Female" && gender !== "Male") {
     return (
       <div>
@@ -413,6 +545,25 @@ export default function PublicBiodataForm() {
   const Who = isSister ? "Sister" : "Brother";
   const spouse = isSister ? "husband" : "wife";
   const showDistrict = b.personal.ethnicity === "Bangladesh" || b.personal.otherEthnicity === "Bangladesh";
+  const isLast = stepIndex === STEPS.length - 1;
+  const errorCount = Object.keys(errors).length;
+
+  const stepTitle: Record<StepId, { title: string; description?: string }> = {
+    you: {
+      title: `${Who}'s Details`,
+      description: `If you are the wali, you may register on behalf of the ${who} under your guardianship.`,
+    },
+    profile: { title: "Profile Information" },
+    education: { title: "Education & Career", description: "Optional — your qualifications and professional background." },
+    about: { title: "About You", description: "Pictures will be requested at a later stage." },
+    wali: {
+      title: `${Who}'s Wali`,
+      description: isSister
+        ? "If your wali's contact information is available, please provide it, as it will eventually be required to send you your potential matches."
+        : "Although optional, we highly recommend you include a wali.",
+    },
+    declaration: { title: "Declaration" },
+  };
 
   return (
     <div>
@@ -448,170 +599,274 @@ export default function PublicBiodataForm() {
         </label>
       </div>
 
-      <div className="mt-6 space-y-5 sm:mt-8 sm:space-y-6">
-        <Section
-          title={Who}
-          description={`If you are the wali, you may register on behalf of the ${who} under your guardianship.`}
-        >
-          <TextField label="First Name *" value={s.firstName} onChange={(v) => setSubmitter("firstName", v)} maxLength={80} autoComplete="given-name" />
-          <TextField label="Last Name *" value={s.lastName} onChange={(v) => setSubmitter("lastName", v)} maxLength={80} autoComplete="family-name" />
-          <TextField label="Email *" type="email" value={s.email} onChange={(v) => setSubmitter("email", v)} autoComplete="email" />
-          <TextField
-            label="Phone *"
-            type="tel"
-            value={s.phone}
-            onChange={(v) => setSubmitter("phone", v)}
-            help="We may contact you by WhatsApp / SMS also."
-            maxLength={40}
-            autoComplete="tel"
+      {/* Progress */}
+      <nav aria-label="Registration steps" className="mt-6 sm:mt-8">
+        <p className="text-[13px] font-semibold text-[var(--foreground)] sm:text-[14px]">
+          Step {stepIndex + 1} of {STEPS.length}
+          <span className="font-normal text-[var(--color-dark-56)]"> · {step.label}</span>
+        </p>
+        <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[var(--color-dark-08)]">
+          <div
+            className="h-full rounded-full bg-[var(--foreground)] transition-[width] duration-300"
+            style={{ width: `${((stepIndex + 1) / STEPS.length) * 100}%` }}
           />
-        </Section>
+        </div>
+        <ol className="mt-3 hidden grid-cols-6 gap-2 sm:grid">
+          {STEPS.map((st, i) => {
+            const done = i < stepIndex;
+            const current = i === stepIndex;
+            const reachable = i <= maxReachable || i < stepIndex;
+            return (
+              <li key={st.id}>
+                <button
+                  type="button"
+                  onClick={() => goTo(i)}
+                  disabled={!reachable && !current}
+                  aria-current={current ? "step" : undefined}
+                  className={cn(
+                    "flex w-full items-center gap-1.5 rounded-lg px-1 py-1 text-left text-[12px] font-semibold transition-colors disabled:cursor-not-allowed",
+                    current
+                      ? "text-[var(--foreground)]"
+                      : reachable
+                        ? "text-[var(--color-dark-56)] hover:text-[var(--foreground)]"
+                        : "text-[var(--color-dark-28)]"
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "flex size-5 shrink-0 items-center justify-center rounded-full text-[11px]",
+                      current || done
+                        ? "bg-[var(--foreground)] text-[var(--background)]"
+                        : "border border-[var(--color-dark-18)]"
+                    )}
+                    style={current || done ? { color: "var(--background)" } : undefined}
+                  >
+                    {done ? <Check className="size-3" /> : i + 1}
+                  </span>
+                  <span className="truncate">{st.label}</span>
+                </button>
+              </li>
+            );
+          })}
+        </ol>
+      </nav>
 
-        <Section title="Profile Information">
-          <div className="sm:col-span-2">
-            <p className={labelClass}>Where Do You Live? *</p>
-            <div className="grid gap-3 sm:grid-cols-3 sm:gap-4">
-              <TextField label="City *" value={b.personal.city} onChange={(v) => setPersonal("city", v)} placeholder="e.g. Toronto" />
-              <TextField label="Province / State" value={b.personal.province} onChange={(v) => setPersonal("province", v)} placeholder="e.g. Ontario" />
-              <TextField label="Country *" value={b.personal.country} onChange={(v) => setPersonal("country", v)} placeholder="e.g. Canada" />
-            </div>
+      <section className="mt-5 rounded-xl border border-[var(--color-dark-12)] bg-[var(--color-dark-04,rgba(30,58,95,0.04))] p-4 sm:mt-6 sm:rounded-2xl sm:p-6 md:p-8">
+        <h2 className="text-[18px] text-[var(--foreground)] sm:text-[22px]">{stepTitle[step.id].title}</h2>
+        {stepTitle[step.id].description && (
+          <p className="mt-1 text-[13px] text-[var(--color-dark-56)] sm:text-[14px]">
+            {stepTitle[step.id].description}
+          </p>
+        )}
+
+        {errorCount > 0 && (
+          <div role="alert" className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-[13px] font-medium text-red-700">
+            Please complete the {errorCount === 1 ? "highlighted field" : `${errorCount} highlighted fields`} to continue.
           </div>
-          <FieldSelect label="Ethnicity *" value={b.personal.ethnicity} onChange={(v) => setPersonal("ethnicity", v)} options={ETHNICITY_OPTIONS} />
-          <FieldSelect label="Other Ethnicity (If Any)" value={b.personal.otherEthnicity} onChange={(v) => setPersonal("otherEthnicity", v)} options={ETHNICITY_OPTIONS} />
-          {showDistrict && (
-            <FieldSelect
-              label="District of Origin (Bangladesh)"
-              value={b.personal.bangladeshDistrict}
-              onChange={(v) => setPersonal("bangladeshDistrict", v)}
-              options={BANGLADESH_DISTRICT_OPTIONS}
-              placeholder="Select your home district..."
-            />
+        )}
+
+        <div className="mt-5 sm:mt-6">
+          {step.id === "you" && (
+            <Grid>
+              <TextField name="firstName" label="First Name *" value={s.firstName} onChange={(v) => setSubmitter("firstName", v)} error={errors.firstName} maxLength={80} autoComplete="given-name" />
+              <TextField name="lastName" label="Last Name *" value={s.lastName} onChange={(v) => setSubmitter("lastName", v)} error={errors.lastName} maxLength={80} autoComplete="family-name" />
+              <TextField name="email" label="Email *" type="email" value={s.email} onChange={(v) => setSubmitter("email", v)} error={errors.email} autoComplete="email" />
+              <TextField
+                name="phone"
+                label="Phone *"
+                type="tel"
+                value={s.phone}
+                onChange={(v) => setSubmitter("phone", v)}
+                error={errors.phone}
+                help="We may contact you by WhatsApp / SMS also."
+                maxLength={40}
+                autoComplete="tel"
+              />
+            </Grid>
           )}
-          <TextField label="Which Languages Do You Speak? *" value={b.lifestyle.languages} onChange={(v) => setLifestyle("languages", v)} placeholder="e.g. Bangla, English" />
-          <FieldDateSelect label="Date Of Birth *" value={b.personal.dateOfBirth} onChange={(v) => setPersonal("dateOfBirth", v)} />
-          <FieldSelect label={`Height (ft'in") *`} value={b.personal.height} onChange={(v) => setPersonal("height", v)} options={PUBLIC_HEIGHT_OPTIONS} />
-          <FieldSelect label="Weight (kg) *" value={b.personal.weight} onChange={(v) => setPersonal("weight", v)} options={WEIGHT_KG_OPTIONS} />
-          <div className="sm:col-span-2">
-            <TextField
-              label="Do You Have Any Serious Health Issue(s)? If so, please describe briefly. *"
-              value={b.personal.healthIssues}
-              onChange={(v) => setPersonal("healthIssues", v)}
-              placeholder='Write "None" if not applicable'
-              maxLength={500}
-            />
-          </div>
-          <FieldSelect label="What Is Your Citizenship Status? *" value={b.personal.citizenshipStatus} onChange={(v) => setPersonal("citizenshipStatus", v)} options={CITIZENSHIP_STATUS_OPTIONS} />
-          <FieldSelect label="What Is Your Marital Status? *" value={b.personal.maritalStatus} onChange={(v) => setPersonal("maritalStatus", v)} options={PUBLIC_MARITAL_STATUS_OPTIONS} />
-          {isSister && (
-            <div className="sm:col-span-2">
-              <ChipSelect label="Do You Wear The Hijab In Your Daily Life? *" value={b.religious.hijab} onChange={(v) => setReligious("hijab", v)} options={HIJAB_OPTIONS} />
+
+          {step.id === "profile" && (
+            <Grid>
+              <div className="md:col-span-2">
+                <p className="mb-3 text-[13px] font-semibold text-[var(--foreground)] sm:text-[14px]">
+                  Where Do You Live? *
+                </p>
+                <div className="grid gap-4 md:grid-cols-3">
+                  <TextField name="city" label="City *" value={b.personal.city} onChange={(v) => setPersonal("city", v)} error={errors.city} placeholder="e.g. Toronto" />
+                  <TextField name="province" label="Province / State" value={b.personal.province} onChange={(v) => setPersonal("province", v)} placeholder="e.g. Ontario" />
+                  <TextField name="country" label="Country *" value={b.personal.country} onChange={(v) => setPersonal("country", v)} error={errors.country} placeholder="e.g. Canada" />
+                </div>
+              </div>
+              <FieldBox name="ethnicity" error={errors.ethnicity}>
+                <FieldSelect label="Ethnicity *" value={b.personal.ethnicity} onChange={(v) => setPersonal("ethnicity", v)} options={ETHNICITY_OPTIONS} />
+              </FieldBox>
+              <FieldBox name="otherEthnicity">
+                <FieldSelect label="Other Ethnicity (If Any)" value={b.personal.otherEthnicity} onChange={(v) => setPersonal("otherEthnicity", v)} options={ETHNICITY_OPTIONS} />
+              </FieldBox>
+              {showDistrict && (
+                <FieldBox name="bangladeshDistrict">
+                  <FieldSelect
+                    label="District of Origin (Bangladesh)"
+                    value={b.personal.bangladeshDistrict}
+                    onChange={(v) => setPersonal("bangladeshDistrict", v)}
+                    options={BANGLADESH_DISTRICT_OPTIONS}
+                    placeholder="Select your home district..."
+                  />
+                </FieldBox>
+              )}
+              <TextField name="languages" label="Which Languages Do You Speak? *" value={b.lifestyle.languages} onChange={(v) => setLifestyle("languages", v)} error={errors.languages} placeholder="e.g. Bangla, English" />
+              <FieldBox name="dateOfBirth" error={errors.dateOfBirth}>
+                <FieldDateSelect label="Date Of Birth *" value={b.personal.dateOfBirth} onChange={(v) => setPersonal("dateOfBirth", v)} />
+              </FieldBox>
+              <FieldBox name="height" error={errors.height}>
+                <FieldSelect label={`Height (ft'in") *`} value={b.personal.height} onChange={(v) => setPersonal("height", v)} options={PUBLIC_HEIGHT_OPTIONS} />
+              </FieldBox>
+              <FieldBox name="weight" error={errors.weight}>
+                <FieldSelect label="Weight (kg) *" value={b.personal.weight} onChange={(v) => setPersonal("weight", v)} options={WEIGHT_KG_OPTIONS} />
+              </FieldBox>
+              <div className="md:col-span-2">
+                <TextField
+                  name="healthIssues"
+                  label="Do You Have Any Serious Health Issue(s)? If so, please describe briefly. *"
+                  value={b.personal.healthIssues}
+                  onChange={(v) => setPersonal("healthIssues", v)}
+                  error={errors.healthIssues}
+                  placeholder='Write "None" if not applicable'
+                  maxLength={500}
+                />
+              </div>
+              <FieldBox name="citizenshipStatus" error={errors.citizenshipStatus}>
+                <FieldSelect label="What Is Your Citizenship Status? *" value={b.personal.citizenshipStatus} onChange={(v) => setPersonal("citizenshipStatus", v)} options={CITIZENSHIP_STATUS_OPTIONS} />
+              </FieldBox>
+              <FieldBox name="maritalStatus" error={errors.maritalStatus}>
+                <FieldSelect label="What Is Your Marital Status? *" value={b.personal.maritalStatus} onChange={(v) => setPersonal("maritalStatus", v)} options={PUBLIC_MARITAL_STATUS_OPTIONS} />
+              </FieldBox>
+              {isSister && (
+                <FieldBox name="hijab" error={errors.hijab} className="md:col-span-2">
+                  <ChipSelect label="Do You Wear The Hijab In Your Daily Life? *" value={b.religious.hijab} onChange={(v) => setReligious("hijab", v)} options={HIJAB_OPTIONS} />
+                </FieldBox>
+              )}
+            </Grid>
+          )}
+
+          {step.id === "education" && (
+            <Grid>
+              <FieldBox name="educationLevel">
+                <FieldSelect label="Education Level" value={b.education.educationLevel} onChange={(v) => setEducation("educationLevel", v)} options={EDUCATION_LEVEL_OPTIONS} />
+              </FieldBox>
+              <TextField name="institution" label="Institution" value={b.education.institution} onChange={(v) => setEducation("institution", v)} placeholder="e.g. University of Toronto" />
+              <TextField name="fieldOfStudy" label="Field of Study" value={b.education.fieldOfStudy} onChange={(v) => setEducation("fieldOfStudy", v)} placeholder="e.g. Computer Science" />
+              <TextField name="occupation" label="Occupation" value={b.education.occupation} onChange={(v) => setEducation("occupation", v)} placeholder="e.g. Software Engineer" />
+              <TextField name="employer" label="Employer" value={b.education.employer} onChange={(v) => setEducation("employer", v)} placeholder="Company name (optional)" />
+              <FieldBox name="income">
+                <FieldSelect label="Annual Income" value={b.education.income} onChange={(v) => setEducation("income", v)} options={INCOME_OPTIONS} />
+              </FieldBox>
+            </Grid>
+          )}
+
+          {step.id === "about" && (
+            <div className="space-y-5 sm:space-y-6">
+              <TextAreaField
+                name="aboutMe"
+                label="What Do You Do In Life? *"
+                value={b.aboutMe}
+                onChange={(v) => setText("aboutMe", v)}
+                error={errors.aboutMe}
+                help="It is very important to provide as much relevant detail as possible about your religious life, education, work, hobbies, passions, etc. Write complete sentences."
+              />
+              <TextAreaField
+                name="lookingFor"
+                label={`What Are You Looking For In Your Future ${isSister ? "Husband" : "Wife"}? *`}
+                value={b.lookingFor ?? ""}
+                onChange={(v) => setText("lookingFor", v)}
+                error={errors.lookingFor}
+                help="It is very important to state clearly and fully all your requirements: religious life, ethnic group, age, personality, work, education, etc. Write complete sentences."
+              />
+              <div className="md:max-w-[50%] md:pr-3">
+                <FieldBox name="howHeard">
+                  <FieldSelect
+                    label="How Did You Hear About Us?"
+                    value={draft.howHeard}
+                    onChange={(v) => setDraft((d) => ({ ...d, howHeard: v }))}
+                    options={HOW_HEARD_OPTIONS}
+                  />
+                </FieldBox>
+              </div>
             </div>
           )}
-        </Section>
 
-        <Section title="Education & Career" description="Your qualifications and professional background">
-          <FieldSelect label="Education Level" value={b.education.educationLevel} onChange={(v) => setEducation("educationLevel", v)} options={EDUCATION_LEVEL_OPTIONS} />
-          <TextField label="Institution" value={b.education.institution} onChange={(v) => setEducation("institution", v)} placeholder="e.g. University of Toronto" />
-          <TextField label="Field of Study" value={b.education.fieldOfStudy} onChange={(v) => setEducation("fieldOfStudy", v)} placeholder="e.g. Computer Science" />
-          <TextField label="Occupation" value={b.education.occupation} onChange={(v) => setEducation("occupation", v)} placeholder="e.g. Software Engineer" />
-          <TextField label="Employer" value={b.education.employer} onChange={(v) => setEducation("employer", v)} placeholder="Company name (optional)" />
-          <FieldSelect label="Annual Income" value={b.education.income} onChange={(v) => setEducation("income", v)} options={INCOME_OPTIONS} />
-        </Section>
-
-        <Section title="About You">
-          <div className="sm:col-span-2">
-            <TextAreaField
-              label="What Do You Do In Life? *"
-              value={b.aboutMe}
-              onChange={(v) => setText("aboutMe", v)}
-              help="It is very important to provide as much relevant detail as possible about your religious life, education, work, hobbies, passions, etc. Write complete sentences."
-            />
-          </div>
-          <div className="sm:col-span-2">
-            <TextAreaField
-              label={`What Are You Looking For In Your Future ${isSister ? "Husband" : "Wife"}? *`}
-              value={b.lookingFor ?? ""}
-              onChange={(v) => setText("lookingFor", v)}
-              help="It is very important to state clearly and fully all your requirements: religious life, ethnic group, age, personality, work, education, etc. Write complete sentences."
-            />
-          </div>
-        </Section>
-
-        <Section title="Profile Pictures" description="Pictures will be requested at a later stage.">
-          <FieldSelect
-            label="How Did You Hear About Us?"
-            value={draft.howHeard}
-            onChange={(v) => setDraft((d) => ({ ...d, howHeard: v }))}
-            options={HOW_HEARD_OPTIONS}
-          />
-        </Section>
-
-        <Section
-          title={`${Who}'s Wali`}
-          description={
-            isSister
-              ? "If your wali's contact information is available, please provide it, as it will eventually be required to send you your potential matches."
-              : "Although optional, we highly recommend you include a wali."
-          }
-        >
-          <TextField label="Full Name" value={b.family.waliName} onChange={(v) => setFamily("waliName", v)} maxLength={120} />
-          <TextField label="Email" type="email" value={b.family.waliEmail} onChange={(v) => setFamily("waliEmail", v)} />
-          <TextField label="Phone" type="tel" value={b.family.waliPhone} onChange={(v) => setFamily("waliPhone", v)} maxLength={40} />
-          <FieldSelect
-            label="What Is Your Relationship With Your Wali?"
-            value={b.family.waliRelationship}
-            onChange={(v) => setFamily("waliRelationship", v)}
-            options={PUBLIC_WALI_RELATIONSHIP_OPTIONS}
-          />
-          <div className="sm:col-span-2">
-            <ChipSelect
-              label={`How Would Your Wali Like To Receive The Match's Profile Information And Picture?`}
-              value={b.family.waliContactMethod}
-              onChange={(v) => setFamily("waliContactMethod", v)}
-              options={WALI_CONTACT_METHOD_OPTIONS}
-            />
-            <p className="mt-1.5 text-[12px] text-[var(--color-dark-56)]">
-              This option must be provided if you are including a wali.
-            </p>
-          </div>
-        </Section>
-
-        <section className="rounded-xl border border-[var(--color-dark-12)] bg-[var(--color-dark-04,rgba(30,58,95,0.04))] p-4 sm:rounded-2xl sm:p-6 md:p-8">
-          <h2 className="text-[18px] text-[var(--foreground)] sm:text-[22px]">Declaration</h2>
-          <p className={cn(labelClass, "mt-4")}>Declaration of Islamic Faith *</p>
-          <div className="mt-2 max-h-64 overflow-y-auto whitespace-pre-line rounded-lg border border-[var(--color-dark-12)] bg-[var(--background)] p-4 text-[13px] leading-relaxed text-[var(--color-dark-72)] sm:text-[14px]">
-            {FAITH_DECLARATION}
-          </div>
-          <label className="mt-4 flex cursor-pointer items-start gap-3 text-[14px] text-[var(--foreground)]">
-            <input
-              type="checkbox"
-              checked={draft.faithDeclarationAccepted}
-              onChange={(e) => setDraft((d) => ({ ...d, faithDeclarationAccepted: e.target.checked }))}
-              className="mt-0.5 size-4 shrink-0 accent-[var(--foreground)]"
-            />
-            <span>I understand and agree to all the above articles of Islamic faith</span>
-          </label>
-
-          <div className="mt-8 border-t border-[var(--color-dark-08)] pt-6">
-            <p className="text-[13px] text-[var(--color-dark-56)] sm:text-[14px]">
-              Once submitted, your biodata will be reviewed by our team before
-              we begin looking for a {spouse} for you, In Sha Allah.
-            </p>
-
-            {missing.length > 0 && (
-              <p className="mt-3 flex items-start gap-1.5 text-[13px] font-medium text-red-600">
-                <AlertCircle className="mt-0.5 size-3.5 shrink-0" />
-                <span>Required before submitting: {missing.join(", ")}.</span>
+          {step.id === "wali" && (
+            <Grid>
+              <TextField name="waliName" label="Full Name" value={b.family.waliName} onChange={(v) => setFamily("waliName", v)} error={errors.waliName} maxLength={120} />
+              <TextField name="waliEmail" label="Email (matches are sent here)" type="email" value={b.family.waliEmail} onChange={(v) => setFamily("waliEmail", v)} error={errors.waliEmail} />
+              <TextField name="waliPhone" label="Phone" type="tel" value={b.family.waliPhone} onChange={(v) => setFamily("waliPhone", v)} error={errors.waliPhone} maxLength={40} />
+              <FieldBox name="waliRelationship" error={errors.waliRelationship}>
+                <FieldSelect
+                  label="What Is Your Relationship With Your Wali?"
+                  value={b.family.waliRelationship}
+                  onChange={(v) => setFamily("waliRelationship", v)}
+                  options={PUBLIC_WALI_RELATIONSHIP_OPTIONS}
+                />
+              </FieldBox>
+              <p className="text-[13px] text-[var(--color-dark-56)] md:col-span-2">
+                If you include a wali, their name, relationship and email are required. Potential matches are
+                sent to your wali by email only.
               </p>
-            )}
+            </Grid>
+          )}
 
+          {step.id === "declaration" && (
+            <div id="field-faith" className="scroll-mt-24">
+              <p className={labelClass}>Declaration of Islamic Faith *</p>
+              <div className="mt-2 max-h-64 overflow-y-auto whitespace-pre-line rounded-lg border border-[var(--color-dark-12)] bg-[var(--background)] p-4 text-[13px] leading-relaxed text-[var(--color-dark-72)] sm:text-[14px]">
+                {FAITH_DECLARATION}
+              </div>
+              <label
+                className={cn(
+                  "mt-4 flex cursor-pointer items-start gap-3 rounded-lg p-2 text-[14px] text-[var(--foreground)]",
+                  errors.faith && "bg-red-50 ring-1 ring-red-300"
+                )}
+              >
+                <input
+                  type="checkbox"
+                  checked={draft.faithDeclarationAccepted}
+                  onChange={(e) => setDraft((d) => ({ ...d, faithDeclarationAccepted: e.target.checked }))}
+                  className="mt-0.5 size-4 shrink-0 accent-[var(--foreground)]"
+                />
+                <span>I understand and agree to all the above articles of Islamic faith</span>
+              </label>
+              <ErrorText msg={errors.faith} />
+              <p className="mt-6 text-[13px] text-[var(--color-dark-56)] sm:text-[14px]">
+                Once submitted, your biodata will be reviewed by our team before
+                we begin looking for a {spouse} for you, In Sha Allah.
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Navigation */}
+        <div className="mt-8 flex flex-col-reverse gap-3 border-t border-[var(--color-dark-08)] pt-5 sm:flex-row sm:items-center sm:justify-between sm:pt-6">
+          {stepIndex > 0 ? (
+            <button
+              type="button"
+              onClick={goBack}
+              className="inline-flex h-11 items-center justify-center gap-1.5 rounded-full border border-[var(--color-dark-18)] px-6 text-[14px] font-semibold text-[var(--foreground)] transition-colors hover:bg-[var(--color-dark-08)]"
+            >
+              <ArrowLeft className="size-4" />
+              Back
+            </button>
+          ) : (
+            <span className="hidden sm:block" />
+          )}
+
+          {isLast ? (
             <button
               type="button"
               onClick={submit}
-              disabled={submitting || missing.length > 0}
+              disabled={submitting}
               className={cn(
                 goldButtonClass,
-                "mt-5 inline-flex h-11 w-full items-center justify-center gap-2 rounded-full px-8 text-[14px] font-semibold disabled:opacity-50 sm:w-auto"
+                "inline-flex h-11 items-center justify-center gap-2 rounded-full px-8 text-[14px] font-semibold disabled:opacity-50"
               )}
             >
               {submitting ? (
@@ -626,43 +881,62 @@ export default function PublicBiodataForm() {
                 </>
               )}
             </button>
+          ) : (
+            <button
+              type="button"
+              onClick={goNext}
+              className={cn(
+                goldButtonClass,
+                "inline-flex h-11 items-center justify-center gap-1.5 rounded-full px-8 text-[14px] font-semibold"
+              )}
+            >
+              Next: {STEPS[stepIndex + 1].label}
+              <ArrowRight className="size-4" />
+            </button>
+          )}
+        </div>
 
-            {submitError && (
-              <p className="mt-3 flex items-start gap-1.5 text-[13px] font-medium text-red-600">
-                <AlertCircle className="mt-0.5 size-3.5 shrink-0" />
-                <span>{submitError}</span>
-              </p>
-            )}
-          </div>
-        </section>
-      </div>
+        {submitError && (
+          <p role="alert" className="mt-3 flex items-start gap-1.5 text-[13px] font-medium text-red-600">
+            <AlertCircle className="mt-0.5 size-3.5 shrink-0" />
+            <span>{submitError}</span>
+          </p>
+        )}
+      </section>
     </div>
   );
 }
 
 function SuccessScreen() {
   return (
-    <div className="mx-auto max-w-xl py-12 text-center sm:py-20">
-      <div className="mx-auto flex size-16 items-center justify-center rounded-full bg-green-100 sm:size-20">
-        <CheckCircle2 className="size-8 text-green-700 sm:size-10" />
-      </div>
-      <h2 className="mt-6 text-[22px] text-[var(--foreground)] sm:text-[28px]">
-        Biodata submitted successfully
-      </h2>
-      <p className="mt-3 text-[14px] text-[var(--color-dark-56)] sm:text-[16px]">
-        Jazak Allah Khair. Our team will review your biodata and contact you
-        (or your wali) when we find a potential match, In Sha Allah.
-      </p>
-      <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-        <Link
-          href="/"
-          className={cn(
-            goldButtonClass,
-            "inline-flex h-11 items-center justify-center rounded-full px-8 text-[14px] font-semibold"
-          )}
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-[#1d1a20]">
+      <Image src="/flowers.webp" alt="" fill priority sizes="100vw" className="object-cover" />
+      <div className="absolute inset-0 bg-black/70" />
+      <div className="relative flex min-h-full items-center px-6 py-16 sm:px-10">
+        <div
+          role="status"
+          className="mx-auto max-w-[620px] space-y-6 [&>p]:text-[19px] [&>p]:leading-[1.75] sm:[&>p]:text-[22px]"
+          style={{ color: "#fff" }}
         >
-          Return to Home
-        </Link>
+          <p>
+            Thank you for registering with BanglaNikahCanada! We are very pleased to have you registered
+            to our Matrimonial Service.
+          </p>
+          <p>
+            We will now begin finding matches for you. Please note that you may only be contacted once a
+            possible match has been found.
+          </p>
+          <p>We appreciate your patience and understanding.</p>
+          <div className="pt-4">
+            <Link
+              href="/"
+              className="inline-flex h-11 items-center justify-center rounded-full border border-white/50 px-7 text-[15px] font-semibold transition-colors hover:bg-white/10"
+              style={{ color: "#fff" }}
+            >
+              Return to Home
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   );
