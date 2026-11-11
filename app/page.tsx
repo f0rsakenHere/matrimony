@@ -63,37 +63,6 @@ const howItWorksSteps = [
 
 /* ─── Ornaments ─── */
 
-/** Thin-line mosque silhouette (onion dome + two minaret domes) on a horizon rule. */
-function MosqueOrnament({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 340 84" fill="none" aria-hidden="true" className={className}>
-      <defs>
-        <linearGradient id="mosque-rule" x1="0" x2="1">
-          <stop offset="0" stopColor="currentColor" stopOpacity="0" />
-          <stop offset="0.35" stopColor="currentColor" />
-          <stop offset="0.65" stopColor="currentColor" />
-          <stop offset="1" stopColor="currentColor" stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <g stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-        {/* finial */}
-        <path d="M170 4v8" />
-        <circle cx="170" cy="14" r="1.6" fill="currentColor" />
-        {/* main onion dome */}
-        <path d="M150 74V52c0-14 8-22 14-28 3-3 6-6 6-8 0 2 3 5 6 8 6 6 14 14 14 28v22" />
-        <path d="M162 74V60a8 8 0 0 1 16 0v14" />
-        {/* left minaret */}
-        <path d="M128 74V58c0-6 4-10 7-12 1.5-1 2-2.5 2-3.5 0 1 .5 2.5 2 3.5 3 2 7 6 7 12v16" />
-        <path d="M137 38v4" />
-        {/* right minaret */}
-        <path d="M194 74V58c0-6 4-10 7-12 1.5-1 2-2.5 2-3.5 0 1 .5 2.5 2 3.5 3 2 7 6 7 12v16" />
-        <path d="M203 38v4" />
-      </g>
-      <rect x="0" y="73" width="340" height="2.2" rx="1.1" fill="url(#mosque-rule)" />
-    </svg>
-  );
-}
-
 /** Two fading rules with a small diamond in the middle. */
 function DiamondDivider({ className }: { className?: string }) {
   return (
@@ -126,9 +95,7 @@ export default function Home() {
         {/* ════════ HERO ════════ */}
         <section className="relative overflow-hidden bg-[linear-gradient(180deg,#f6effc_0%,#efe3f8_55%,#ead9f5_100%)]">
           <div className="relative z-10 mx-auto flex max-w-[860px] flex-col items-center px-5 pt-8 text-center sm:px-8 sm:pt-12 lg:pt-14">
-            <MosqueOrnament className="w-[260px] text-[#8b5cc4] sm:w-[340px]" />
-
-            <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#3d1f63] sm:text-[13px] sm:tracking-[0.32em]">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#3d1f63] sm:text-[13px] sm:tracking-[0.32em]">
               Personalized Halal Matchmaking
             </p>
 

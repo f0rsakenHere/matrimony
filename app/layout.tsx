@@ -14,9 +14,28 @@ import { AuthProvider } from "@/contexts/AuthContext";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://www.banglanikahcanada.com";
+const SITE_DESCRIPTION =
+  "A halal matrimony service helping Bangladeshi Muslims find a spouse in Canada. Send us your profile for free and we'll handpick a match for you.";
+
+// The sharing image comes from app/opengraph-image.jpg / twitter-image.jpg.
 export const metadata: Metadata = {
-  title: "BanglaNikahCanada",
-  description: "A Graceful Path to the Right Marriage",
+  metadataBase: new URL(SITE_URL),
+  title: "BanglaNikahCanada — A Halal Matrimony Service",
+  description: SITE_DESCRIPTION,
+  openGraph: {
+    type: "website",
+    siteName: "BanglaNikahCanada",
+    title: "BanglaNikahCanada — A Halal Matrimony Service",
+    description: SITE_DESCRIPTION,
+    url: "/",
+    locale: "en_CA",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "BanglaNikahCanada — A Halal Matrimony Service",
+    description: SITE_DESCRIPTION,
+  },
 };
 
 export default function RootLayout({

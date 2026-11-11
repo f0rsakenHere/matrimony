@@ -20,6 +20,8 @@ setInterval(() => {
 
 export interface RateLimiter {
   check: (key: string) => { success: boolean; remaining: number };
+  /** True if a request would be allowed right now, without counting it. */
+  peek: (key: string) => boolean;
 }
 
 /**
@@ -34,6 +36,10 @@ export function createRateLimiter(
   prefix: string
 ): RateLimiter {
   return {
+    peek(key: string) {
+      const entry = store.get(`${prefix}:${key}`);
+      return !entry || Date.now() > entry.resetAt || entry.count < maxRequests;
+    },
     check(key: string) {
       const fullKey = `${prefix}:${key}`;
       const now = Date.now();
@@ -69,3 +75,6 @@ export const submissionLimiter = createRateLimiter(3, 24 * 3_600_000, "submissio
 
 /** Contact form: 5 messages per IP per hour */
 export const contactLimiter = createRateLimiter(5, 3_600_000, "contact");
+
+/** Wali notification emails from the member dashboard: 3 per member per day */
+export const waliEmailLimiter = createRateLimiter(3, 24 * 3_600_000, "wali-email");

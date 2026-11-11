@@ -3,7 +3,7 @@ import { and, count, desc, eq, inArray, ne, or, type SQL } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { members } from "@/lib/db/schema";
 import { requireAuth } from "@/lib/auth";
-import { bio, biodataFilters, containsCI } from "@/lib/db/helpers";
+import { bio, biodataFilters, containsCI, sisterHasWali } from "@/lib/db/helpers";
 import { apiLimiter } from "@/lib/rate-limit";
 import { getMemberByUid } from "@/lib/server/members";
 
@@ -25,7 +25,7 @@ export async function GET(request: Request) {
 
     // Exclude self and shadow profiles (they haven't consented to being
     // browsed by registered users).
-    const conds: SQL[] = [ne(members.uid, uid), eq(members.isShadow, false)];
+    const conds: SQL[] = [ne(members.uid, uid), eq(members.isShadow, false), sisterHasWali(members.biodata)];
 
     // Default to opposite gender; an explicit ?gender= overrides (handled
     // by biodataFilters below).

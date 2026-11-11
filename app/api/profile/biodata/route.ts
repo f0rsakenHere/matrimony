@@ -2,7 +2,9 @@ import { NextResponse } from "next/server";
 import { eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { members, type Member } from "@/lib/db/schema";
-import { sendAdminBiodataEmail } from "@/lib/email";
+import { sendAdminBiodataEmail, sendWaliNotificationEmail } from "@/lib/email";
+import { waliEmailLimiter } from "@/lib/rate-limit";
+import { waliErrorSentence, waliRequired } from "@/lib/wali";
 import { getProfileCompletion } from "@/lib/profile-completion";
 import { requireAuth } from "@/lib/auth";
 import { sanitizeBiodataSection } from "@/lib/sanitize";
@@ -46,6 +48,24 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
     const completionBefore = completion(before);
+    const beforeBio = normalizeBiodata(before.biodata);
+
+    // Wali rules (lib/wali.ts): mandatory for sisters, complete-if-started for
+    // brothers. Matches go to the wali by email only.
+    let newWaliEmail: string | null = null;
+    if (section === "family") {
+      const fam = value as Record<string, string>;
+      const gender = beforeBio.personal.gender;
+      const problem = waliErrorSentence(gender, fam);
+      if (problem) {
+        return NextResponse.json({ error: problem }, { status: 400 });
+      }
+      fam.waliEmail = (fam.waliEmail ?? "").trim().toLowerCase();
+      fam.waliContactMethod = waliRequired(gender, fam) ? "Email" : "";
+      if (fam.waliEmail && fam.waliEmail !== beforeBio.family.waliEmail.trim().toLowerCase()) {
+        newWaliEmail = fam.waliEmail;
+      }
+    }
 
     // Atomic single-key update of the jsonb document.
     const path = `{${section}}`;
@@ -66,6 +86,23 @@ export async function PUT(request: Request) {
         lastName: user.lastName,
         completionPct: completionAfter,
       }).catch((err) => console.error("Admin biodata email error:", err));
+    }
+
+    // A new or changed wali email: let the wali know they've been named.
+    // Rate-limited per member so this can't be used to spam an address.
+    if (newWaliEmail && newWaliEmail !== user.email.toLowerCase()) {
+      if (waliEmailLimiter.check(uid).success) {
+        const fam = normalizeBiodata(user.biodata).family;
+        sendWaliNotificationEmail({
+          to: newWaliEmail,
+          waliName: fam.waliName,
+          relationship: fam.waliRelationship,
+          candidateName: `${user.firstName} ${user.lastName}`.trim() || user.profileName || "",
+          gender: normalizeBiodata(user.biodata).personal.gender,
+        }).catch((err) => console.error("Wali notification email error:", err));
+      } else {
+        console.warn(`[biodata] wali email rate limit reached for ${uid}; notification skipped`);
+      }
     }
 
     return NextResponse.json({ user: memberJson(user) });

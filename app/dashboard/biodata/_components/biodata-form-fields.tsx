@@ -25,6 +25,7 @@ import {
   DIET_OPTIONS,
   SMOKING_OPTIONS,
 } from "@/lib/constants/biodata-options";
+import { waliErrors } from "@/lib/wali";
 import { Check, Loader2, AlertCircle } from "lucide-react";
 
 const MONTHS = [
@@ -486,6 +487,7 @@ export function TabEducation({
 
 export function TabFamily({
   data,
+  gender,
   onChange,
   onSave,
   saving,
@@ -494,7 +496,14 @@ export function TabFamily({
   saveLabel,
   savedLabel,
 }: TabProps<BiodataSection["family"]> & { gender?: string }) {
-  const waliMissing = !data.waliName || !data.waliRelationship || !data.waliPhone;
+  const isSister = gender === "Female";
+  const waliErrs = waliErrors(gender, data);
+  const waliMissing = Object.keys(waliErrs).length > 0;
+  const waliMsg = waliErrs.waliEmail?.startsWith("Please enter")
+    ? "Please enter a valid email address for your wali."
+    : isSister
+      ? "Sisters must include a wali: name, relationship and email are required."
+      : "If you include a wali, their name, relationship and email are required.";
 
   return (
     <div>
@@ -553,32 +562,33 @@ export function TabFamily({
           Wali&apos;s Contact Information
         </h3>
         <p className="mt-1 text-[14px] text-[var(--color-dark-56)]">
-          Required — your Wali (male guardian) will be the point of contact
-          for prospective families
+          {isSister
+            ? "Required. Your wali (male guardian) will be the point of contact for prospective families. Potential matches are sent to your wali by email."
+            : "Optional, but highly recommended. Potential matches are sent to your wali by email."}
         </p>
 
         <div className="mt-6 grid gap-6 sm:grid-cols-2">
           <FieldInput
-            label="Wali's Full Name *"
+            label={isSister ? "Wali's Full Name *" : "Wali's Full Name"}
             value={data.waliName}
             onChange={(v) => onChange("waliName", v)}
             placeholder="e.g. Abdul Rahman"
           />
           <FieldSelect
-            label="Relationship to You *"
+            label={isSister ? "Relationship to You *" : "Relationship to You"}
             value={data.waliRelationship}
             onChange={(v) => onChange("waliRelationship", v)}
             options={WALI_RELATIONSHIP_OPTIONS}
             placeholder="Select relationship..."
           />
           <FieldInput
-            label="Wali's Phone Number *"
+            label="Wali's Phone Number (optional)"
             value={data.waliPhone}
             onChange={(v) => onChange("waliPhone", v)}
             placeholder="e.g. +1 (416) 555-0123"
           />
           <FieldInput
-            label="Wali's Email"
+            label={isSister ? "Wali's Email * (matches are sent here)" : "Wali's Email (matches are sent here)"}
             value={data.waliEmail}
             onChange={(v) => onChange("waliEmail", v)}
             placeholder="e.g. wali@email.com"
@@ -588,7 +598,7 @@ export function TabFamily({
         {waliMissing && (
           <p className="mt-4 flex items-center gap-1.5 text-[13px] font-medium text-red-600">
             <AlertCircle className="size-3.5" />
-            Wali&apos;s name, relationship, and phone number are required.
+            {waliMsg}
           </p>
         )}
       </div>

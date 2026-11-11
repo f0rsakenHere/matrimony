@@ -122,3 +122,12 @@ export function biodataFilters(
 
   return conds;
 }
+
+/**
+ * Sisters are only shown to other members once their wali's email is on file
+ * (a wali is mandatory for sisters — see lib/wali.ts). Closes the gap where a
+ * member saves the Family tab before setting her gender to Female.
+ */
+export function sisterHasWali(column: AnyPgColumn): SQL {
+  return sql`not (coalesce(${bio(column, "personal", "gender")}, '') = 'Female' and coalesce(btrim(${bio(column, "family", "waliEmail")}), '') = '')`;
+}

@@ -3,7 +3,7 @@ import { and, eq, ne } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { members } from "@/lib/db/schema";
 import { requireAuth } from "@/lib/auth";
-import { bio } from "@/lib/db/helpers";
+import { bio, sisterHasWali } from "@/lib/db/helpers";
 import { getMemberByUid } from "@/lib/server/members";
 
 export async function GET(request: Request) {
@@ -36,7 +36,8 @@ export async function GET(request: Request) {
         and(
           ne(members.uid, uid),
           eq(bio(members.biodata, "personal", "gender"), targetGender),
-          eq(members.isShadow, false)
+          eq(members.isShadow, false),
+          sisterHasWali(members.biodata)
         )
       );
 

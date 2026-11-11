@@ -4,6 +4,7 @@ import { useState, useEffect, useId } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { EMPTY_BIODATA, type BiodataSection } from "@/lib/types/biodata";
+import { waliErrors } from "@/lib/wali";
 import { cn } from "@/lib/utils";
 import {
   FieldSelect,
@@ -176,19 +177,9 @@ function stepErrors(step: StepId, d: Draft): Errors {
       req("aboutMe", !!b.aboutMe.trim());
       req("lookingFor", !!(b.lookingFor ?? "").trim());
       break;
-    case "wali": {
-      // Contact method is always Email, so it doesn't count as the user adding a wali.
-      const hasWali = [f.waliName, f.waliEmail, f.waliPhone, f.waliRelationship].some((v) => v.trim() !== "");
-      if (f.waliEmail.trim() && !EMAIL_RE.test(f.waliEmail.trim())) {
-        e.waliEmail = "Please enter a valid email address.";
-      }
-      if (hasWali) {
-        req("waliName", !!f.waliName.trim(), "Required when including a wali.");
-        req("waliRelationship", !!f.waliRelationship, "Required when including a wali.");
-        if (!f.waliEmail.trim()) e.waliEmail = "Required — matches are sent to your wali by email.";
-      }
+    case "wali":
+      Object.assign(e, waliErrors(p.gender, f));
       break;
-    }
     case "declaration":
       req("faith", d.faithDeclarationAccepted, "You must accept the declaration to submit.");
       break;
@@ -559,8 +550,8 @@ export default function PublicBiodataForm() {
     wali: {
       title: `${Who}'s Wali`,
       description: isSister
-        ? "If your wali's contact information is available, please provide it, as it will eventually be required to send you your potential matches."
-        : "Although optional, we highly recommend you include a wali.",
+        ? "A wali is required for sisters. Please provide your wali's details. Potential matches will be sent to your wali by email."
+        : "Although optional, we highly recommend you include a wali. If you do, their name, relationship and email are required.",
     },
     declaration: { title: "Declaration" },
   };
@@ -797,20 +788,21 @@ export default function PublicBiodataForm() {
 
           {step.id === "wali" && (
             <Grid>
-              <TextField name="waliName" label="Full Name" value={b.family.waliName} onChange={(v) => setFamily("waliName", v)} error={errors.waliName} maxLength={120} />
-              <TextField name="waliEmail" label="Email (matches are sent here)" type="email" value={b.family.waliEmail} onChange={(v) => setFamily("waliEmail", v)} error={errors.waliEmail} />
-              <TextField name="waliPhone" label="Phone" type="tel" value={b.family.waliPhone} onChange={(v) => setFamily("waliPhone", v)} error={errors.waliPhone} maxLength={40} />
+              <TextField name="waliName" label={isSister ? "Full Name *" : "Full Name"} value={b.family.waliName} onChange={(v) => setFamily("waliName", v)} error={errors.waliName} maxLength={120} />
+              <TextField name="waliEmail" label={isSister ? "Email * (matches are sent here)" : "Email (matches are sent here)"} type="email" value={b.family.waliEmail} onChange={(v) => setFamily("waliEmail", v)} error={errors.waliEmail} />
+              <TextField name="waliPhone" label="Phone (optional)" type="tel" value={b.family.waliPhone} onChange={(v) => setFamily("waliPhone", v)} error={errors.waliPhone} maxLength={40} />
               <FieldBox name="waliRelationship" error={errors.waliRelationship}>
                 <FieldSelect
-                  label="What Is Your Relationship With Your Wali?"
+                  label={isSister ? "What Is Your Relationship With Your Wali? *" : "What Is Your Relationship With Your Wali?"}
                   value={b.family.waliRelationship}
                   onChange={(v) => setFamily("waliRelationship", v)}
                   options={PUBLIC_WALI_RELATIONSHIP_OPTIONS}
                 />
               </FieldBox>
               <p className="text-[13px] text-[var(--color-dark-56)] md:col-span-2">
-                If you include a wali, their name, relationship and email are required. Potential matches are
-                sent to your wali by email only.
+                {isSister
+                  ? "Your wali will receive an email letting them know they have been named, and potential matches will be sent to them by email only."
+                  : "If you include a wali, they will receive an email letting them know, and potential matches will be sent to them by email only."}
               </p>
             </Grid>
           )}

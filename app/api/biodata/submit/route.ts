@@ -3,7 +3,8 @@ import crypto from "node:crypto";
 import { db } from "@/lib/db";
 import { biodataSubmissions } from "@/lib/db/schema";
 import { clientIp } from "@/lib/auth";
-import { sendSubmissionEmail } from "@/lib/email";
+import { sendSubmissionEmail, sendSubmissionReceivedEmail, sendWaliNotificationEmail } from "@/lib/email";
+import { waliErrorSentence, waliRequired } from "@/lib/wali";
 import { submissionLimiter } from "@/lib/rate-limit";
 import { EMPTY_BIODATA, type BiodataSection } from "@/lib/types/biodata";
 import {
@@ -85,8 +86,9 @@ function hashIp(ip: string): string {
 export async function POST(request: Request) {
   try {
     const ip = clientIp(request);
-    const { success } = submissionLimiter.check(ip);
-    if (!success) {
+    // Only successful submissions count toward the limit (counted after the
+    // insert below), so fixing validation errors never locks someone out.
+    if (!submissionLimiter.peek(ip)) {
       return NextResponse.json(
         { error: "Too many submissions. Please try again tomorrow." },
         { status: 429 }
@@ -142,17 +144,13 @@ export async function POST(request: Request) {
     if (!biodata.lookingFor) errors.push("Please describe what you are looking for.");
     if (!faithDeclarationAccepted) errors.push("The declaration of Islamic faith must be accepted.");
 
-    // Wali is optional, but if any wali detail is given the entry must be
-    // usable: name, relationship and email. Matches go to the wali by email
+    // Wali: mandatory for sisters; optional for brothers but must be complete
+    // if started (name, relationship, email). Matches go to the wali by email
     // only, so the contact method is set here, never taken from the client.
-    const hasWali = [f.waliName, f.waliEmail, f.waliPhone, f.waliRelationship].some(Boolean);
-    f.waliContactMethod = hasWali ? "Email" : "";
-    if (hasWali) {
-      if (!f.waliName) errors.push("Wali's full name is required when including a wali.");
-      if (!f.waliRelationship) errors.push("Wali's relationship is required when including a wali.");
-      if (!f.waliEmail) errors.push("Wali's email is required — matches are sent to the wali by email.");
-    }
-    if (f.waliEmail && !EMAIL_RE.test(f.waliEmail)) errors.push("Wali's email is not valid.");
+    const waliProblem = waliErrorSentence(p.gender, f);
+    if (waliProblem) errors.push(waliProblem);
+    f.waliEmail = f.waliEmail.toLowerCase();
+    f.waliContactMethod = waliRequired(p.gender, f) ? "Email" : "";
 
     // Dropdown values must come from the known lists.
     const optionChecks: Array<[string, readonly string[], string]> = [
@@ -194,19 +192,50 @@ export async function POST(request: Request) {
       userAgent: (request.headers.get("user-agent") ?? "").slice(0, 500),
       })
       .returning({ id: biodataSubmissions.id, createdAt: biodataSubmissions.createdAt });
+    submissionLimiter.check(ip);
 
-    // Email the full biodata (with PDF) to the office inbox. Fire-and-forget:
-    // the submission is already saved, so a mail failure must not fail it.
-    sendSubmissionEmail({
-      id: submission.id,
-      createdAt: submission.createdAt,
-      submitterFirstName,
-      submitterLastName,
-      email,
-      phone,
-      howHeard,
-      biodata,
-    }).catch((err) => console.error("[/api/biodata/submit] submission email failed:", err));
+    // Emails (fire-and-forget: the submission is already saved, so a mail
+    // failure must not fail it):
+    //  1. the full biodata + PDF to the office inbox,
+    //  2. a confirmation to the person who submitted,
+    //  3. a notice to the wali, unless the wali uses the same inbox.
+    const wali = f.waliEmail ? { name: f.waliName, email: f.waliEmail } : null;
+    const candidateName = `${submitterFirstName} ${submitterLastName}`.trim();
+    const sends: Array<[string, Promise<unknown>]> = [
+      [
+        "office",
+        sendSubmissionEmail({
+          id: submission.id,
+          createdAt: submission.createdAt,
+          submitterFirstName,
+          submitterLastName,
+          email,
+          phone,
+          howHeard,
+          biodata,
+        }),
+      ],
+      ["submitter", sendSubmissionReceivedEmail({ to: email, firstName: submitterFirstName, wali })],
+    ];
+    if (wali && wali.email !== email) {
+      sends.push([
+        "wali",
+        sendWaliNotificationEmail({
+          to: wali.email,
+          waliName: f.waliName,
+          relationship: f.waliRelationship,
+          candidateName,
+          gender: p.gender,
+        }),
+      ]);
+    }
+    void Promise.allSettled(sends.map(([, pr]) => pr)).then((results) =>
+      results.forEach((res, i) => {
+        if (res.status === "rejected") {
+          console.error(`[/api/biodata/submit] ${sends[i][0]} email failed:`, res.reason);
+        }
+      })
+    );
 
     return NextResponse.json({
       ok: true,
