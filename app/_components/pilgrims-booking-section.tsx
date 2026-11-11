@@ -136,7 +136,7 @@ export default function PilgrimsBookingSection() {
             </p>
 
             <Link
-              href="/#register"
+              href="/start"
               className={`${goldButtonClass} mt-8 inline-flex h-14 w-full min-w-0 items-center justify-center gap-3 px-6 text-[15px] font-semibold sm:w-auto sm:min-w-[230px] sm:px-7 sm:text-base`}
             >
               <span>Begin Your Private Profile</span>

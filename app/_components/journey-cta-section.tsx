@@ -43,7 +43,7 @@ export default function JourneyCtaSection() {
 
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row sm:gap-5">
           <Link
-            href="/#register"
+            href="/start"
             className={`${goldButtonClass} inline-flex h-14 min-w-[230px] items-center justify-center px-8 text-base font-semibold`}
           >
             Create Your Profile

@@ -14,7 +14,7 @@ import {
 const exploreLinks = [
   { label: "About Us", href: "/#about" },
   { label: "How It Works", href: "/#how-it-works" },
-  { label: "Register", href: "/register" },
+  { label: "Register", href: "/start" },
   { label: "Contact Us", href: "/contact" },
 ];
 
