@@ -150,12 +150,12 @@ export default function Home() {
           {/* Couple over the Toronto skyline; top edge fades into the lavender. */}
           <div className="relative -mt-4 h-[300px] sm:h-[420px] lg:h-[540px]">
             <Image
-              src="/hero-couple-toronto.webp"
+              src="/hero-couple-toronto-v2.webp"
               alt="Bangladeshi Muslim bride and groom looking out over the Toronto skyline at sunset"
               fill
               priority
               sizes="100vw"
-              className="object-cover object-[38%_30%]"
+              className="object-cover object-[45%_25%]"
             />
             <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-[#efe3f8] to-transparent sm:h-40" />
             <svg
