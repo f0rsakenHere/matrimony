@@ -135,7 +135,7 @@ const PAGE_W = 595.28; // A4
 const PAGE_H = 841.89;
 const MARGIN = 50;
 const LABEL_W = 150;
-const PLUM = rgb(0.353, 0.102, 0.42); // brand plum #5a1a6b
+const BRAND = rgb(0.106, 0.369, 0.231); // brand green #1b5e3b
 const GREY = rgb(0.45, 0.45, 0.45);
 const TEXT = rgb(0.13, 0.13, 0.13);
 const RULE = rgb(0.85, 0.85, 0.82);
@@ -208,12 +208,12 @@ export async function renderSubmissionPdf(s: SubmissionForPdf): Promise<Uint8Arr
     page.drawText(t, { x, y, size, font, color });
 
   // Header band
-  page.drawRectangle({ x: 0, y: PAGE_H - 90, width: PAGE_W, height: 90, color: PLUM });
+  page.drawRectangle({ x: 0, y: PAGE_H - 90, width: PAGE_W, height: 90, color: BRAND });
   page.drawText("BanglaNikahCanada", { x: MARGIN, y: PAGE_H - 45, size: 20, font: bold, color: rgb(1, 1, 1) });
   page.drawText("Biodata Submission", { x: MARGIN, y: PAGE_H - 68, size: 11, font: regular, color: rgb(0.94, 0.81, 0.53) });
   y = PAGE_H - 120;
 
-  draw(pdfSafe(name || "Unnamed"), MARGIN, 18, bold, PLUM);
+  draw(pdfSafe(name || "Unnamed"), MARGIN, 18, bold, BRAND);
   y -= 18;
   draw(`Submitted ${s.createdAt.toUTCString()}`, MARGIN, 9, regular, GREY);
   y -= 12;
@@ -225,7 +225,7 @@ export async function renderSubmissionPdf(s: SubmissionForPdf): Promise<Uint8Arr
     const tableH = "rows" in sec ? sec.rows.length * 16 + 50 : 0;
     ensure(tableH && tableH < 300 ? tableH : 60);
     y -= 22;
-    draw(pdfSafe(sec.title.toUpperCase()), MARGIN, 10, bold, PLUM);
+    draw(pdfSafe(sec.title.toUpperCase()), MARGIN, 10, bold, BRAND);
     y -= 6;
     page.drawLine({ start: { x: MARGIN, y }, end: { x: PAGE_W - MARGIN, y }, thickness: 0.75, color: RULE });
     y -= 14;

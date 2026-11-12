@@ -47,7 +47,7 @@ export default function SiteFooter() {
             </p>
 
             <p className="mt-4 max-w-[36ch] text-[14px] leading-relaxed opacity-80">
-              Faith-led matchmaking for Bangladeshi Canadian Muslims seeking a
+              Faith-led matchmaking for Bengali Canadian Muslims seeking a
               dignified path to marriage.
             </p>
 

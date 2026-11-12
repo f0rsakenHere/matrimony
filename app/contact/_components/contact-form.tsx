@@ -4,8 +4,8 @@ import { useState } from "react";
 import { CircleCheck, Loader2, Send } from "lucide-react";
 
 const fieldClass =
-  "mt-1.5 w-full rounded-xl border border-[var(--color-dark-18)] bg-white px-4 py-3 text-[16px] text-[#2b2b33] outline-none transition-colors placeholder:text-[#9a92a6] focus:border-[#5a1a6b] focus:ring-2 focus:ring-[#5a1a6b]/15";
-const labelClass = "text-[14px] font-semibold text-[#5a1a6b]";
+  "mt-1.5 w-full rounded-xl border border-[var(--color-dark-18)] bg-white px-4 py-3 text-[16px] text-[var(--brand-ink)] outline-none transition-colors placeholder:text-[#8f948d] focus:border-[var(--brand-green)] focus:ring-2 focus:ring-[var(--brand-green)]/15";
+const labelClass = "text-[14px] font-semibold text-[var(--brand-green)]";
 
 export function ContactForm() {
   const [form, setForm] = useState({ name: "", email: "", phone: "", subject: "", message: "", website: "" });
@@ -41,9 +41,9 @@ export function ContactForm() {
   if (status === "sent") {
     return (
       <div role="status" className="mt-8 rounded-2xl bg-white p-6 text-center shadow-sm sm:p-8">
-        <CircleCheck className="mx-auto size-12 text-[#5a1a6b]" strokeWidth={1.5} aria-hidden="true" />
-        <p className="mt-4 font-sans text-[22px] font-bold text-[#5a1a6b]">Message sent</p>
-        <p className="mt-2 text-[16px] leading-relaxed text-[#2b2b33]">
+        <CircleCheck className="mx-auto size-12 text-[var(--brand-green)]" strokeWidth={1.5} aria-hidden="true" />
+        <p className="mt-4 font-sans text-[22px] font-bold text-[var(--brand-green)]">Message sent</p>
+        <p className="mt-2 text-[16px] leading-relaxed text-[var(--brand-ink)]">
           Jazak Allah Khair, {form.name.split(" ")[0] || "and thank you"}. We&rsquo;ll reply to{" "}
           <strong>{form.email}</strong> as soon as possible.
         </p>
@@ -107,7 +107,7 @@ export function ContactForm() {
       <button
         type="submit"
         disabled={status === "sending"}
-        className="inline-flex h-14 w-full items-center justify-center gap-2.5 rounded-full bg-[#5a1a6b] text-[18px] font-bold shadow-[0_10px_24px_rgb(90_26_107_/_0.3)] transition-[filter] hover:brightness-110 disabled:opacity-70 sm:w-auto sm:min-w-[240px] sm:px-10"
+        className="inline-flex h-14 w-full items-center justify-center gap-2.5 rounded-full bg-[linear-gradient(180deg,#c8181f_0%,#9c0f17_100%)] text-[18px] font-bold shadow-[0_10px_24px_rgb(156_15_23_/_0.3)] transition-[filter] hover:brightness-110 disabled:opacity-70 sm:w-auto sm:min-w-[240px] sm:px-10"
         style={{ color: "#fff" }}
       >
         {status === "sending" ? <Loader2 className="size-5 animate-spin" /> : <Send className="size-5" />}

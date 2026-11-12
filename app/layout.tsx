@@ -16,7 +16,7 @@ const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
 const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://www.banglanikahcanada.com";
 const SITE_DESCRIPTION =
-  "A halal matrimony service helping Bangladeshi Muslims find a spouse in Canada. Send us your profile for free and we'll handpick a match for you.";
+  "A halal matrimony service helping Bengali Canadian Muslims find a spouse. Send us your profile and we'll handpick a match for you.";
 
 // The sharing image comes from app/opengraph-image.jpg / twitter-image.jpg.
 export const metadata: Metadata = {

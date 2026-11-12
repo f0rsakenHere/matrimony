@@ -3,9 +3,9 @@ import Image from "next/image";
 import SiteHeader from "./_components/site-header";
 import SiteFooter from "./_components/site-footer";
 import { MotionSection } from "@/components/ui/motion-section";
+import { GoldFloral, RedGoldDivider } from "@/components/ui/gold-floral";
 import {
   ShieldCheck,
-  HeartHandshake,
   FileText,
   CircleCheckBig,
   Users,
@@ -63,27 +63,6 @@ const howItWorksSteps = [
 
 /* ─── Ornaments ─── */
 
-/** Two fading rules with a small diamond in the middle. */
-function DiamondDivider({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 300 16" aria-hidden="true" className={className}>
-      <defs>
-        <linearGradient id="div-l" x1="0" x2="1">
-          <stop offset="0" stopColor="currentColor" stopOpacity="0" />
-          <stop offset="1" stopColor="currentColor" />
-        </linearGradient>
-        <linearGradient id="div-r" x1="0" x2="1">
-          <stop offset="0" stopColor="currentColor" />
-          <stop offset="1" stopColor="currentColor" stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <rect x="0" y="7" width="134" height="2" fill="url(#div-l)" />
-      <rect x="166" y="7" width="134" height="2" fill="url(#div-r)" />
-      <path d="M150 1l7 7-7 7-7-7z" fill="currentColor" />
-    </svg>
-  );
-}
-
 /* ─── Page ─── */
 
 export default function Home() {
@@ -93,22 +72,22 @@ export default function Home() {
 
       <main className="flex-1">
         {/* ════════ HERO ════════ */}
-        <section className="relative overflow-hidden bg-[linear-gradient(180deg,#f6effc_0%,#efe3f8_55%,#ead9f5_100%)]">
+        <section className="relative overflow-hidden bg-[linear-gradient(180deg,#fcf8f0_0%,#f8f0e2_100%)]">
           <div className="relative z-10 mx-auto flex max-w-[860px] flex-col items-center px-5 pt-8 text-center sm:px-8 sm:pt-12 lg:pt-14">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#3d1f63] sm:text-[13px] sm:tracking-[0.32em]">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[var(--brand-green)] sm:text-[13px] sm:tracking-[0.32em]">
               Personalized Halal Matchmaking
             </p>
 
-            <h1 className="mt-4 text-balance text-[30px] font-bold leading-[1.12] min-[400px]:text-[34px] text-[#3d1f63] sm:text-[46px] lg:text-[56px]">
-              Helping Bangladeshi Muslims Find a Spouse in Canada
+            <h1 className="mt-4 text-balance text-[31px] font-bold leading-[1.12] text-[var(--brand-green)] min-[400px]:text-[35px] sm:text-[48px] lg:text-[58px]">
+              Helping Bengali Canadian Muslims Find a Spouse
             </h1>
 
-            <DiamondDivider className="mt-5 w-[240px] text-[#9a6fcf] sm:mt-6 sm:w-[300px]" />
+            <RedGoldDivider className="mt-5 w-[260px] sm:mt-6 sm:w-[340px]" />
 
             <ul className="mt-5 space-y-2.5 text-left sm:mt-6">
-              {["Send us your profile for free.", "We’ll handpick a match for you."].map((t) => (
-                <li key={t} className="flex items-center gap-3 text-[17px] font-medium text-[#3d1f63] sm:text-[20px]">
-                  <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-[#8b6bb3] sm:size-7">
+              {["Send us your profile.", "We’ll handpick a match for you."].map((t) => (
+                <li key={t} className="flex items-center gap-3 text-[17px] font-medium text-[var(--brand-ink)] sm:text-[20px]">
+                  <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-[var(--brand-green)] sm:size-7">
                     <svg className="size-3.5 sm:size-4" viewBox="0 0 14 14" fill="none" aria-hidden="true">
                       <path d="M3 7l3 3 5-5" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
@@ -120,24 +99,21 @@ export default function Home() {
 
             <Link
               href="/start"
-              className="mt-7 inline-flex h-14 w-full max-w-[420px] items-center justify-center gap-3 rounded-full bg-[linear-gradient(180deg,#6a3fa0_0%,#4b2577_100%)] text-[19px] font-semibold shadow-[0_10px_24px_rgb(75_37_119_/_0.35)] transition-[filter,transform] hover:brightness-110 active:scale-[0.99] sm:mt-8 sm:h-16 sm:text-[21px]"
+              className="mt-7 inline-flex h-14 w-full max-w-[400px] items-center justify-center rounded-full bg-[linear-gradient(180deg,#c8181f_0%,#9c0f17_100%)] text-[20px] font-bold shadow-[0_10px_24px_rgb(156_15_23_/_0.3)] transition-[filter,transform] hover:brightness-110 active:scale-[0.99] sm:mt-8 sm:h-16 sm:text-[22px]"
               style={{ color: "#fff" }}
             >
-              <FileText className="size-6" strokeWidth={1.75} />
               Register Now
             </Link>
 
-            <ul className="mt-7 grid w-full max-w-[520px] grid-cols-3 divide-x divide-[#3d1f63]/25 sm:mt-8">
+            <ul className="mt-7 grid w-full max-w-[520px] grid-cols-3 divide-x divide-[var(--brand-gold)]/50 sm:mt-8">
               {[
                 { icon: ShieldCheck, label: ["Verified", "Profiles"] },
                 { icon: Lock, label: ["Private &", "Confidential"] },
-                { icon: HeartHandshake, label: ["Personalized", "Matchmaking"] },
+                { icon: Users, label: ["Personalized", "Matchmaking"] },
               ].map(({ icon: Icon, label }) => (
                 <li key={label[0]} className="flex flex-col items-center gap-2 px-2">
-                  <span className="flex size-12 items-center justify-center rounded-full bg-[#e4d3f3] sm:size-14">
-                    <Icon className="size-6 text-[#3d1f63] sm:size-7" strokeWidth={1.6} />
-                  </span>
-                  <span className="text-[13px] font-semibold leading-tight text-[#3d1f63] sm:text-[15px]">
+                  <Icon className="size-9 text-[var(--brand-green)] sm:size-10" strokeWidth={1.5} aria-hidden="true" />
+                  <span className="text-[13px] font-medium leading-tight text-[var(--brand-ink)] sm:text-[15px]">
                     {label[0]}
                     <br />
                     {label[1]}
@@ -147,26 +123,19 @@ export default function Home() {
             </ul>
           </div>
 
-          {/* Couple over the Toronto skyline; top edge fades into the lavender. */}
-          <div className="relative -mt-4 h-[300px] sm:h-[420px] lg:h-[540px]">
+          {/* Couple over the Toronto skyline; top edge fades into the cream. */}
+          <div className="relative mt-2 h-[300px] sm:h-[420px] lg:h-[540px]">
             <Image
-              src="/hero-couple-toronto-v2.webp"
-              alt="Bangladeshi Muslim bride and groom looking out over the Toronto skyline at sunset"
+              src="/hero-couple-toronto-v3.webp"
+              alt="Bengali Muslim bride and groom looking out over the Toronto skyline at sunset"
               fill
               priority
               sizes="100vw"
-              className="object-cover object-[45%_25%]"
+              className="object-cover object-[42%_30%]"
             />
-            <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-[#efe3f8] to-transparent sm:h-40" />
-            <svg
-              className="absolute inset-x-0 bottom-0 h-10 w-full sm:h-14"
-              viewBox="0 0 1440 80"
-              preserveAspectRatio="none"
-              aria-hidden="true"
-            >
-              <path d="M0 80 V44 Q720 -6 1440 44 V80 Z" fill="var(--color-light)" />
-              <path d="M0 44 Q720 -6 1440 44" fill="none" stroke="#8b5cc4" strokeWidth="3" />
-            </svg>
+            <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-[#f8f0e2] to-transparent sm:h-36" />
+            <GoldFloral className="absolute bottom-full left-0 w-16 translate-y-8 -scale-y-100 opacity-70 sm:w-28" />
+            <GoldFloral flip className="absolute bottom-full right-0 w-16 translate-y-8 -scale-y-100 opacity-70 sm:w-28" />
           </div>
         </section>
 
@@ -176,8 +145,8 @@ export default function Home() {
             <ul className="mx-auto mt-4 w-fit space-y-7 sm:mt-6 sm:space-y-8 xl:mt-8 xl:grid xl:w-full xl:grid-cols-5 xl:gap-4 xl:space-y-0">
               {promises.map(({ icon: Icon, lines }) => (
                 <li key={lines[0]} className="flex items-center gap-5 xl:flex-col xl:gap-4 xl:text-center">
-                  <Icon className="size-11 shrink-0 text-[#5a1a6b] sm:size-12" strokeWidth={1.5} aria-hidden="true" />
-                  <span className="whitespace-nowrap text-[18px] font-bold leading-snug text-[#5a1a6b] min-[400px]:text-[19px] sm:text-[21px] xl:text-[15px] 2xl:text-[17px]">
+                  <Icon className="size-11 shrink-0 text-[var(--brand-green)] sm:size-12" strokeWidth={1.5} aria-hidden="true" />
+                  <span className="whitespace-nowrap text-[18px] font-bold leading-snug text-[var(--brand-green)] min-[400px]:text-[19px] sm:text-[21px] xl:text-[15px] 2xl:text-[17px]">
                     {lines[0]}
                     <br />
                     {lines[1]}
@@ -191,24 +160,24 @@ export default function Home() {
         {/* ════════ WHY SEND US YOUR PROFILE ════════ */}
         <section id="about" className="scroll-mt-4 bg-[var(--color-light)] pb-2 pt-10 sm:pt-14 lg:pt-16">
           <div className="mx-auto max-w-[680px] px-5 sm:px-8">
-            <h2 className="text-center font-sans text-[28px] font-bold leading-tight text-[#5a1a6b] sm:text-[36px]">
+            <h2 className="text-center font-sans text-[28px] font-bold leading-tight text-[var(--brand-green)] sm:text-[36px]">
               Why Send Us Your Profile?
             </h2>
             <div className="mt-6 h-[2px] bg-[var(--button-gold-mid)] sm:mt-8" />
 
-            <h3 className="mt-8 font-sans text-[24px] font-bold leading-tight text-[#5a1a6b] sm:text-[28px]">
+            <h3 className="mt-8 font-sans text-[24px] font-bold leading-tight text-[var(--brand-green)] sm:text-[28px]">
               Finding the Right Match
             </h3>
-            <p className="mt-4 text-[17px] leading-[1.75] text-[#2b2b33] sm:text-[18px]">
+            <p className="mt-4 text-[17px] leading-[1.75] text-[var(--brand-ink)] sm:text-[18px]">
               Finding a suitable match can be stressful. It can take months or even years, especially when
               you&rsquo;re looking for someone who shares your faith, values, and expectations.
             </p>
 
-            <p className="mt-6 rounded-2xl bg-[#5a1a6b] px-6 py-4 text-center text-[22px] font-bold leading-tight sm:py-5 sm:text-[26px]" style={{ color: "#fff" }}>
+            <p className="mt-6 rounded-2xl bg-[var(--brand-green)] px-6 py-4 text-center text-[22px] font-bold leading-tight sm:py-5 sm:text-[26px]" style={{ color: "#fff" }}>
               That&rsquo;s Where We Come In.
             </p>
 
-            <p className="mt-6 text-[17px] leading-[1.75] text-[#2b2b33] sm:text-[18px]">
+            <p className="mt-6 text-[17px] leading-[1.75] text-[var(--brand-ink)] sm:text-[18px]">
               Tell us about yourself and what you&rsquo;re looking for. Our team will personally review your
               biodata and handpick potential matches based on your preferences.
             </p>
@@ -220,7 +189,7 @@ export default function Home() {
         {/* ════════ CONFIDENTIAL & SAFE ════════ */}
         <section id="why-choose" className="bg-[var(--color-light)] pb-2 pt-4 sm:pt-6">
           <div className="mx-auto max-w-[680px] px-5 sm:px-8">
-            <h2 className="text-center font-sans text-[28px] font-bold leading-tight text-[#5a1a6b] sm:text-[36px]">
+            <h2 className="text-center font-sans text-[28px] font-bold leading-tight text-[var(--brand-green)] sm:text-[36px]">
               Confidential &amp; Safe
             </h2>
             <div className="mt-6 h-[2px] bg-[var(--button-gold-mid)] sm:mt-8" />
@@ -228,8 +197,8 @@ export default function Home() {
             <ul className="mt-8 space-y-6 sm:mt-10 sm:space-y-7">
               {privacyPoints.map((text) => (
                 <li key={text} className="flex items-start gap-4">
-                  <CircleCheck className="mt-[3px] size-6 shrink-0 text-[#5a1a6b] sm:size-7" strokeWidth={1.75} aria-hidden="true" />
-                  <span className="text-[18px] leading-[1.6] text-[#2b2b33] sm:text-[20px]">{text}</span>
+                  <CircleCheck className="mt-[3px] size-6 shrink-0 text-[var(--brand-green)] sm:size-7" strokeWidth={1.75} aria-hidden="true" />
+                  <span className="text-[18px] leading-[1.6] text-[var(--brand-ink)] sm:text-[20px]">{text}</span>
                 </li>
               ))}
             </ul>
@@ -241,12 +210,12 @@ export default function Home() {
         {/* ════════ DEVELOPED WITH SCHOLARS ════════ */}
         <section className="bg-[var(--color-light)] pb-12 pt-4 sm:pb-16 sm:pt-6">
           <div className="mx-auto max-w-[680px] px-5 sm:px-8">
-            <h2 className="text-center font-sans text-[28px] font-bold leading-tight text-[#5a1a6b] sm:text-[36px]">
+            <h2 className="text-center font-sans text-[28px] font-bold leading-tight text-[var(--brand-green)] sm:text-[36px]">
               Developed With Scholars
             </h2>
             <div className="mt-6 h-[2px] bg-[var(--button-gold-mid)] sm:mt-8" />
 
-            <div className="mt-8 space-y-6 text-[18px] leading-[1.6] text-[#2b2b33] sm:mt-10 sm:text-[20px]">
+            <div className="mt-8 space-y-6 text-[18px] leading-[1.6] text-[var(--brand-ink)] sm:mt-10 sm:text-[20px]">
               <p>Our services were developed in collaboration with traditional Scholars.</p>
               <p>Our goal is to provide you with a matchmaking experience in line with the Islamic injunctions.</p>
               <p>
@@ -260,7 +229,7 @@ export default function Home() {
             <div className="mt-8 flex justify-center sm:mt-10">
               <Link
                 href="/start"
-                className="inline-flex h-14 w-full max-w-[360px] items-center justify-center rounded-full bg-[#5a1a6b] text-[22px] font-bold shadow-[0_10px_24px_rgb(90_26_107_/_0.3)] transition-[filter] hover:brightness-110 sm:h-16 sm:text-[24px]"
+                className="inline-flex h-14 w-full max-w-[360px] items-center justify-center rounded-full bg-[linear-gradient(180deg,#c8181f_0%,#9c0f17_100%)] text-[22px] font-bold shadow-[0_10px_24px_rgb(156_15_23_/_0.3)] transition-[filter] hover:brightness-110 sm:h-16 sm:text-[24px]"
                 style={{ color: "#fff" }}
               >
                 Register Now

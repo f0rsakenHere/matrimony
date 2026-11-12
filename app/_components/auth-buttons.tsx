@@ -39,7 +39,7 @@ export function AuthButtons() {
     <div className="hidden items-center gap-3 min-[900px]:flex">
       <Link
         href="/start"
-        className="h-12 items-center justify-center gap-2 rounded-lg bg-[var(--foreground)] px-6 text-[14px] font-semibold whitespace-nowrap inline-flex shadow-[0_4px_14px_rgb(75_45_127_/_0.3)] transition-all hover:shadow-[0_6px_20px_rgb(75_45_127_/_0.4)] lg:h-14 lg:px-7 lg:text-[15px]"
+        className="h-12 items-center justify-center gap-2 rounded-lg bg-[linear-gradient(180deg,#c8181f_0%,#9c0f17_100%)] px-6 text-[14px] font-semibold whitespace-nowrap inline-flex shadow-[0_4px_14px_rgb(156_15_23_/_0.3)] transition-all hover:shadow-[0_6px_20px_rgb(156_15_23_/_0.4)] lg:h-14 lg:px-7 lg:text-[15px]"
         style={{ color: "#fff" }}
       >
         <FileText className="size-4" />
@@ -80,7 +80,7 @@ export function MobileAuthButtons() {
     <div className="mt-3 grid gap-1">
       <Link
         href="/start"
-        className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-[var(--foreground)] text-[14px] font-semibold"
+        className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-[linear-gradient(180deg,#c8181f_0%,#9c0f17_100%)] text-[14px] font-semibold"
         style={{ color: "#fff" }}
       >
         <FileText className="size-4" />

@@ -5,22 +5,30 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --color-light: #f8f6fb;
-  --color-dark: #4B2D7F;
-  --color-light-96: rgb(248 246 251 / 0.96);
-  --color-light-90: rgb(248 246 251 / 0.9);
-  --color-light-72: rgb(248 246 251 / 0.72);
-  --color-light-18: rgb(248 246 251 / 0.18);
-  --color-light-12: rgb(248 246 251 / 0.12);
-  --color-light-08: rgb(248 246 251 / 0.08);
-  --color-dark-88: rgb(75 45 127 / 0.88);
-  --color-dark-72: rgb(75 45 127 / 0.72);
-  --color-dark-56: rgb(75 45 127 / 0.56);
-  --color-dark-28: rgb(75 45 127 / 0.28);
-  --color-dark-18: rgb(75 45 127 / 0.18);
-  --color-dark-14: rgb(75 45 127 / 0.14);
-  --color-dark-12: rgb(75 45 127 / 0.12);
-  --color-dark-08: rgb(75 45 127 / 0.08);
+  --color-light: #fbf6ec;
+  --color-dark: #1b5e3b;
+  /* Brand: forest green, deep red (calls to action), cream, gold accents */
+  --brand-green: #1b5e3b;
+  --brand-green-dark: #134a2e;
+  --brand-red: #b3141f;
+  --brand-red-dark: #8c0f17;
+  --brand-cream: #fbf6ec;
+  --brand-gold: #c9a24a;
+  --brand-ink: #2a332d;
+  --color-light-96: rgb(251 246 236 / 0.96);
+  --color-light-90: rgb(251 246 236 / 0.9);
+  --color-light-72: rgb(251 246 236 / 0.72);
+  --color-light-18: rgb(251 246 236 / 0.18);
+  --color-light-12: rgb(251 246 236 / 0.12);
+  --color-light-08: rgb(251 246 236 / 0.08);
+  --color-dark-88: rgb(27 94 59 / 0.88);
+  --color-dark-72: rgb(27 94 59 / 0.72);
+  --color-dark-56: rgb(27 94 59 / 0.56);
+  --color-dark-28: rgb(27 94 59 / 0.28);
+  --color-dark-18: rgb(27 94 59 / 0.18);
+  --color-dark-14: rgb(27 94 59 / 0.14);
+  --color-dark-12: rgb(27 94 59 / 0.12);
+  --color-dark-08: rgb(27 94 59 / 0.08);
   --surface: var(--color-light);
   --surface-inverse: var(--color-dark);
   --surface-muted: var(--color-light-90);
@@ -29,7 +37,7 @@
   --button-gold-mid: #e4b968;
   --button-gold-dark: #cf9a4b;
   --button-gold-border: rgb(180 130 63 / 0.68);
-  --button-gold-text: #4B2D7F;
+  --button-gold-text: #1b5e3b;
   --font-size-h1: 72px;
   --font-size-h2: 48px;
   --font-size-h3: 24px;
