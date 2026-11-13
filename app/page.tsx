@@ -3,7 +3,7 @@ import Image from "next/image";
 import SiteHeader from "./_components/site-header";
 import SiteFooter from "./_components/site-footer";
 import { MotionSection } from "@/components/ui/motion-section";
-import { GoldFloral, RedGoldDivider } from "@/components/ui/gold-floral";
+import { GoldFloral, MapleDivider } from "@/components/ui/gold-floral";
 import {
   ShieldCheck,
   FileText,
@@ -78,11 +78,16 @@ export default function Home() {
               Personalized Halal Matchmaking
             </p>
 
-            <h1 className="mt-4 text-balance text-[31px] font-bold leading-[1.12] text-[var(--brand-green)] min-[400px]:text-[35px] sm:text-[48px] lg:text-[58px]">
-              Helping Bengali Canadian Muslims Find a Spouse
+            <h1 className="mt-4 font-[family-name:var(--font-display)] font-black text-[#1a1a1a]">
+              <span className="block text-balance text-[27px] leading-[1.18] min-[400px]:text-[30px] sm:text-[42px] lg:text-[50px]">
+                Helping Bengali Canadian Muslims Find Their
+              </span>
+              <span className="mt-1 block text-[38px] leading-[1.1] text-[var(--brand-red)] min-[400px]:text-[42px] sm:text-[58px] lg:text-[70px]">
+                Life Partner
+              </span>
             </h1>
 
-            <RedGoldDivider className="mt-5 w-[260px] sm:mt-6 sm:w-[340px]" />
+            <MapleDivider className="mt-3 w-[260px] sm:mt-4 sm:w-[340px]" />
 
             <ul className="mt-5 space-y-2.5 text-left sm:mt-6">
               {["Send us your profile.", "We’ll handpick a match for you."].map((t) => (

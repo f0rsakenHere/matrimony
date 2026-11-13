@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { MAPLE } from "./brand-logo";
 
 /**
  * Decorative gold floral sprig for page corners (line art: vines, leaves,
@@ -45,6 +46,27 @@ export function GoldFloral({ className, flip = false }: { className?: string; fl
           </g>
         ))}
       </g>
+    </svg>
+  );
+}
+
+/** Red rules fading out to the sides with a red maple leaf in the middle. */
+export function MapleDivider({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 340 24" aria-hidden="true" className={className}>
+      <defs>
+        <linearGradient id="md-l" x1="0" x2="1">
+          <stop offset="0" stopColor="#b3141f" stopOpacity="0" />
+          <stop offset="1" stopColor="#b3141f" />
+        </linearGradient>
+        <linearGradient id="md-r" x1="0" x2="1">
+          <stop offset="0" stopColor="#b3141f" />
+          <stop offset="1" stopColor="#b3141f" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <rect x="0" y="11.25" width="152" height="1.5" fill="url(#md-l)" />
+      <rect x="188" y="11.25" width="152" height="1.5" fill="url(#md-r)" />
+      <path d={MAPLE} transform="translate(158 0)" fill="#b3141f" />
     </svg>
   );
 }

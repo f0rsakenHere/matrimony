@@ -4,6 +4,7 @@ import {
   Geist_Mono,
   Libre_Baskerville,
   Manrope,
+  Merriweather,
   Noto_Serif_Bengali,
   Sora,
 } from "next/font/google";
@@ -29,6 +30,14 @@ export const brandScript = Berkshire_Swash({
 export const headingManrope = Manrope({
   variable: "--font-manrope",
   subsets: ["latin"],
+  display: "swap",
+});
+
+// Heavy display serif for the homepage headline.
+export const displaySerif = Merriweather({
+  variable: "--font-display",
+  subsets: ["latin"],
+  weight: ["900"],
   display: "swap",
 });
 

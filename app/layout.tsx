@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import {
   arabicSerif,
   bengaliSerif,
+  displaySerif,
   geistMono,
   headingManrope,
   headingSerif,
@@ -52,6 +53,7 @@ export default function RootLayout({
         "antialiased",
         soraSans.variable,
         headingSerif.variable,
+        displaySerif.variable,
         headingManrope.variable,
         geistMono.variable,
         bengaliSerif.variable,
