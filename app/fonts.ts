@@ -38,6 +38,7 @@ export const displaySerif = Merriweather({
   variable: "--font-display",
   subsets: ["latin"],
   weight: ["900"],
+  style: ["normal", "italic"],
   display: "swap",
 });
 

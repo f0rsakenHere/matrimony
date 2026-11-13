@@ -129,16 +129,16 @@ export default function Home() {
           </div>
 
           {/* Couple over the Toronto skyline; top edge fades into the cream. */}
-          <div className="relative mt-2 h-[300px] sm:h-[420px] lg:h-[540px]">
+          <div className="relative mt-2 aspect-[2/1] lg:aspect-auto lg:h-[540px]">
             <Image
               src="/hero-couple-toronto-v3.webp"
               alt="Bengali Muslim bride and groom looking out over the Toronto skyline at sunset"
               fill
               priority
               sizes="100vw"
-              className="object-cover object-[42%_30%]"
+              className="object-cover object-[50%_30%]"
             />
-            <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-[#f8f0e2] to-transparent sm:h-36" />
+            <div className="absolute inset-x-0 top-0 h-10 bg-gradient-to-b from-[#f8f0e2] to-transparent sm:h-20 lg:h-36" />
             <GoldFloral className="absolute bottom-full left-0 w-16 translate-y-8 -scale-y-100 opacity-70 sm:w-28" />
             <GoldFloral flip className="absolute bottom-full right-0 w-16 translate-y-8 -scale-y-100 opacity-70 sm:w-28" />
           </div>
