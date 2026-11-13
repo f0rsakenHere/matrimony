@@ -16,7 +16,7 @@ export default function StartPage() {
           </Link>
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-dark-18)] px-3.5 py-2 text-[14px] font-semibold text-[var(--brand-green)] transition-colors hover:bg-[var(--brand-green)] hover:text-white sm:px-4 sm:text-[15px]"
+            className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-dark-18)] px-3.5 py-2 text-[14px] font-semibold !text-[var(--brand-green)] transition-colors hover:bg-[var(--brand-green)] hover:!text-white sm:px-4 sm:text-[15px]"
           >
             <ArrowLeft className="size-4" aria-hidden="true" />
             <span className="sm:hidden">Home</span>
