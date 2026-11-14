@@ -151,7 +151,7 @@ export default function Home() {
               {promises.map(({ icon: Icon, lines }) => (
                 <li key={lines[0]} className="flex items-center gap-5 xl:flex-col xl:gap-4 xl:text-center">
                   <Icon className="size-11 shrink-0 text-[var(--brand-green)] sm:size-12" strokeWidth={1.5} aria-hidden="true" />
-                  <span className="whitespace-nowrap text-[18px] font-bold leading-snug text-[var(--brand-green)] min-[400px]:text-[19px] sm:text-[21px] xl:text-[15px] 2xl:text-[17px]">
+                  <span className="whitespace-nowrap text-[18px] font-medium leading-snug text-[var(--brand-green)] min-[400px]:text-[19px] sm:text-[21px] xl:text-[15px] 2xl:text-[17px]">
                     {lines[0]}
                     <br />
                     {lines[1]}
