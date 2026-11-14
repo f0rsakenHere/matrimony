@@ -23,7 +23,7 @@ export const RED_HEART =
 /**
  * BanglaNikahCanada wordmark: green + red heart mark, the Bengali name,
  * "BanglaNikahCanada.com" in heavy italic serif, and the tagline
- * "A Halal Matrimony Service" between red rules.
+ * "A Halal Matrimony Service" below it.
  * Size it with a width class (e.g. "w-[240px]"); height follows the aspect ratio.
  */
 export function BrandLogo({ className, tone = "dark" }: BrandLogoProps) {
@@ -32,10 +32,9 @@ export function BrandLogo({ className, tone = "dark" }: BrandLogoProps) {
   const red = light ? "#ffb4b9" : "#c8181f";
   const ink = light ? "#ffffff" : "#141414";
   const sub = light ? "rgba(255,255,255,0.88)" : "#1f1f1f";
-  const rule = light ? "rgba(255,180,185,0.8)" : "#c8181f";
 
   return (
-    <svg viewBox="0 0 520 112" aria-hidden="true" className={cn("block h-auto shrink-0", className)}>
+    <svg viewBox="0 0 520 118" aria-hidden="true" className={cn("block h-auto shrink-0", className)}>
       <g transform="translate(0 4)">
         <path d={GREEN_SWOOSH} fill={green} />
         <path d={RED_HEART} fill={red} fillRule="evenodd" />
@@ -65,20 +64,17 @@ export function BrandLogo({ className, tone = "dark" }: BrandLogoProps) {
         BanglaNikahCanada.com
       </text>
 
-      {/* Tagline between red rules */}
-      <rect x="122" y="100" width="94" height="2" fill={rule} />
+      {/* Tagline, spanning the width of the English name */}
       <text
-        x="316"
-        y="106"
+        x="122"
+        y="110"
         fill={sub}
-        textAnchor="middle"
-        textLength="188"
-        lengthAdjust="spacingAndGlyphs"
-        style={{ fontFamily: "var(--font-sora), sans-serif", fontSize: 16, fontStyle: "italic", fontWeight: 500 }}
+        textLength="388"
+        lengthAdjust="spacing"
+        style={{ fontFamily: "var(--font-sora), sans-serif", fontSize: 22, fontStyle: "italic", fontWeight: 600 }}
       >
         A Halal Matrimony Service
       </text>
-      <rect x="416" y="100" width="96" height="2" fill={rule} />
     </svg>
   );
 }
