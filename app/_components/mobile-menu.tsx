@@ -8,7 +8,7 @@ import { MobileAuthButtons } from "./auth-buttons";
 
 const navigationLinks = [
   { href: "/", label: "Home" },
-  { href: "/#about", label: "About Us" },
+  { href: "/about", label: "About Us" },
   { href: "/#how-it-works", label: "How It Works" },
   { href: "/contact", label: "Contact" },
 ];

@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 
 const exploreLinks = [
-  { label: "About Us", href: "/#about" },
+  { label: "About Us", href: "/about" },
   { label: "How It Works", href: "/#how-it-works" },
   { label: "Register", href: "/start" },
   { label: "Contact Us", href: "/contact" },

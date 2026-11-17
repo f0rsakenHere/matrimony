@@ -7,7 +7,7 @@ import { GoldFloral } from "@/components/ui/gold-floral";
 
 const navigationLinks = [
   { href: "/", label: "Home" },
-  { href: "/#about", label: "About Us" },
+  { href: "/about", label: "About Us" },
   { href: "/#how-it-works", label: "How It Works" },
   { href: "/contact", label: "Contact" },
 ];
