@@ -9,7 +9,7 @@ export function AuthButtons() {
 
   if (loading) {
     return (
-      <div className="hidden items-center gap-3 min-[900px]:flex">
+      <div className="hidden items-center gap-3 min-[1000px]:flex">
         <div className="h-12 w-24 animate-pulse rounded bg-[var(--color-dark-08)]" />
       </div>
     );
@@ -17,7 +17,7 @@ export function AuthButtons() {
 
   if (user) {
     return (
-      <div className="hidden items-center gap-3 min-[900px]:flex">
+      <div className="hidden items-center gap-3 min-[1000px]:flex">
         <Link
           href="/dashboard"
           aria-label="Go to dashboard"
@@ -36,14 +36,14 @@ export function AuthButtons() {
   }
 
   return (
-    <div className="hidden items-center gap-3 min-[900px]:flex">
+    <div className="hidden items-center gap-3 min-[1000px]:flex">
       <Link
         href="/start"
         className="h-12 items-center justify-center gap-2 rounded-lg bg-[linear-gradient(180deg,#c8181f_0%,#9c0f17_100%)] px-6 text-[14px] font-semibold whitespace-nowrap inline-flex shadow-[0_4px_14px_rgb(156_15_23_/_0.3)] transition-all hover:shadow-[0_6px_20px_rgb(156_15_23_/_0.4)] lg:h-14 lg:px-7 lg:text-[15px]"
         style={{ color: "#fff" }}
       >
         <FileText className="size-4" />
-        Submit Biodata
+        Register for Free
       </Link>
     </div>
   );
@@ -84,7 +84,7 @@ export function MobileAuthButtons() {
         style={{ color: "#fff" }}
       >
         <FileText className="size-4" />
-        Submit Biodata
+        Register for Free
       </Link>
     </div>
   );

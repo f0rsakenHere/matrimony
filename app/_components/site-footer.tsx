@@ -14,7 +14,7 @@ import {
 const exploreLinks = [
   { label: "About Us", href: "/about" },
   { label: "How It Works", href: "/#how-it-works" },
-  { label: "Register", href: "/start" },
+  { label: "Register for Free", href: "/start" },
   { label: "Contact Us", href: "/contact" },
 ];
 
@@ -123,7 +123,7 @@ export default function SiteFooter() {
               className="mt-5 inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-[var(--button-gold-border)] bg-[linear-gradient(180deg,var(--button-gold-light)_0%,var(--button-gold-mid)_56%,var(--button-gold-dark)_100%)] px-6 text-[14px] font-semibold shadow-[inset_0_1px_0_rgb(255_249_233_/_0.78)] transition-[filter] hover:[filter:brightness(1.05)]"
               style={{ color: "var(--button-gold-text)" }}
             >
-              Submit Biodata
+              Register for Free
             </Link>
           </div>
         </div>

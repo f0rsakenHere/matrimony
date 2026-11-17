@@ -139,7 +139,7 @@ export default function AboutPage() {
               href="/start"
               className="mt-8 inline-flex h-14 items-center justify-center rounded-full border border-[#7d0d14] bg-[linear-gradient(180deg,#c8181f_0%,#9c0f17_100%)] px-10 text-[18px] font-bold !text-white shadow-[0_10px_24px_rgb(0_0_0_/_0.25)] transition-[filter] hover:brightness-110"
             >
-              Register Now
+              Register for Free
             </Link>
           </div>
         </section>

@@ -107,7 +107,7 @@ export default function Home() {
               className="mt-7 inline-flex h-14 w-full max-w-[400px] items-center justify-center rounded-full bg-[linear-gradient(180deg,#c8181f_0%,#9c0f17_100%)] text-[20px] font-bold shadow-[0_10px_24px_rgb(156_15_23_/_0.3)] transition-[filter,transform] hover:brightness-110 active:scale-[0.99] sm:mt-8 sm:h-16 sm:text-[22px]"
               style={{ color: "#fff" }}
             >
-              Register Now
+              Register for Free
             </Link>
 
             <ul className="mt-7 grid w-full max-w-[520px] grid-cols-3 divide-x divide-[var(--brand-gold)]/50 sm:mt-8">
@@ -237,7 +237,7 @@ export default function Home() {
                 className="inline-flex h-14 w-full max-w-[360px] items-center justify-center rounded-full bg-[linear-gradient(180deg,#c8181f_0%,#9c0f17_100%)] text-[22px] font-bold shadow-[0_10px_24px_rgb(156_15_23_/_0.3)] transition-[filter] hover:brightness-110 sm:h-16 sm:text-[24px]"
                 style={{ color: "#fff" }}
               >
-                Register Now
+                Register for Free
               </Link>
             </div>
           </div>

@@ -40,13 +40,13 @@ export default function SiteHeader() {
 
           <nav
             aria-label="Primary navigation"
-            className="hidden items-center gap-8 text-[15px] font-semibold text-[var(--foreground)] min-[900px]:flex"
+            className="hidden items-center gap-5 text-[15px] xl:gap-8 font-semibold text-[var(--foreground)] min-[1000px]:flex"
           >
             {navigationLinks.map((item) => (
               <Link
                 key={item.label}
                 href={item.href}
-                className="leading-none text-[var(--foreground)] transition-opacity hover:opacity-70"
+                className="whitespace-nowrap leading-none text-[var(--foreground)] transition-opacity hover:opacity-70"
               >
                 {item.label}
               </Link>

@@ -530,7 +530,7 @@ export default function PublicBiodataForm() {
                 {title}
               </span>
               <span className="mt-4 inline-block text-[13px] font-semibold text-[var(--color-dark-56)] group-hover:text-[var(--foreground)]">
-                Start registration →
+                Register for free →
               </span>
             </button>
           ))}

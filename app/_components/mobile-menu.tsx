@@ -27,7 +27,7 @@ export function MobileMenu() {
   }
 
   return (
-    <div className="min-[900px]:hidden">
+    <div className="min-[1000px]:hidden">
       <button
         ref={buttonRef}
         onClick={handleToggle}
