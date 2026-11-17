@@ -2,13 +2,17 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import {
-  ArrowDown, ArrowUpRight, BookOpen, Globe, HandHeart, Heart,
-  LockKeyhole, MessagesSquare, Scale, ShieldCheck, Users,
+  BookOpen,
+  Globe,
+  HandHeart,
+  Heart,
+  MessagesSquare,
+  Scale,
+  Users,
 } from "lucide-react";
 import SiteHeader from "../_components/site-header";
 import SiteFooter from "../_components/site-footer";
 import { MapleDivider } from "@/components/ui/gold-floral";
-import styles from "./about.module.css";
 
 export const metadata: Metadata = {
   title: "About Us | BanglaNikahCanada",
@@ -23,194 +27,146 @@ const services = [
   { icon: HandHeart, title: "Nikah Services", text: "Assistance with Islamic marriage ceremonies." },
   { icon: MessagesSquare, title: "Marriage & Family Counseling", text: "Experienced guidance before and after nikah." },
   { icon: Scale, title: "Legal & Professional Support", text: "Access to a lawyer and social worker for marriage related matters." },
+  { icon: Globe, title: "Multilingual Assistance", text: "Support in Bangla, English, French, Arabic, Urdu, and other languages where available." },
 ];
 
-const promises = [
-  { icon: ShieldCheck, title: "Rooted in faith", text: "A thoughtful, halal approach" },
-  { icon: LockKeyhole, title: "Personal & private", text: "Your journey, treated with care" },
-  { icon: Users, title: "Connected by community", text: "Bengali roots. Canadian home." },
-];
+const h2 = "font-[family-name:var(--font-display)] text-[26px] font-black leading-tight text-[var(--brand-green)] sm:text-[32px]";
+const p = "mt-4 text-[17px] leading-[1.8] text-[var(--brand-ink)] sm:text-[18px]";
 
 export default function AboutPage() {
   return (
-    <div className={styles.page}>
+    <div className="flex min-h-screen flex-col bg-[var(--color-light)]">
       <SiteHeader />
-      <main id="main-content">
-        <section className={styles.hero} aria-labelledby="about-title">
-          <div className={`${styles.container} ${styles.heroGrid}`}>
-            <div className={styles.heroCopy}>
-              <p className={styles.eyebrow}><span /> About us</p>
-              <h1 id="about-title" className={styles.heroTitle}>
-                Making nikah<br /><em>simple, halal</em><br />&amp; accessible.
-              </h1>
-              <MapleDivider className={styles.divider} />
-              <p className={styles.heroDescription}>
-                As Bengali Muslims who were born or raised in Canada, we understand what it&rsquo;s like to grow
-                up between two cultures. We understand the lifestyle, mindset, and expectations of Bengali
-                Muslims who call Canada home.
-              </p>
-              <div className={styles.heroActions}>
-                <Link href="/start" className={styles.primaryButton}>
-                  Register for Free <ArrowUpRight size={19} aria-hidden="true" />
-                </Link>
-                <a href="#our-story" className={styles.textLink}>
-                  Get to know us <ArrowDown size={16} aria-hidden="true" />
-                </a>
-              </div>
-            </div>
-            <div className={styles.heroVisual}>
-              <div className={styles.heroFrame}>
-                <Image
-                  src="/images/about/shared-beginnings.webp"
-                  alt="A Bengali Muslim couple sharing a warm smile in a sunlit Montreal courtyard garden"
-                  fill priority
-                  sizes="(max-width: 760px) 100vw, (max-width: 1200px) 48vw, 550px"
-                  className={styles.heroImage}
-                />
-              </div>
-              <span className={styles.imageAccent} aria-hidden="true" />
-              <div className={styles.imageNote}>
-                <span className={styles.noteIcon}><Heart size={22} strokeWidth={1.4} aria-hidden="true" /></span>
-                <div>
-                  <span className={styles.noteLabel}>Faith. Family. A shared future.</span>
-                  <p>Meaningful connections begin here.</p>
-                </div>
-              </div>
-              <p className={styles.imageCaption}>Bengali at heart. At home in Canada.</p>
+
+      <main className="flex-1">
+        {/* Intro */}
+        <section className="bg-[linear-gradient(180deg,#fcf8f0_0%,#f8f0e2_100%)] pb-12 pt-10 text-center sm:pb-16 sm:pt-14">
+          <div className="mx-auto max-w-[760px] px-5 sm:px-8">
+            <p className="text-[12px] font-semibold uppercase tracking-[0.28em] text-[var(--brand-green)] sm:text-[13px]">
+              About Us
+            </p>
+            <h1 className="mt-4 font-[family-name:var(--font-display)] font-black text-[#1a1a1a]">
+              <span className="block text-balance text-[30px] leading-[1.15] sm:text-[44px]">Making Nikah</span>
+              <span className="mt-1 block text-balance text-[32px] leading-[1.15] text-[var(--brand-red)] sm:text-[48px]">
+                Simple, Halal &amp; Accessible
+              </span>
+            </h1>
+            <MapleDivider className="mx-auto mt-4 w-[240px] sm:w-[320px]" />
+            <p className="mx-auto mt-6 max-w-[640px] text-[17px] leading-[1.8] text-[var(--brand-ink)] sm:text-[19px]">
+              As Bengali Muslims who were born or raised in Canada, we understand what it&rsquo;s like to grow
+              up between two cultures. We understand the lifestyle, mindset, and expectations of Bengali
+              Muslims who call Canada home.
+            </p>
+          </div>
+          <div className="mx-auto mt-8 max-w-[1040px] px-5 sm:mt-10 sm:px-8">
+            <div className="relative aspect-[16/9] overflow-hidden rounded-2xl border border-[var(--brand-gold)]/35 shadow-[0_12px_32px_rgb(27_94_59_/_0.08)] sm:aspect-[3/1]">
+              <Image
+                src="/images/about/islamic-courtyard.webp"
+                alt="A peaceful empty Islamic courtyard with cream stone arches, green doors, and jasmine"
+                fill
+                priority
+                sizes="(max-width: 1040px) 100vw, 976px"
+                className="object-cover"
+              />
             </div>
           </div>
         </section>
 
-        <div className={styles.promiseBand}>
-          <ul className={`${styles.container} ${styles.promises}`} aria-label="Our values">
-            {promises.map(({ icon: Icon, title, text }) => (
-              <li key={title}>
-                <Icon size={27} strokeWidth={1.35} aria-hidden="true" />
-                <div><p>{title}</p><span>{text}</span></div>
-              </li>
-            ))}
-          </ul>
-        </div>
+        {/* Why we exist */}
+        <section className="py-12 sm:py-16">
+          <div className="mx-auto max-w-[760px] px-5 sm:px-8">
+            <h2 className={h2}>That&rsquo;s Why We Exist.</h2>
+            <p className={p}>
+              We want to bring Bengali Muslims across Canada together through a trusted, halal matchmaking
+              service where individuals and families can connect, explore compatible matches, and take
+              meaningful steps toward nikah.
+            </p>
+            <p className={p}>
+              Our goal is to help you find a compatible life partner who shares your values, understands
+              your mindset, and has similar hopes and goals for the future.
+            </p>
+          </div>
+        </section>
 
-        <section id="our-story" className={`${styles.section} ${styles.story}`} aria-labelledby="story-title">
-          <div className={`${styles.container} ${styles.storyGrid}`}>
-            <div className={styles.storyVisual}>
-              <div className={styles.storyImage}>
+        {/* More than matchmaking */}
+        <section className="bg-white/60 py-12 sm:py-16">
+          <div className="mx-auto max-w-[1040px] px-5 sm:px-8">
+            <div className="mx-auto max-w-[760px]">
+              <h2 className={h2}>More Than Matchmaking</h2>
+              <p className={p}>
+                We want to be more than just another matrimonial platform. Our vision is to become a
+                trusted, one stop resource for everything related to nikah and marriage.
+              </p>
+              <p className={p}>
+                Our team brings together Islamic scholars, experienced marriage counselors, a social
+                worker, a lawyer, and individuals with years of experience supporting families.
+              </p>
+              <div className="relative mt-8 aspect-[16/9] overflow-hidden rounded-2xl border border-[var(--brand-gold)]/35 sm:aspect-[5/2]">
                 <Image
-                  src="/images/about/family-connections.webp"
-                  alt="Two generations of a Bengali Canadian family enjoying a thoughtful conversation over tea"
+                  src="/images/about/bengali-hospitality.webp"
+                  alt="A brass Bengali tea service with ivory cups, jasmine flowers, and green and gold textiles"
                   fill
-                  sizes="(max-width: 760px) 100vw, (max-width: 1200px) 46vw, 550px"
+                  sizes="(max-width: 760px) 100vw, 760px"
+                  className="object-cover"
                 />
               </div>
-              <div className={styles.storyNote}>
-                <span className={styles.eyebrow}>A sense of belonging</span>
-                <p>Two cultures.<br />Shared values.<br /><em>One meaningful journey.</em></p>
-              </div>
+              <p className={`${p} font-semibold`}>Together, we aim to provide:</p>
             </div>
-            <div className={styles.storyCopy}>
-              <p className={styles.eyebrow}>That&rsquo;s why we exist</p>
-              <h2 id="story-title" className={styles.sectionTitle}>A connection that<br />feels like <em>home.</em></h2>
-              <div className={styles.goldRule} />
-              <p className={styles.bodyCopy}>
-                We want to bring Bengali Muslims across Canada together through a trusted, halal matchmaking
-                service where individuals and families can connect, explore compatible matches, and take
-                meaningful steps toward nikah.
-              </p>
-              <p className={styles.bodyCopy}>
-                Our goal is to help you find a compatible life partner who shares your values, understands
-                your mindset, and has similar hopes and goals for the future.
-              </p>
-              <Link href="/#how-it-works" className={styles.textLink}>
-                Discover our approach <ArrowUpRight size={17} aria-hidden="true" />
-              </Link>
-            </div>
-          </div>
-        </section>
 
-        <section className={`${styles.section} ${styles.services}`} aria-labelledby="services-title">
-          <div className={styles.container}>
-            <div className={styles.servicesIntro}>
-              <div>
-                <p className={styles.eyebrow}>Support at every step</p>
-                <h2 id="services-title" className={styles.sectionTitle}>More than<br /><em>matchmaking.</em></h2>
-              </div>
-              <div>
-                <p className={styles.bodyCopy}>
-                  We want to be more than just another matrimonial platform. Our vision is to become a
-                  trusted, one stop resource for everything related to nikah and marriage.
-                </p>
-                <p className={styles.bodyCopy}>
-                  Our team brings together Islamic scholars, experienced marriage counselors, a social
-                  worker, a lawyer, and individuals with years of experience supporting families.
-                </p>
-              </div>
-            </div>
-            <p className={styles.servicesLabel}>Together, we aim to provide:</p>
-            <ul className={styles.serviceGrid}>
-              {services.map(({ icon: Icon, title, text }, index) => (
-                <li key={title} className={styles.serviceCard}>
-                  <div className={styles.serviceTop}>
-                    <Icon size={29} strokeWidth={1.3} aria-hidden="true" />
-                    <span aria-hidden="true">0{index + 1}</span>
+            <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:[&>li:last-child]:col-start-2">
+              {services.map(({ icon: Icon, title, text }) => (
+                <li
+                  key={title}
+                  className="flex gap-4 rounded-2xl border border-[var(--brand-gold)]/35 bg-[var(--brand-cream)] p-5"
+                >
+                  <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-[var(--brand-green)]">
+                    <Icon className="size-5 text-white" strokeWidth={1.75} aria-hidden="true" />
+                  </span>
+                  <div>
+                    <p className="text-[17px] font-semibold text-[var(--brand-green)]">{title}</p>
+                    <p className="mt-1 text-[15px] leading-relaxed text-[var(--brand-ink)]">{text}</p>
                   </div>
-                  <h3>{title}</h3><p>{text}</p>
                 </li>
               ))}
             </ul>
-            <div className={styles.languageBar}>
-              <Globe size={27} strokeWidth={1.3} aria-hidden="true" />
-              <div>
-                <h3>Multilingual Assistance</h3>
-                <p>Support in Bangla, English, French, Arabic, Urdu, and other languages where available.</p>
-              </div>
-            </div>
           </div>
         </section>
 
-        <section className={`${styles.section} ${styles.welcome}`} aria-labelledby="welcome-title">
-          <div className={`${styles.container} ${styles.welcomeGrid}`}>
-            <div>
-              <p className={styles.eyebrow}>A place for your next chapter</p>
-              <h2 id="welcome-title" className={styles.sectionTitle}>Everyone is<br /><em>welcome.</em></h2>
-              <MapleDivider className={styles.welcomeDivider} />
-            </div>
-            <div>
-              <p className={styles.bodyCopy}>
-                Whether you&rsquo;ve never been married, are divorced, or are widowed, you&rsquo;re welcome
-                here, regardless of your age or marital status.
-              </p>
-              <p className={styles.bodyCopy}>We believe everyone should have the opportunity to find a compatible life partner.</p>
-              <p className={styles.bodyCopy}>
-                We want everyone who wishes to marry to experience the companionship, love, and happiness of
-                sharing life with someone.
-              </p>
-            </div>
+        {/* Everyone is welcome */}
+        <section className="py-12 sm:py-16">
+          <div className="mx-auto max-w-[760px] px-5 sm:px-8">
+            <h2 className={h2}>Everyone Is Welcome</h2>
+            <p className={p}>
+              Whether you&rsquo;ve never been married, are divorced, or are widowed, you&rsquo;re welcome
+              here, regardless of your age or marital status.
+            </p>
+            <p className={p}>We believe everyone should have the opportunity to find a compatible life partner.</p>
+            <p className={p}>
+              We want everyone who wishes to marry to experience the companionship, love, and happiness of
+              sharing life with someone.
+            </p>
           </div>
         </section>
 
-        <section className={styles.mission} aria-labelledby="mission-title">
-          <div className={styles.missionCopy}>
-            <p className={styles.eyebrow}>Our mission</p>
-            <h2 id="mission-title">To make nikah<br /><em>simple, halal,</em> and<br />accessible for everyone.</h2>
-            <div className={styles.missionActions}>
-              <Link href="/start" className={styles.primaryButton}>
-                Register for Free <ArrowUpRight size={19} aria-hidden="true" />
-              </Link>
-              <Link href="/contact" className={styles.textLink}>
-                Speak with our team <ArrowUpRight size={17} aria-hidden="true" />
-              </Link>
-            </div>
-          </div>
-          <div className={styles.missionImage}>
-            <Image
-              src="/images/about/a-shared-future.webp"
-              alt="Two gold wedding bands on ivory Bengali silk beside white jasmine and a brass tea cup"
-              fill sizes="(max-width: 760px) 100vw, 45vw"
-            />
+        {/* Mission */}
+        <section className="bg-[var(--brand-green)] py-14 text-center sm:py-20">
+          <div className="mx-auto max-w-[760px] px-5 sm:px-8">
+            <p className="text-[12px] font-semibold uppercase tracking-[0.28em] text-[#f0cf86] sm:text-[13px]">
+              Our Mission
+            </p>
+            <p className="mt-4 text-balance font-[family-name:var(--font-display)] text-[28px] font-black leading-snug text-white sm:text-[40px]">
+              To make nikah simple, halal, and accessible for everyone.
+            </p>
+            <Link
+              href="/start"
+              className="mt-8 inline-flex h-14 items-center justify-center rounded-full border border-[#7d0d14] bg-[linear-gradient(180deg,#c8181f_0%,#9c0f17_100%)] px-10 text-[18px] font-bold !text-white shadow-[0_10px_24px_rgb(0_0_0_/_0.25)] transition-[filter] hover:brightness-110"
+            >
+              Register for Free
+            </Link>
           </div>
         </section>
       </main>
+
       <SiteFooter />
     </div>
   );
