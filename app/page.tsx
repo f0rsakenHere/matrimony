@@ -78,11 +78,11 @@ export default function Home() {
               Personalized Halal Matchmaking
             </p>
 
-            <h1 className="mt-4 font-[family-name:var(--font-display)] font-black text-[#1a1a1a]">
+            <h1 className="mt-4 font-[family-name:var(--font-heading)] font-normal tracking-[-0.055em] text-[#1a1a1a]">
               <span className="block text-balance text-[27px] leading-[1.18] min-[400px]:text-[30px] sm:text-[42px] lg:text-[50px]">
                 Helping Bengali Canadian Muslims Find Their
               </span>
-              <span className="mt-1 block text-[38px] leading-[1.1] text-[var(--brand-red)] min-[400px]:text-[42px] sm:text-[58px] lg:text-[70px]">
+              <span className="mt-1 block text-[38px] italic leading-[1.1] text-[var(--brand-red)] min-[400px]:text-[42px] sm:text-[58px] lg:text-[70px]">
                 Life Partner
               </span>
             </h1>
@@ -131,14 +131,14 @@ export default function Home() {
           {/* Couple over the Toronto skyline; top edge fades into the cream. */}
           <div className="relative mt-2 aspect-[2/1] lg:aspect-auto lg:h-[540px]">
             <Image
-              src="/hero-couple-toronto-v3.webp"
+              src="/hero-couple-toronto-v4.webp"
               alt="Bengali Muslim bride and groom looking out over the Toronto skyline at sunset"
               fill
               priority
               sizes="100vw"
-              className="object-cover object-[50%_30%]"
+              className="object-cover object-[60%_50%]"
             />
-            <div className="absolute inset-x-0 top-0 h-10 bg-gradient-to-b from-[#f8f0e2] to-transparent sm:h-20 lg:h-36" />
+            <div className="absolute inset-x-0 top-0 h-8 bg-gradient-to-b from-[#f8f0e2] to-transparent sm:h-12 lg:h-16" />
             <GoldFloral className="absolute bottom-full left-0 w-16 translate-y-8 -scale-y-100 opacity-70 sm:w-28" />
             <GoldFloral flip className="absolute bottom-full right-0 w-16 translate-y-8 -scale-y-100 opacity-70 sm:w-28" />
           </div>
@@ -165,20 +165,20 @@ export default function Home() {
         {/* ════════ WHY SEND US YOUR PROFILE ════════ */}
         <section id="about" className="scroll-mt-4 bg-[var(--color-light)] pb-2 pt-10 sm:pt-14 lg:pt-16">
           <div className="mx-auto max-w-[680px] px-5 sm:px-8">
-            <h2 className="text-center font-sans text-[28px] font-bold leading-tight text-[var(--brand-green)] sm:text-[36px]">
-              Why Send Us Your Profile?
+            <h2 className="text-center font-[family-name:var(--font-heading)] text-[28px] font-normal leading-tight tracking-[-0.045em] text-[var(--brand-green)] sm:text-[36px]">
+              Why Send Us Your <em>Profile?</em>
             </h2>
             <div className="mt-6 h-[2px] bg-[var(--button-gold-mid)] sm:mt-8" />
 
-            <h3 className="mt-8 font-sans text-[24px] font-bold leading-tight text-[var(--brand-green)] sm:text-[28px]">
-              Finding the Right Match
+            <h3 className="mt-8 font-[family-name:var(--font-heading)] text-[24px] font-normal leading-tight tracking-[-0.045em] text-[var(--brand-green)] sm:text-[28px]">
+              Finding the Right <em>Match</em>
             </h3>
             <p className="mt-4 text-[17px] leading-[1.75] text-[var(--brand-ink)] sm:text-[18px]">
               Finding a suitable match can be stressful. It can take months or even years, especially when
               you&rsquo;re looking for someone who shares your faith, values, and expectations.
             </p>
 
-            <p className="mt-6 rounded-2xl bg-[var(--brand-green)] px-6 py-4 text-center text-[22px] font-bold leading-tight sm:py-5 sm:text-[26px]" style={{ color: "#fff" }}>
+            <p className="mt-6 rounded-2xl bg-[var(--brand-green)] px-6 py-4 text-center font-[family-name:var(--font-heading)] text-[22px] font-normal leading-tight tracking-[-0.045em] sm:py-5 sm:text-[26px]" style={{ color: "#fff" }}>
               That&rsquo;s Where We Come In.
             </p>
 
@@ -194,8 +194,8 @@ export default function Home() {
         {/* ════════ CONFIDENTIAL & SAFE ════════ */}
         <section id="why-choose" className="bg-[var(--color-light)] pb-2 pt-4 sm:pt-6">
           <div className="mx-auto max-w-[680px] px-5 sm:px-8">
-            <h2 className="text-center font-sans text-[28px] font-bold leading-tight text-[var(--brand-green)] sm:text-[36px]">
-              Confidential &amp; Safe
+            <h2 className="text-center font-[family-name:var(--font-heading)] text-[28px] font-normal leading-tight tracking-[-0.045em] text-[var(--brand-green)] sm:text-[36px]">
+              Confidential &amp; <em>Safe</em>
             </h2>
             <div className="mt-6 h-[2px] bg-[var(--button-gold-mid)] sm:mt-8" />
 
@@ -215,8 +215,8 @@ export default function Home() {
         {/* ════════ DEVELOPED WITH SCHOLARS ════════ */}
         <section className="bg-[var(--color-light)] pb-12 pt-4 sm:pb-16 sm:pt-6">
           <div className="mx-auto max-w-[680px] px-5 sm:px-8">
-            <h2 className="text-center font-sans text-[28px] font-bold leading-tight text-[var(--brand-green)] sm:text-[36px]">
-              Developed With Scholars
+            <h2 className="text-center font-[family-name:var(--font-heading)] text-[28px] font-normal leading-tight tracking-[-0.045em] text-[var(--brand-green)] sm:text-[36px]">
+              Developed With <em>Scholars</em>
             </h2>
             <div className="mt-6 h-[2px] bg-[var(--button-gold-mid)] sm:mt-8" />
 
@@ -251,7 +251,7 @@ export default function Home() {
         >
           <div className="mx-auto max-w-[1520px] px-4 sm:px-6 md:px-8 lg:px-10">
             <div className="text-center">
-              <h2 className="text-[var(--foreground)]">How It Works</h2>
+              <h2 className="font-[family-name:var(--font-heading)] font-normal tracking-[-0.045em] text-[var(--foreground)]">How It <em>Works</em></h2>
             </div>
 
             <div className="mx-auto mt-10 grid max-w-5xl grid-cols-2 gap-6 sm:mt-14 sm:grid-cols-2 lg:grid-cols-4 lg:gap-0">
@@ -273,7 +273,7 @@ export default function Home() {
                       <svg className="size-3 shrink-0 text-[var(--color-dark-28)]" viewBox="0 0 12 12" fill="currentColor"><path d="M4 2l4 4-4 4" /></svg>
                     </div>
                   )}
-                  <p className="mt-4 text-[13px] font-semibold text-[var(--foreground)] sm:mt-5 sm:text-[15px]">
+                  <p className="mt-4 font-[family-name:var(--font-heading)] text-[13px] font-normal text-[var(--foreground)] sm:mt-5 sm:text-[15px]">
                     {title}
                   </p>
                   <p className="mt-1.5 text-[12px] leading-relaxed text-[var(--color-dark-56)] sm:mt-2 sm:max-w-[200px] sm:text-[13px]">

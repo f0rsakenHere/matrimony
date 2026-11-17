@@ -22,56 +22,57 @@ export const RED_HEART =
 
 /**
  * BanglaNikahCanada wordmark: green + red heart mark, the Bengali name,
- * "BanglaNikahCanada.com" in heavy italic serif, and the tagline
- * "A Halal Matrimony Service" below it.
+ * "BanglaNikahCanada.com" in green italic serif, and a horizontal rule
+ * leading into the serif tagline "A Halal Matrimony Service".
  * Size it with a width class (e.g. "w-[240px]"); height follows the aspect ratio.
  */
 export function BrandLogo({ className, tone = "dark" }: BrandLogoProps) {
   const light = tone === "light";
-  const green = light ? "#ffffff" : "#1b5e3b";
-  const red = light ? "#ffb4b9" : "#c8181f";
+  const green = light ? "#ffffff" : "#006438";
+  const red = light ? "#ffb4b9" : "#c60013";
   const ink = light ? "#ffffff" : "#141414";
   const sub = light ? "rgba(255,255,255,0.88)" : "#1f1f1f";
 
   return (
-    <svg viewBox="0 0 520 118" aria-hidden="true" className={cn("block h-auto shrink-0", className)}>
-      <g transform="translate(0 4)">
+    <svg viewBox="0 0 560 108" aria-hidden="true" className={cn("block h-auto shrink-0", className)}>
+      <g transform="translate(0 3)">
         <path d={GREEN_SWOOSH} fill={green} />
         <path d={RED_HEART} fill={red} fillRule="evenodd" />
       </g>
 
       {/* Bengali name */}
       <text
-        x="122"
-        y="40"
+        x="117"
+        y="38"
         fill={ink}
-        textLength="250"
+        textLength="264"
         lengthAdjust="spacingAndGlyphs"
-        style={{ fontFamily: "var(--font-bengali), serif", fontSize: 36, fontWeight: 700 }}
+        style={{ fontFamily: "var(--font-bengali), serif", fontSize: 34, fontWeight: 700 }}
       >
         বাংলা নিকাহ কানাডা
       </text>
 
       {/* English name */}
       <text
-        x="120"
-        y="80"
-        fill={ink}
-        textLength="392"
+        x="114"
+        y="77"
+        fill={green}
+        textLength="440"
         lengthAdjust="spacingAndGlyphs"
-        style={{ fontFamily: "var(--font-display), Georgia, serif", fontSize: 37, fontWeight: 900, fontStyle: "italic" }}
+        style={{ fontFamily: "'Times New Roman', 'Liberation Serif', serif", fontSize: 44, fontWeight: 700, fontStyle: "italic" }}
       >
         BanglaNikahCanada.com
       </text>
 
-      {/* Tagline, spanning the width of the English name */}
+      {/* Short rule followed by the right-aligned tagline, as in the reference. */}
+      <path d="M111 97 H296" fill="none" stroke={ink} strokeWidth="3" strokeLinecap="round" />
       <text
-        x="122"
-        y="110"
+        x="306"
+        y="101"
         fill={sub}
-        textLength="388"
-        lengthAdjust="spacing"
-        style={{ fontFamily: "var(--font-sora), sans-serif", fontSize: 22, fontStyle: "italic", fontWeight: 600 }}
+        textLength="248"
+        lengthAdjust="spacingAndGlyphs"
+        style={{ fontFamily: "'Times New Roman', 'Liberation Serif', serif", fontSize: 22, fontStyle: "italic", fontWeight: 700 }}
       >
         A Halal Matrimony Service
       </text>

@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import SiteHeader from "../_components/site-header";
 import SiteFooter from "../_components/site-footer";
-import { MapleDivider } from "@/components/ui/gold-floral";
+import { GoldFloral, MapleDivider } from "@/components/ui/gold-floral";
 
 export const metadata: Metadata = {
   title: "About Us | BanglaNikahCanada",
@@ -30,7 +30,7 @@ const services = [
   { icon: Globe, title: "Multilingual Assistance", text: "Support in Bangla, English, French, Arabic, Urdu, and other languages where available." },
 ];
 
-const h2 = "font-[family-name:var(--font-display)] text-[26px] font-black leading-tight text-[var(--brand-green)] sm:text-[32px]";
+const h2 = "font-[family-name:var(--font-heading)] text-[26px] font-normal leading-tight tracking-[-0.045em] text-[var(--brand-green)] sm:text-[32px]";
 const p = "mt-4 text-[17px] leading-[1.8] text-[var(--brand-ink)] sm:text-[18px]";
 
 export default function AboutPage() {
@@ -45,9 +45,9 @@ export default function AboutPage() {
             <p className="text-[12px] font-semibold uppercase tracking-[0.28em] text-[var(--brand-green)] sm:text-[13px]">
               About Us
             </p>
-            <h1 className="mt-4 font-[family-name:var(--font-display)] font-black text-[#1a1a1a]">
+            <h1 className="mt-4 font-[family-name:var(--font-heading)] font-normal tracking-[-0.055em] text-[#1a1a1a]">
               <span className="block text-balance text-[30px] leading-[1.15] sm:text-[44px]">Making Nikah</span>
-              <span className="mt-1 block text-balance text-[32px] leading-[1.15] text-[var(--brand-red)] sm:text-[48px]">
+              <span className="mt-1 block text-balance text-[32px] italic leading-[1.15] text-[var(--brand-red)] sm:text-[48px]">
                 Simple, Halal &amp; Accessible
               </span>
             </h1>
@@ -61,8 +61,8 @@ export default function AboutPage() {
           <div className="mx-auto mt-8 max-w-[1040px] px-5 sm:mt-10 sm:px-8">
             <div className="relative aspect-[16/9] overflow-hidden rounded-2xl border border-[var(--brand-gold)]/35 shadow-[0_12px_32px_rgb(27_94_59_/_0.08)] sm:aspect-[3/1]">
               <Image
-                src="/images/about/islamic-courtyard.webp"
-                alt="A peaceful empty Islamic courtyard with cream stone arches, green doors, and jasmine"
+                src="/images/about/bengali-nikah-setting.webp"
+                alt="An empty Bengali nikah setting decorated with tuberose garlands, jasmine, and traditional Jamdani drapery"
                 fill
                 priority
                 sizes="(max-width: 1040px) 100vw, 976px"
@@ -75,7 +75,7 @@ export default function AboutPage() {
         {/* Why we exist */}
         <section className="py-12 sm:py-16">
           <div className="mx-auto max-w-[760px] px-5 sm:px-8">
-            <h2 className={h2}>That&rsquo;s Why We Exist.</h2>
+            <h2 className={h2}>That&rsquo;s Why We <em>Exist.</em></h2>
             <p className={p}>
               We want to bring Bengali Muslims across Canada together through a trusted, halal matchmaking
               service where individuals and families can connect, explore compatible matches, and take
@@ -92,7 +92,7 @@ export default function AboutPage() {
         <section className="bg-white/60 py-12 sm:py-16">
           <div className="mx-auto max-w-[1040px] px-5 sm:px-8">
             <div className="mx-auto max-w-[760px]">
-              <h2 className={h2}>More Than Matchmaking</h2>
+              <h2 className={h2}>More Than <em>Matchmaking</em></h2>
               <p className={p}>
                 We want to be more than just another matrimonial platform. Our vision is to become a
                 trusted, one stop resource for everything related to nikah and marriage.
@@ -103,8 +103,8 @@ export default function AboutPage() {
               </p>
               <div className="relative mt-8 aspect-[16/9] overflow-hidden rounded-2xl border border-[var(--brand-gold)]/35 sm:aspect-[5/2]">
                 <Image
-                  src="/images/about/bengali-hospitality.webp"
-                  alt="A brass Bengali tea service with ivory cups, jasmine flowers, and green and gold textiles"
+                  src="/images/about/bengali-wedding-details.webp"
+                  alt="Burgundy Bengali wedding sari and ivory panjabi with jasmine and tuberose wedding garlands"
                   fill
                   sizes="(max-width: 760px) 100vw, 760px"
                   className="object-cover"
@@ -123,7 +123,7 @@ export default function AboutPage() {
                     <Icon className="size-5 text-white" strokeWidth={1.75} aria-hidden="true" />
                   </span>
                   <div>
-                    <p className="text-[17px] font-semibold text-[var(--brand-green)]">{title}</p>
+                    <p className="font-[family-name:var(--font-heading)] text-[17px] font-normal text-[var(--brand-green)]">{title}</p>
                     <p className="mt-1 text-[15px] leading-relaxed text-[var(--brand-ink)]">{text}</p>
                   </div>
                 </li>
@@ -135,7 +135,7 @@ export default function AboutPage() {
         {/* Everyone is welcome */}
         <section className="py-12 sm:py-16">
           <div className="mx-auto max-w-[760px] px-5 sm:px-8">
-            <h2 className={h2}>Everyone Is Welcome</h2>
+            <h2 className={h2}>Everyone Is <em>Welcome</em></h2>
             <p className={p}>
               Whether you&rsquo;ve never been married, are divorced, or are widowed, you&rsquo;re welcome
               here, regardless of your age or marital status.
@@ -149,13 +149,15 @@ export default function AboutPage() {
         </section>
 
         {/* Mission */}
-        <section className="bg-[var(--brand-green)] py-14 text-center sm:py-20">
-          <div className="mx-auto max-w-[760px] px-5 sm:px-8">
-            <p className="text-[12px] font-semibold uppercase tracking-[0.28em] text-[#f0cf86] sm:text-[13px]">
+        <section className="relative isolate overflow-hidden border-y border-[var(--brand-gold)]/30 bg-[linear-gradient(135deg,#f4ead8_0%,#fcf8f0_50%,#f4ead8_100%)] py-14 text-center sm:py-20">
+          <GoldFloral className="absolute left-0 top-0 w-24 opacity-45 sm:w-40" />
+          <GoldFloral flip className="absolute bottom-0 right-0 w-24 -scale-y-100 opacity-45 sm:w-40" />
+          <div className="relative z-10 mx-auto max-w-[760px] px-5 sm:px-8">
+            <p className="text-[12px] font-semibold uppercase tracking-[0.28em] text-[var(--brand-green)] sm:text-[13px]">
               Our Mission
             </p>
-            <p className="mt-4 text-balance font-[family-name:var(--font-display)] text-[28px] font-black leading-snug text-white sm:text-[40px]">
-              To make nikah simple, halal, and accessible for everyone.
+            <p className="mt-4 text-balance font-[family-name:var(--font-heading)] text-[28px] font-normal leading-snug tracking-[-0.045em] text-[var(--brand-green)] sm:text-[40px]">
+              To make nikah <em className="text-[var(--brand-red)]">simple, halal,</em> and accessible for everyone.
             </p>
             <Link
               href="/start"
